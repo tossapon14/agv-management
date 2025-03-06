@@ -26,7 +26,7 @@
   height: 100%;
   overflow: auto;
   font-family: 'K2D-Regular', sans-serif;
-  width: cal(100vh-200px);
+  width: calc(100vh-200px);
   overflow-y: auto;;
 }
 
@@ -412,6 +412,7 @@
   height: 40px;
   border-radius: 50%;
   background-color: #383838;
+  z-index: 2;
 }
 .box-no-mossion .button-center{
   background-color: #ededed;
@@ -600,8 +601,9 @@
   height: auto;
   background-color: #fff;
   border-radius: 8px;
-  padding:0 1rem 1.5rem;
+  padding:0 1rem 1.2rem;
   margin: 0 auto;
+  transition: height 2s linear 1s;
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 
 }
@@ -625,47 +627,50 @@
   width: 100px;
 
 }
+
 .box-selected-warehouse{
   width: 100%;
   border-top: 3px dotted #838383;
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: fit-content !important;
+  overflow-y: auto;
+  padding: 8px 12px 0; 
   min-height: 140px;
-  padding: 5px 12px;
+  max-height: 550px;
   /* background-color: #d9d9d9; */
 }
-.box-selected-warehouse .model-mission-line{
-  border-top:4px dotted #f43232;
+.position-relative .dotted-mission-line{
+  border-left:5px dotted #f43232;
   position: absolute;
-  transform: rotate(90deg);
   transform-origin: top left;
-  top: 50px;
-  left: 50px;
-  width: 300px;
+  top: 29px;
+  left: 34px;
+  height: calc(100% - 50px);
+  /* transition: height 2s; */
 }
 .data-warehouse-box{
   display: flex;
+  padding-block: 12px ;
   width: 10px;
   height: 10px;
   border-radius: 50%;
   align-items: center;
-  position: absolute;
-  left: 24px;
+  opacity: 1;
+  z-index: 1;
   background: transparent;
-  box-shadow:inset rgba(96, 255, 88, 0.30) 0px 54px 55px, rgba(96, 255, 88, 0.50) 0px -12px 30px, rgba(119, 255, 88, 0.70) 0px 4px 6px;
+  box-shadow:inset rgba(96, 255, 88, 0.874) 0px 5px 55px, rgba(96, 255, 88, 0.50) 0px 12px 30px, rgba(119, 255, 88, 0.70) 0px 4px 6px;
   animation: addmission 1s normal forwards ease-in-out;
+  
 }
 @keyframes addmission {
   0% {
       opacity: .2;
   }
-
-  99% {
-    width: 90%;
-      opacity: 1;
-  }
   100%{
+    opacity: 1;
       width: 90%;
-      height: 100px;
+      height: 90px;
       border-radius: 5px;
       box-shadow: none;
   }

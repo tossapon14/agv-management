@@ -4,7 +4,7 @@ import AgvImg from '../assets/images/plyagvmirror.png';
 import AgvImg2 from '../assets/images/plyagv.png';
 
 import { CiBatteryFull } from "react-icons/ci";
-import { FaArrowDown, FaWarehouse } from "react-icons/fa6";
+import { FaArrowDown } from "react-icons/fa6";
 import { IoMdSettings } from "react-icons/io";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import MissionImage from '../assets/images/mission.png';
@@ -49,10 +49,10 @@ export default function Home() {
   const [agv, setAgv] = useState<IPayload[]>([]);
   const [btnAgv, setBtnAgv] = useState<string[]>([]);
   const [selectPickup, setSelectedPickup] = useState<React.ReactNode>(<h3 className="selectPickup">Select your pickup</h3>)
-  const [selectWarehouse, setSelectWarehouse] = useState<string[]>([]);
-
+  const [selectWarehouse, setselectWarehouse] = useState<string[]>([])
+  const showMission = useRef<HTMLDivElement>(null);
   const clickWarehouse = (i: string) => {
-    setSelectWarehouse((prev) => [...prev, `warehouse ${i}`]);
+    setselectWarehouse((prev) => [...prev, `warehouse ${i}`]);
   }
   const clickPickup = (index: number) => {
     const pickup = ["Pickup 1", "Pickup 2", "Pickup 3", "Pickup 4", "Pickup 5", "Pickup 6", "Pickup 7", "Pickup 8"];
@@ -85,6 +85,15 @@ export default function Home() {
         setShowModel("hidden-model");
       }
     };
+    const scrollToBottom = () => {
+      if (showMission.current) {
+        showMission.current.scrollTop = showMission.current.scrollHeight;
+      }
+    };
+    const observer = new MutationObserver(scrollToBottom);
+    if (showMission.current) {
+      observer.observe(showMission.current, { childList: true, subtree: true });
+    }
     const getAgv = async () => {
       try {
         const res: IVehicles = await axiosGet(
@@ -104,7 +113,8 @@ export default function Home() {
     if (sessionStorage.getItem("token")) {
       getAgv();
     }
-
+    return () => { observer.disconnect(); 
+      modelRef.current!.removeEventListener("mouseup", handleMouseUp); };
   }, []);
   return (
     <section className='home'>
@@ -332,28 +342,28 @@ export default function Home() {
               </>
             ) : null}
             {missionModel.status != 2 ? (<>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("1")} style={{ top: '80%', left: '25%' }}>D1</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("2")} style={{ top: '88%', left: '18%' }}>D2</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("3")} style={{ top: '88%', left: '10%' }}>D3</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("4")} style={{ top: '80%', left: '2%' }}>D4</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("5")} style={{ top: '70%', left: '9%' }}>D5</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("6")} style={{ top: '70%', left: '18%' }}>D6</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("7")} style={{ top: '65%', left: '2%' }}>D7</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("8")} style={{ top: '52%', left: '2%' }}>D8</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("9")} style={{ top: '42%', left: '9%' }}>D9</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("10")} style={{ top: '42%', left: '18%' }}>D10</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("11")} style={{ top: '65%', left: '25%' }}>D11</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("12")} style={{ top: '52%', left: '25%' }}>D12</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("13")} style={{ top: '30%', left: '45%' }}>D13</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("14")} style={{ top: '38%', left: '45%' }}>D14</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("15")} style={{ top: '68%', left: '53%' }}>D15</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("16")} style={{ top: '70%', left: '80%' }}>D16</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("17")} style={{ top: '84%', left: '40%' }}>D17</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("18")} style={{ top: '50%', left: '38%' }}>D18</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("19")} style={{ top: '60%', left: '38%' }}>D19</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("20")} style={{ top: '65%', left: '46%' }}>D20</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("21")} style={{ top: '65%', left: '62%' }}>D21</button>
-              <button className='btn-pickup-agv color-btn-warehouse'  onClick={() => clickWarehouse("22")} style={{ top: '65%', left: '70%' }}>D22</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("1")} style={{ top: '80%', left: '25%' }}>D1</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("2")} style={{ top: '88%', left: '18%' }}>D2</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("3")} style={{ top: '88%', left: '10%' }}>D3</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("4")} style={{ top: '80%', left: '2%' }}>D4</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("5")} style={{ top: '70%', left: '9%' }}>D5</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("6")} style={{ top: '70%', left: '18%' }}>D6</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("7")} style={{ top: '65%', left: '2%' }}>D7</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("8")} style={{ top: '52%', left: '2%' }}>D8</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("9")} style={{ top: '42%', left: '9%' }}>D9</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("10")} style={{ top: '42%', left: '18%' }}>D10</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("11")} style={{ top: '65%', left: '25%' }}>D11</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("12")} style={{ top: '52%', left: '25%' }}>D12</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("13")} style={{ top: '30%', left: '45%' }}>D13</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("14")} style={{ top: '38%', left: '45%' }}>D14</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("15")} style={{ top: '68%', left: '53%' }}>D15</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("16")} style={{ top: '70%', left: '80%' }}>D16</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("17")} style={{ top: '84%', left: '40%' }}>D17</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("18")} style={{ top: '50%', left: '38%' }}>D18</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("19")} style={{ top: '60%', left: '38%' }}>D19</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("20")} style={{ top: '65%', left: '46%' }}>D20</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("21")} style={{ top: '65%', left: '62%' }}>D21</button>
+              <button className='btn-pickup-agv color-btn-warehouse' onClick={() => clickWarehouse("22")} style={{ top: '65%', left: '70%' }}>D22</button>
             </>) : null}
 
 
@@ -371,22 +381,27 @@ export default function Home() {
                 </div>
                 <img className='image-agv-model' src={AgvImg2}></img>
               </div>
-              <div className='box-selected-warehouse' style={{ height: missionModel.status === 2 ? "100px" : "0px" }}>
-                <div className='button-center' ><FaArrowDown size={24} /></div>
-                {missionModel.status != 2 && <div className='model-mission-line'></div>}
-                {selectPickup}
-                {selectWarehouse.map((wh) => <div className='data-warehouse-box' style={{ top: '24px' }}>
-                  <div className='circle-pickup-outline green-circle-bg'>
-                    <div className='circle-pickup-inner'></div>
-                  </div>
-                  <div className='warehouse-from-to-box'>
-                    <p style={{ color: '#838383' }}>to</p>
-                    <h5>{wh}</h5>
-                  </div>
-                </div>)}
+              <div className="position-relative">
+                {missionModel.status != 2 && <div className='dotted-mission-line'></div>}
+                <div ref={showMission} className='box-selected-warehouse'>
+                  <div className='button-center' ><FaArrowDown size={24} /></div>
 
+                  {selectPickup}
+                  {selectWarehouse.map((warehouse, index) => <div className='data-warehouse-box'>
+                    <div className='circle-goal-outline blue-circle-bg'>
+                      <FaMapMarkerAlt size={32} color='#003092' />
+                    </div>
+                    <div className='warehouse-from-to-box'>
+                      <p style={{ color: '#838383' }}>to</p>
+                      <h5>{warehouse}</h5>
+                    </div>
+                  </div>)}
+
+
+                </div>
               </div>
-              <button className='send-command' onClick={()=>setMissionModel((prev)=>({...prev,status:3}))}>สั่งงาน</button>
+
+              <button className='send-command mt-3' onClick={() => setMissionModel((prev) => ({ ...prev, status: 3 }))}>สั่งงาน</button>
             </div>
             <button className='close-model' onClick={() => { setShowModel("hidden-model") }}>ย้อนกลับ</button>
           </div>
