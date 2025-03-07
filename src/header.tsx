@@ -25,7 +25,7 @@ export default function Headers() {
 
             <div className='nav-end'>
                 <div className='timer-clock'>
-                    {time.toLocaleTimeString()} <span>@ BGC อยุธยากล๊าส</span>
+                    <p>{time.toLocaleTimeString()}</p> <p>@ BGC อยุธยากล๊าส</p>
                 </div>
                 <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span className="navbar-toggler-icon"></span>

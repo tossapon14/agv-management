@@ -1,4 +1,5 @@
 
+
 .home {
   display: grid;
   width: 100vw;
@@ -26,7 +27,7 @@
   height: 100%;
   overflow: auto;
   font-family: 'K2D-Regular', sans-serif;
-  width: calc(100vh-200px);
+  height: calc(100vh - 64px);
   overflow-y: auto;;
 }
 
@@ -87,19 +88,14 @@
 }
 
 .agv-name-text {
-  background-color: #001494;
-  border-radius: 2px;
+  /* background-color: #001494; */
+  border-radius: 5px;
   width: 90px;
-  height: 25px;
-  font-size: 16px;
+  font-size: 20px;
+  padding: 4px 8px;
+  margin-bottom:4px ;
   text-align: center;
   color: white;
-}
-.AGV1{
-  background-color: #001494;
-}
-.AGV2{
-  background-color: #420000;
 }
 
 .auto-manual {
@@ -143,8 +139,7 @@
 }
 
 .agv-battery {
-  transform: translateY(-6px);
-  padding: 0 8px 0;
+  padding: 0 12px 0;
 }
 
 .agv-state {
@@ -163,13 +158,14 @@
   justify-content: start;
   align-items: end;
   /* background-color: #001494; */
-  transform: translateY(-16px);
+  /* transform: translateY(-16px); */
   margin-left: auto;
 }
 
 .velocity-number {
   font-size: 64px;
   margin: 0;
+
   color: #3E3E3E;
 }
 
@@ -539,6 +535,49 @@
   z-index: 2;
   backdrop-filter: blur(5px);
 }
+.model.show-model{
+  display: block;
+  overflow: hidden;
+  /* transform-origin: center; */
+  animation: expandCenter 0.4s ease-out forwards;
+}
+.model.hidden-model{
+  animation: shrinkModel 0.4s ease-out forwards;
+  display: block;
+  overflow: hidden;
+}
+
+@keyframes expandCenter {
+  from {
+    width: 0;
+    height: 0;
+    opacity: 0;
+    transform: translateX(1920px);
+
+  }
+  to {
+    width: 100%;
+    height: 100%;
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes shrinkModel {
+  from {
+    width: 100%;
+    height: 100%;
+    transform: translateX(0px);
+    opacity: 1;
+    /* visibility: visible; */
+  }
+  to {
+    width: 0;
+    height: 0;
+    transform:  translateX(1920px);
+    opacity: 0;
+    display: none;
+  }
+}
 .model-content{
   width: 1750px;
   height: 900px;
@@ -607,12 +646,7 @@
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 
 }
-.agv-mission-card.btAGV1{
-  border-top:16px solid #001494;
-}
-.agv-mission-card.btAGV2{
-  border-top:16px solid rgb(65, 1, 1);
-}
+
 .agv-mission-card .agv-top-name-box{
   display: flex;
   justify-content: space-between;
@@ -644,10 +678,10 @@
   border-left:5px dotted #f43232;
   position: absolute;
   transform-origin: top left;
-  top: 29px;
+  top: 32px;
   left: 34px;
-  height: calc(100% - 50px);
-  /* transition: height 2s; */
+  height: calc(100% - 54px);
+  transition: height 2s ease-in-out;
 }
 .data-warehouse-box{
   display: flex;
@@ -736,41 +770,7 @@
   border: 2px solid #ff2222;
 
 }
-.model.show-model{
-  display: block;
-  overflow: hidden;
-  transform: scaleX(0);
-  /* transform-origin: center; */
-  animation: expandCenter 0.2s ease-out forwards;
-}
-.model.hidden-model{
-  animation: shrinkModel 0.2s ease-out forwards;
-  display: block;
-  overflow: hidden;
-}
 
-@keyframes expandCenter {
-  from {
-    transform: scaleX(0);
-    opacity: 0;
-  }
-  to {
-    transform: scaleX(1);
-    opacity: 1;
-  }
-}
-@keyframes shrinkModel {
-  from {
-    transform: scaleX(1) translateY(0px);
-    opacity: 1;
-    /* visibility: visible; */
-  }
-  to {
-    transform: scaleX(0) translateY(500px);
-    opacity: 0;
-    display: none;
-  }
-}
 .selectPickup{
   width: 100%;
   /* height: 100px; */

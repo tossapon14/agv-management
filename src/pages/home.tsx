@@ -17,8 +17,7 @@ interface IagvDataModel {
   agvName: string;
   status: number;
   state: string;
-  auto: string;
-  colorBoxName: string;
+  mode: string;
 }
 interface IVehicles {
   message: string
@@ -37,16 +36,17 @@ interface IPayload {
   port: string
   state: number
   velocity: number
+  str_state?:string
 }
-
+const colorAgv:{[key:string]:string}={"AGV1":"#001494","AGV2":"#420000","AGV3":"#006a33","AGV4":"#d7be00","AGV5":"#94008d","AGV6":"#0097a8"};
 
 export default function Home() {
   const modelRef = useRef<HTMLDivElement>(null);
 
-  const [missionModel, setMissionModel] = useState<IagvDataModel>({ agvName: "", status: 0, state: '', auto: '', colorBoxName: '', });
+  const [missionModel, setMissionModel] = useState<IagvDataModel>({ agvName: "", status: 0, state: '', mode: ''});
   const [showModel, setShowModel] = useState<string>("");
   const [selectedAgv, setSelectedAgv] = useState(0);
-  const [agv, setAgv] = useState<IPayload[]>([]);
+  const [agvAll, setAgvAll] = useState<IPayload[]>([]);
   const [btnAgv, setBtnAgv] = useState<string[]>([]);
   const [selectPickup, setSelectedPickup] = useState<React.ReactNode>(<h3 className="selectPickup">Select your pickup</h3>)
   const [selectWarehouse, setselectWarehouse] = useState<string[]>([])
@@ -94,12 +94,27 @@ export default function Home() {
     if (showMission.current) {
       observer.observe(showMission.current, { childList: true, subtree: true });
     }
+    const pairAgvState = function(state:number):string{
+      switch(state){
+        case 0: return "ไม่เชื่อมต่อ";
+        case 1: return "เชื่อมต่อ";
+        case 2: return "พร้อมรับงาน";
+        case 3: return "ปฏิบัติงาน";
+        case 4: return "หยุด";
+        case 5: return "มีสิ่งกีดขวาง";
+        case 6: return "ระบบพบปัญหา";
+        case 7: return "รอคำสั่ง";
+        default: return "";
+      }
+    }
     const getAgv = async () => {
       try {
         const res: IVehicles = await axiosGet(
           "https://2514-110-164-87-31.ngrok-free.app/vehicle/vehicles?vehicle_name=ALL&state=ALL",
         );
-        setAgv(res.payload);
+        const agv = res.payload.map((data)=>({...data,str_state:pairAgvState(data.state)}));
+        console.log(agv);
+        setAgvAll(agv);
         setBtnAgv(res.payload.map(agvItem => agvItem.name));
       } catch (e) {
         console.log(e);
@@ -186,20 +201,20 @@ export default function Home() {
           <button onClick={() => selectAgvFunction(0)} className='btn-agv'>ทั้งหมด</button>
           {btnAgv.map((name, index) => <button onClick={() => selectAgvFunction(index + 1)} className='btn-agv'>{name}</button>)}
         </div>
-        {(selectedAgv === 1 || selectedAgv === 0) ? <section className='box-agv-data'>
+        {agvAll.map((agv,index)=><section className={`box-agv-data ${(selectedAgv === index+1 || selectedAgv === 0)?"":"d-none"}`}>
           <div className='top-box-data'>
             <img className='image-agv' src={AgvImg}></img>
             <div className='box-name-agv'>
               <div className='box-name-battery'>
-                <div className='agv-name-text AGV1'>AGV 1</div>
-                <div className='agv-battery'><CiBatteryFull size={36} /><span>100%</span></div>
+                <div className='agv-name-text'  style={{ backgroundColor: colorAgv[agv.name] || "red" }}>{agv.name}</div>
+                <div className='agv-battery'><CiBatteryFull size={36} /><span>{agv.battery}%</span></div>
               </div>
 
-              <div className='auto-manual MANUAL'>MANUAL</div>
-              <div className='agv-state'>กำลังทำงาน</div>
+              <div className={`auto-manual ${agv.mode}`}>{agv.mode}</div>
+              <div className='agv-state'>{agv.str_state}</div>
             </div>
             <div className='velocity'>
-              <h1 className='velocity-number'>3.4</h1>
+              <h1 className='velocity-number'>{agv.velocity}</h1>
               <p className="km-h">km/h</p>
               <button className='button-agv'>หยุด</button>
             </div>
@@ -207,72 +222,7 @@ export default function Home() {
           <div className='mission-line-container'>
 
           </div>
-          <div className='box-dotted-mission'>
-            <div className='button-center'  ><FaArrowDown size={24} /></div>
-            <div className='circle-1'></div>
-            <div className='circle-2'></div>
-            <div className='circle-3'></div>
-            <div className='circle-4'></div>
-            <div className="mission-text-box">
-              {/* <img src={MissionImage} alt="Logo with a yellow circle and blue border" className="me-1" width="28" height="28" /> */}
-              <p className="fs-5 mb-0">mission <span className="fw-bolder">#12</span></p>
-            </div>
-            <div className="mission-process-box">
-              <div className="pickup-box">
-                <div className='pickup-text'>P3</div>
-                <div className='pickup-time'>12.22</div>
-              </div>
-              <div className='center-line-box'>
-                <hr className="line4"></hr>
-                <div className="circle-pickup"></div>
-                <div className="circle-goal"></div>
-                <div className="stations-box left10">
-                  <div className='circle-top-stations'></div>
-                  <div className='label-station'>W10</div>
-                </div>
-                <div className="stations-box" style={{ left: '36%' }}>
-                  <div className='circle-top-stations'></div>
-                  <div className='label-station'>W10</div>
-                </div>
-                <div className="stations-box" style={{ left: '63%' }}>
-                  <div className='circle-top-stations'></div>
-                  <div className='label-station'>W10</div>
-                </div>
-                <div className="stations-box" style={{ left: '90%' }}>
-                  <div className='circle-top-stations'></div>
-                  <div className='label-station'>W10</div>
-                </div>
-              </div>
-              <div className="goal-box">
-                <div className='pickup-text'>W4</div>
-                <div className='pickup-time'>12.48</div>
-              </div>
-            </div>
-          </div>
-          <div className='mission-container'>
-            <div className='mission-status'>จุดลงสินค้า</div>
-            <button className='misstion-btn' onClick={() => clickMission({ agvName: "AGV 1", status: 2, state: 'รับสินค้า', auto: 'MANUAL', colorBoxName: 'AGV1' }, "show-model")}>จองที่จอด</button>
-          </div>
-        </section> : <div></div>}
-        {(selectedAgv === 2 || selectedAgv === 0) ? <section className='box-agv-data'>
-          <div className='top-box-data'>
-            <img className='image-agv' src={AgvImg}></img>
-            <div className='box-name-agv'>
-              <div className='box-name-battery'>
-                <div className='agv-name-text AGV2'>AGV 2</div>
-                <div className='agv-battery'><CiBatteryFull size={36} /><span>100%</span></div>
-              </div>
-
-              <div className='auto-manual AUTO'>AUTO</div>
-              <div className='agv-state'>กำลังทำงาน</div>
-            </div>
-            <div className='velocity'>
-              <h1 className='velocity-number'>5.2</h1>
-              <p className="km-h">km/h</p>
-              <button className='button-agv'>หยุด</button>
-            </div>
-          </div>
-          {true ? <div className="box-no-mossion">
+          {agv.mission_id == null ? <div className="box-no-mossion">
             <div className='button-center' ><FaArrowDown size={24} /></div>
             <div className='circle-1'></div>
             <div className='circle-2'></div>
@@ -285,7 +235,7 @@ export default function Home() {
               <div className='circle-4'></div>
               <div className="mission-text-box">
                 {/* <img src={MissionImage} alt="Logo with a yellow circle and blue border" className="me-1" width="28" height="28" /> */}
-                <p className="fs-5 mb-0">mission <span className="fw-bolder">#12</span></p>
+                <p className="fs-5 mb-0">mission <span className="fw-bolder">#{agv.mission_id}</span></p>
               </div>
               <div className="mission-process-box" >
                 <div className="pickup-box">
@@ -320,10 +270,10 @@ export default function Home() {
               </div>
             </div>}
           <div className='mission-container'>
-            <div className='mission-status'>รับสินค้า</div>
-            <button className='misstion-btn' onClick={() => clickMission({ agvName: "AGV 2", status: 2, state: 'รับสินค้า', auto: 'AUTO', colorBoxName: 'AGV2' }, "show-model")}>จองที่จอด</button>
+            <div className='mission-status'>จุดลงสินค้า</div>
+            <button className='misstion-btn' onClick={() => clickMission({ agvName: agv.name, status: 2, state: agv.str_state!, mode: agv.mode}, "show-model")}>จองที่จอด</button>
           </div>
-        </section> : <div></div>}
+        </section>)}
       </section>
       <div ref={modelRef} className={`model ${showModel}`}>
         <div className='model-content'>
@@ -369,14 +319,14 @@ export default function Home() {
 
           </div>
           <div className='agv-mission-box'>
-            <div className={`agv-mission-card bt${missionModel.colorBoxName}`}>
+            <div className='agv-mission-card' style={{borderTop:`16px solid ${colorAgv[missionModel.agvName]}`}}>
               <div className='agv-top-name-box'>
                 <div className='agv-name-state'>
                   <div className='box-name-battery'>
-                    <div className={`agv-name-text ${missionModel.colorBoxName}`}>{missionModel.agvName}</div>
+                    <div className='agv-name-text'  style={{ backgroundColor: colorAgv[missionModel.agvName] || "red" }}>{missionModel.agvName}</div>
                     <div className='agv-battery'><CiBatteryFull size={36} /><span>100%</span></div>
                   </div>
-                  <div className={`auto-manual ${missionModel.auto}`}>{missionModel.auto}</div>
+                  <div className={`auto-manual ${missionModel.mode}`}>{missionModel.mode}</div>
                   <div className='agv-state'>{missionModel.state}</div>
                 </div>
                 <img className='image-agv-model' src={AgvImg2}></img>

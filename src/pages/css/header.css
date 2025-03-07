@@ -1,8 +1,11 @@
 .timer-clock{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     font-size: 1.2rem;
     font-weight: normal;
     color: #fff;
     width:300px;
-    text-align: center;
+    padding-top:8px ;
     /* background-color: aqua; */
 }
