@@ -1,18 +1,26 @@
-import Map_bg from '../assets/images/bgc5_1min7.webp';
-// import IndexStation from "../assets/images/bgc2sta2.png";
-// import { LazyLoadImage } from "react-lazy-load-image-component";
-// import React, { useState, useRef, useEffect } from 'react'
+import BgMap from '../assets/images/bg_map.webp';
+import Location from "../assets/images/location.png";
+import Switch from './switch';
+import { useState} from 'react'
 import './css/map.css';
 
 function MapAnimate() {
+  const [stationshow, setStationshow] = useState(true)
+  const [sw, setSwitch] = useState(true);
+  const setSwitchShow = () => {
+    setSwitch(!sw);
+    setStationshow(!stationshow);
+  }
 
   return (
-    <>
-      <div id='map'>
-        <img src={Map_bg} className="map-img" alt='map' loading="lazy"></img>
-        {/* <LazyLoadImage src={IndexStation} className="map-img" alt='station'></LazyLoadImage> */}
-      </div>
-    </>
+    <div id="map">
+        <img src={BgMap} className="map-img" alt='map' loading="lazy"></img>
+        {stationshow && <img src={Location} className="map-img" alt='location' loading="lazy"></img>}
+        <div className='switch-map-pick'>
+          <h5>{sw ? "show" : "hide"}</h5>
+          <Switch isOn={sw} handleToggle={setSwitchShow} />
+        </div>
+    </div>
   )
 }
 

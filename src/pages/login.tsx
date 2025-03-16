@@ -5,7 +5,7 @@ import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import './css/login.css';
 
 import { useState, useEffect, FormEvent } from "react";
-import { axiosPost } from "../api/axiosFetch";
+import { axiosLogin } from "../api/axiosFetch";
 
 
 interface ILogin {
@@ -27,17 +27,19 @@ export default function Login() {
   const text = Json1["Signin"]["en"];
   const [showPass, setShowPass] = useState(false);
   const [user,setUser] = useState<IUser|null>(null);
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
 
   const postLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
       const params = new URLSearchParams();
-      params.append('username', 'admin');
-      params.append('password', 'admin');
-      const response: ILogin = await axiosPost("/authentication/login", params);
+      params.append('username', name);
+      params.append('password', password);
+      const response: ILogin = await axiosLogin("/authentication/login", params);
       sessionStorage.setItem("token", `${response.token_type} ${response.access_token}`);
       setUser(response.user);
-      console.log(response);
+      // console.log(response);
     } catch (error) {
       console.error(error);
     }
@@ -79,13 +81,13 @@ export default function Login() {
           <h1>{text["signin"]}</h1>
           <div className="input-textbox">
             <span><BsPersonFill  ></BsPersonFill></span>
-            <input autoFocus type="text" placeholder=' ' name="username" required />
+            <input autoFocus type="text" onChange={(e) => setName(e.target.value)}  required />
             <label>Username</label>
           </div>
           <div className="input-textbox">
             <span onClick={() => setShowPass(prev => !prev)}>
               {showPass ? <FaRegEyeSlash ></FaRegEyeSlash> : <FaRegEye></FaRegEye>}</span>
-            <input type={showPass ? "text" : "password"} name="password" placeholder=' ' required />
+            <input type={showPass ? "text" : "password"}   onChange={(e) => setPassword(e.target.value)}  required />
             <label>Password</label>
           </div>
           <button type="submit" className='btn btn-login fw-bold'>{text["login"]}</button>

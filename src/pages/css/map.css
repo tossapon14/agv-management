@@ -1,5 +1,28 @@
+#map{
+    position: relative;
+    top: 0;
+    left: 0;
+    width: var(--map-width);
+    height: var(--map-height);
+}
 #map .map-img{
-    height: 800px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
     width: 100%;
     z-index: 0;
 }
+#map .switch-map-pick{
+    position:absolute;
+    display: flex;
+    color:rgb(0, 0, 0);
+    justify-content: space-between;
+    padding: 12px;
+    width: 130px;
+    background-color: rgb(236, 236, 236);
+    border-radius:6px ;
+    left:88%;
+    bottom:5%;
+  }
+  

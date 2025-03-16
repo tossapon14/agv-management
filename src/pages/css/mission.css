@@ -4,9 +4,13 @@
   width: 100%;
   /* background-color: #ABABAB; */
 }
-
+.box-title{
+  width: 100%;
+  display: flex;
+  gap: 16px;
+}
 .mission-title-box{
-  width: 300px;
+  width: 100%;
   padding-left: 30px;
   height: 100px;
   /* background-color: #ABABAB; */
@@ -41,45 +45,107 @@
   display: flex;
   align-items: end;
   width: 50%;
+  margin-right: 2rem;
   padding: 0 0 0 2rem;
 }
 .selected-mission-btn button{
   padding: 0.5rem 1.4rem;
   /* height: 40px; */
-  margin:2px 0.5rem;
+  margin:1px 0.5rem;
   font-size: 12px !important;
   background-color: transparent;
   border: none;
   font-weight: 400;
   color:#8F8F8F;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
   /* background-color: #002582; */
   }
 .selected-mission-btn button:hover{
- transform: scale(1.1);
+ transform: scale(1.15);
 }
-.selected-mission-btn button:focus{
+.selected-mission-btn button:focus,.selected-mission-btn .active{
   transform: scale(1.15);
   color:black;
   background-color: white !important;
   border: 1px solid #8F8F8F;
   border-bottom:none ;
   font-weight: 600;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
  }
  .input-date-box{
    display: flex;
    margin-top: 1rem;
-   width: 50%;
-   align-items: center;
+   align-items: end;
+   justify-content: start;
+   margin-right: 2rem;
+   padding-bottom: 8px;
  } 
- .input-date-box input{
-   width: 200px;
-   height: 32px;
-   padding: 0 1rem;
-   font-size: 16px;
-   border-radius: 8px;
+ .selected-agv-box{
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  padding-bottom: 8px;
  }
+.selected-agv-box button{
+  width: 80px;
+  height:32px;
+  border-radius:5px;
+  background-color: white;
+  color:#555555;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid #555555;
+  margin-right: 12px;
+}
+.selected-agv-box button:hover{
+   transform: scale(1.05);
+}
+.selected-agv-box button.active{
+  background-color: #0d00ff;
+  color:white;
+  font-weight: 600;
+}
+ .form-group {
+  position: relative;
+  width: 150px;
+  height:32px;
+  margin-right: 16px;
+}
+.form-group input[type="text"]{
+  width: 100%;
+  height: 100%;
+  padding: 0 1rem;
+  font-size: 16px;
+  border-radius: 4px;
+  margin-right:1rem;
+  color:#8F8F8F;
+  position: absolute;
+  border: 1px solid #838383;
+  top:0;
+  left:0;
+}
+
+.form-group input[type="text"]:focus{
+  border: 1px solid #838383;
+}
+ .form-group input[type="date"]{
+   position: absolute;
+   top:5px;
+   right:2px;
+   width: 24px;
+   height: 24px;
+   font-size: 20px;
+   padding: 0;
+   border: none;
+ }
+ .form-group label{
+   position: absolute;
+   top: -20px;
+   left: 2px;
+   font-size: 14px;
+   color:#5a5a5a;
+ }
+
  .export-btn{
     width: 120px;
     height: 40px;
@@ -91,6 +157,13 @@
     color:white;
     box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
 
+ }
+ .export-btn:hover{
+  transform: scale(1.05);
+ }
+ .export-btn:active{
+  transform: scale(0.95);
+  background-color: #374bff;
  }
  .table-container{
     margin: 2rem 1rem 1rem;
@@ -104,6 +177,9 @@
   position: sticky;
   top: 0;
   z-index: 1;
+ }
+ .table-container tbody td{
+   color:#515151;
  }
  .pick-circle-icon {
   width: 22px;
@@ -126,12 +202,7 @@
   margin-right: .4rem;
   border-radius: 50%;
 }
-.color-agv1{
-  background-color: #002582;
-}
-.color-agv2{
-  background-color: #820000;
-}
+
 .td-vehicle-name{
   display: flex;
   justify-content: center;
@@ -139,15 +210,15 @@
 }
 .box-status{
   width: 100px;
-  height: 32px;
+  /* height: 32px; */
   margin: 0 auto;
   font-weight: 600;
-  padding: 0.2rem 0;
+  padding: 0.4rem 0;
   text-align: center;
-  border-radius: 8px;
+  border-radius:2px;
   font-size: 14px;
 }
-.tb-mission-btn{
+.tb-mission-pause{
   display: flex;
   justify-content: center;
   align-items: center;
@@ -157,10 +228,44 @@
   border-radius: 5px;
   font-size: 14px;
   margin:0 auto;
-  border: none;
+  border: 1px solid rgb(162, 162, 162);
+  background-color: rgb(162, 162, 162);
+  color:rgb(255, 255, 255);
   box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
-
+}
+.tb-mission-pause:hover{
+  background-color: #e2e2e2;
+  transform: scale(1.05);
+}
+.tb-mission-pause:active{
+  transform: scale(0.95);
 }
 .table-container th{
   font-weight: 600;
+  font-size:12px;
+}
+tbody td{
+  font-size: 14px;
+}
+.pagination {
+  display: inline-block;
+  float: right;
+  margin-top: 1rem;
+}
+.pagination a {
+  color: black;
+  float: left;
+  padding: 8px 16px;
+  text-decoration: none;
+}
+
+.pagination a.active {
+  background-color: #0400ff;
+  color: white;
+  border-radius: 5px;
+}
+
+.pagination a:hover:not(.active) {
+  background-color: #ddd;
+  border-radius: 5px;
 }
