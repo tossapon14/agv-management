@@ -2,15 +2,14 @@ import './css/home.css';
 import MapAnimate from './map_animation.tsx';
 import AgvImg from '../assets/images/plyagvmirror.png';
 import AgvImg2 from '../assets/images/plyagv.png';
+import Map_btn from '../assets/images/bg_btn.webp';
+import MissionImage from '../assets/images/mission.png';
 
 import { CiBatteryFull } from "react-icons/ci";
 import { FaArrowDown } from "react-icons/fa6";
 import { IoMdSettings } from "react-icons/io";
 import { FaMapMarkerAlt } from "react-icons/fa";
-import MissionImage from '../assets/images/mission.png';
-import Map_btn from '../assets/images/bg_btn.webp';
 import { axiosGet, axiosPost, axiosPut } from "../api/axiosFetch";
-
 import { useState, useRef, useEffect } from 'react';
 import { FaRegTrashCan } from "react-icons/fa6";
 
@@ -18,7 +17,8 @@ interface IagvDataModel {
   agv: string;
   id?: number;
   codePickup: string;
-  state: string;
+  str_state: string;
+  state:number;
   mode: string;
 }
 interface IVehicles {
@@ -106,11 +106,10 @@ interface IAgvSelected {
 
 
 export const colorAgv: { [key: string]: string } = { "AGV1": "#001494", "AGV2": "#cc0000", "AGV3": "#006a33", "AGV4": "#d7be00", "AGV5": "#94008d", "AGV6": "#0097a8" };
-var misstion_loop = 0;
-export default function Home() {
+ export default function Home() {
   const modelRef = useRef<HTMLDivElement>(null);
 
-  const [missionModel, setMissionModel] = useState<IagvDataModel>({ agv: "", codePickup: '', state: '', mode: '' });
+  const [missionModel, setMissionModel] = useState<IagvDataModel>({ agv: "", codePickup: '', state: 0,str_state:'', mode: '' });
   const [showModel, setShowModel] = useState<string>("");
   const [selectedAgv, setSelectedAgv] = useState(0);
   const [agvAll, setAgvAll] = useState<IPayload[]>([]);
@@ -119,9 +118,8 @@ export default function Home() {
   const [selectWarehouse, setselectWarehouse] = useState<string[]>([])
   const [missionTable, setMissionTable] = useState<IPayloadMission[]>([]);
   const agvselectedMission = useRef<IAgvSelected>({});
-  const current_agv = useRef<string>("AGV");
-  const showMission = useRef<HTMLDivElement>(null);
   const timerInterval = useRef<NodeJS.Timeout>(null);
+  const missionLoop = useRef(0);
 
   const sendMissionDrop = async (agv: string) => {
     const endpoint = `fleet/command?command=next&vehicle_name=${agv}`;
@@ -133,7 +131,7 @@ export default function Home() {
     const response = await axiosPut(endpoint);
     console.log(response);
   }
-  const modelPostMission = async (agv: string, id: number) => {
+  const modalPutDropMission = async (agv: string,id:number) => {
     if (selectWarehouse.length > 0 && agvselectedMission.current[agv]?.pickup) { //select drop
       const dataMission: IMissionDrop = {
         id: id,
@@ -145,7 +143,10 @@ export default function Home() {
       console.log(dataMission);
       const response = await axiosPut("/mission/update", dataMission);
       console.log(response);
-    } else if (agvselectedMission.current[agv]?.pickup||pickup) {
+    }
+  }
+  const modelPostMissionPickup = async (agv: string) => {
+   if (agvselectedMission.current[agv]?.pickup||pickup) {
       const dataMission: IMissionCreate = {
         "nodes":  pickup||agvselectedMission.current[agv]?.pickup!,
         "requester": "admin",
@@ -153,19 +154,17 @@ export default function Home() {
         "vehicle_name": agv
       }
       console.log(dataMission);
-      const response = await axiosPost("/mission/create", dataMission);
+      // const response = 
+      await axiosPost("/mission/create", dataMission);
     }
   }
  
-  const btnCallDrop = (data: IagvDataModel) => {
-    setMissionModel(data);
-    setShowModel("show-model");
-  }
+  
   const btnCallModal = (data: IagvDataModel) => {
     setMissionModel(data);
     setShowModel("show-model");
     setPickup(null);
-    current_agv.current = data.agv;
+    setselectWarehouse([]);
   }
   const deleteDrop = (node:string) => {
     const element = document.getElementById(node);
@@ -173,7 +172,7 @@ export default function Home() {
       element.classList.add("slide-out");
       setTimeout(() => {
         setselectWarehouse((prev) => prev.filter((item) => item !== node));
-      }, 400);
+      }, 500);
     }
   };
 
@@ -202,15 +201,7 @@ export default function Home() {
         setShowModel("hidden-model");
       }
     };
-    const scrollToBottom = () => {
-      if (showMission.current) {
-        showMission.current.scrollTop = showMission.current.scrollHeight;
-      }
-    };
-    const observer = new MutationObserver(scrollToBottom);
-    if (showMission.current) {
-      observer.observe(showMission.current, { childList: true, subtree: true });
-    }
+   
     const pairAgvState = function (state: number): string {
       switch (state) {
         case 0: return "ออฟไลน์";
@@ -281,10 +272,10 @@ export default function Home() {
         // console.log(agv);
         setAgvAll(agv);
         setBtnAgv(res.payload.map(agvItem => agvItem.name));
-        res.payload.forEach((data) => {
-          if (data.name&&!agvselectedMission.current[data.name]?.pickup) {
+        agv.forEach((data) => {
+          if (data.name&&data.btn_pick_drop_code=="721") {
             if (data.mission?.nodes?.split(",").length >= 1) {
-              agvselectedMission.current[data.name] = { pickup: data.node.split(",")[0] }
+              agvselectedMission.current[data.name] = { pickup: data.mission.nodes.split(",")[0] }
             }
           }
         });
@@ -294,25 +285,25 @@ export default function Home() {
 
     }
 
-    if (modelRef != null) {
-      modelRef.current!.addEventListener("mouseup", handleMouseUp);
+    if (modelRef.current) {
+      modelRef.current.addEventListener("mouseup", handleMouseUp);
     }
     if (sessionStorage.getItem("token")) {
       getAgv();
       getMission();
       timerInterval.current = setInterval(() => {
-        misstion_loop++;
+        missionLoop.current++;
         getAgv();
-        if (misstion_loop == 2) {
-          misstion_loop = 0;
+        if (missionLoop.current === 2) {
+          missionLoop.current = 0;
           getMission();
         }
-      }
-        , 3000);
+      }, 3000);
     }
     return () => {
-      observer.disconnect();
-      modelRef.current!.removeEventListener("mouseup", handleMouseUp);
+      if (modelRef.current) {
+        modelRef.current.removeEventListener("mouseup", handleMouseUp);
+      }
       clearInterval(timerInterval.current as NodeJS.Timeout);
     };
   }, []);
@@ -356,12 +347,12 @@ export default function Home() {
                   <tbody className='text-center'>
                     {missionTable.map((data) => <tr key={data.id}>
                       <td>#{data.id}</td>
-                      <td><span className="dot dot-blue"></span>{data.vehicle_name}</td>
+                      <td><div className='td-vehicle-name'><div className='circle-vehicle-icon' style={{ background: `${colorAgv[data.vehicle_name]}` }}></div><span className="dot dot-blue"></span>{data.vehicle_name}</div></td>
                       <td>{data.pick}</td>
                       <td><span className="status-badge status-in-process">{data.str_status}</span></td>
                       <td>{data.drop}</td>
                       <td>{data.timestamp.substring(0, 10)}</td>
-                      <td>{data.timestamp.substring(11, 16)}</td>
+                      <td>{data.timestamp.substring(11, 19)}</td>
                       {data.status === 0 && <td><button className="btn-cancel">cancel</button></td>}
                     </tr>
                     )}
@@ -380,14 +371,14 @@ export default function Home() {
         {agvAll.map((agv, index) => <section key={agv.name} className={`box-agv-data ${(selectedAgv === index + 1 || selectedAgv === 0) ? "" : "d-none"}`}
         >
           <div className='top-box-data'>
-            <img className='image-agv' src={AgvImg}></img>
+            <img className='image-agv' style={{filter:`${agv.state!=0?'':'grayscale(90%)'}`}} src={AgvImg}></img>
             <div className='box-name-agv'>
               <div className='box-name-battery'>
-                <div className='agv-name-text' style={{ backgroundColor: colorAgv[agv.name] || "red" }}>{agv.name}</div>
+                <div className='agv-name-text' style={{ backgroundColor: `${agv.state!=0? colorAgv[agv.name]: "#ccc"}` }}>{agv.name}</div>
                 <div className='agv-battery'><CiBatteryFull size={36} /><span>{agv.battery}%</span></div>
               </div>
 
-              <div className={`auto-manual ${agv.mode}`}>{agv.mode}</div>
+             { agv.state!=0&&<div className={`auto-manual ${agv.mode}`}>{agv.mode}</div>}
               <div className='agv-state'>{agv.str_state}</div>
             </div>
             <div className='velocity'>
@@ -449,10 +440,10 @@ export default function Home() {
           <div className='mission-container'>
             <div className='mission-status'>{agv.str_mission}</div>
             {agv.btn_pick_drop_code === "724" ? <button className='drop-btn' onClick={() => sendMissionDrop(agv.name)}>ลงสินค้า</button> :
-              agv.btn_pick_drop_code === "721" ? <button className='mission-btn' onClick={() => btnCallDrop({ agv: agv.name, codePickup: "721", id: agv.mission?.id, state: agv.str_state!, mode: agv.mode })}>
+              agv.btn_pick_drop_code === "721" ? <button className='mission-btn' onClick={() => btnCallModal({ agv: agv.name, codePickup: "721", id: agv.mission?.id, str_state: agv.str_state!,state:agv.state, mode: agv.mode })}>
                 จองจุดลง
               </button> :
-                <button className='mission-btn' onClick={() => btnCallModal({ agv: agv.name, codePickup: agv.btn_pick_drop_code, id: agv.mission?.id, state: agv.str_state!, mode: agv.mode })}>
+                <button className='mission-btn' onClick={() => btnCallModal({ agv: agv.name, codePickup: agv.btn_pick_drop_code, id: agv.mission?.id, str_state: agv.str_state!,state:agv.state, mode: agv.mode })}>
                   สร้างคิวงาน
                 </button>}
 
@@ -475,7 +466,7 @@ export default function Home() {
                 <button className="btn-pickup-agv" onClick={() => clickPickup(7)} style={{ top: "66%", left: "36%" }}>P8</button>
               </>
             ) : null}
-            {missionModel.codePickup === "721"||true ? (<>
+            {missionModel.codePickup === "721"? (<>
               <button className='btn-pickup-agv  color-btn-warehouse' onClick={() => clickDrop("01")} style={{ top: '80%', left: '26%' }}>D1</button>
               <button className='btn-pickup-agv  color-btn-warehouse' onClick={() => clickDrop("02")} style={{ top: '86%', left: '19%' }}>D2</button>
               <button className='btn-pickup-agv  color-btn-warehouse' onClick={() => clickDrop("03")} style={{ top: '86%', left: '10%' }}>D3</button>
@@ -510,14 +501,14 @@ export default function Home() {
                     <div className='agv-name-text' style={{ backgroundColor: colorAgv[missionModel.agv] || "red" }}>{missionModel.agv}</div>
                     <div className='agv-battery'><CiBatteryFull size={36} /><span>100%</span></div>
                   </div>
-                  <div className={`auto-manual ${missionModel.mode}`}>{missionModel.mode}</div>
-                  <div className='agv-state'>{missionModel.state}</div>
+                  {(missionModel.state !=0)&&<div className={`auto-manual ${missionModel.mode}`}>{missionModel.mode}</div>}
+                  <div className='agv-state'>{missionModel.str_state}</div>
                 </div>
                 <img className='image-agv-model' src={AgvImg2}></img>
               </div>
               <div className="position-relative">
-                {false && <div className='dotted-mission-line'></div>}
-                <div ref={showMission} className='box-selected-drop'>
+                {!!selectWarehouse.length && <div className='dotted-mission-line'></div>}
+                <div   className='box-selected-drop'>
                   <div className='button-center' ><FaArrowDown size={24} /></div>
 
                   {agvselectedMission.current[missionModel.agv]?.pickup || pickup ? <div className='data-warehouse-box' style={{ top: '24px' }}>
@@ -526,7 +517,7 @@ export default function Home() {
                     </div>
                     <div className='warehouse-from-to-box'>
                       <p style={{ color: '#838383' }}>from</p>
-                      <h5>{agvselectedMission.current[missionModel.agv]?.pickup || pickup}</h5>
+                      <h5>{pickup||agvselectedMission.current[missionModel.agv]?.pickup}</h5>
                     </div>
                   </div> : <h3 className="selectPickup">Select your pickup</h3>}
                   {selectWarehouse.map((warehouse) => <div key={warehouse} id={warehouse} className='data-warehouse-box data-drop-box'>
@@ -544,7 +535,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <button className='btn-send-command mt-3' onClick={() => modelPostMission(missionModel.agv, missionModel.id ?? 0)}>สั่งงาน</button>
+              <button className='btn-send-command mt-4' onClick={() =>missionModel.codePickup === "721"?modalPutDropMission(missionModel.agv,missionModel.id??0): modelPostMissionPickup(missionModel.agv)}>สั่งงาน</button>
             </div>
             <button className='close-model' onClick={() => setShowModel("hidden-model")}>ย้อนกลับ</button>
           </div>

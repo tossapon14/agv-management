@@ -40,13 +40,15 @@ export default function Alarm() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [alarmTable, setalarmTable] = useState<IAlarmTable[]>([]);
-    const page = searchParams.get("page") || "1"; // Default to 1 if not found
+    const [pagination, setPagination] = useState<React.ReactElement | null>(null);
+
+    const page: number = Number(searchParams.get("page") || 1);
     const vehicle = searchParams.get("vehicle_name") || "ALL"; // Default to "desc"
     const start_date = searchParams.get("start_date") || new Date().toISOString().substring(0, 10)
     const end_date = searchParams.get("end_date") || new Date().toISOString().substring(0, 10)
 
 
-    const reloadPage = function (data: { v?: string, s?: string, d?: string, de?: string, p?: string }) {
+    const reloadPage = function (data: { v?: string, s?: string, d?: string, de?: string, p?: number }) {
 
         try {
             var params = "/";
@@ -57,16 +59,16 @@ export default function Alarm() {
                 if (new Date(data.d) > new Date(end_date)) {
                     return;
                 }
-                params = `/alarms?vehicle_name=${vehicle}&start_date=${data.d}&end_date=${end_date}&page=${page}&page_size=10`
+                params = `/alarms?vehicle_name=${vehicle}&start_date=${data.d}&end_date=${end_date}&page=1&page_size=10`
             }
             else if (data.de) {
                 if (new Date(data.de) < new Date(start_date)) {
                     return;
                 }
-                params = `/alarms?vehicle_name=${vehicle}&start_date=${start_date}&end_date=${data.de}&page=${page}&page_size=10`
+                params = `/alarms?vehicle_name=${vehicle}&start_date=${start_date}&end_date=${data.de}&page=1&page_size=10`
             }
             else if (data.v) {
-                params = `/alarms?vehicle_name=${data.v}&start_date=${start_date}&end_date=${end_date}&page=${page}&page_size=10`
+                params = `/alarms?vehicle_name=${data.v}&start_date=${start_date}&end_date=${end_date}&page=1&page_size=10`
 
             }
             navigate(params, { replace: true });
@@ -76,7 +78,7 @@ export default function Alarm() {
         }
 
     }
-  
+
     const downloadCSV = async () => {
         const fetchData: string = await axiosGet(
             `/alarm/export_alarm_report?vehicle_name=${vehicle}&start_date=${start_date}&end_date=${end_date}`)
@@ -95,7 +97,73 @@ export default function Alarm() {
     };
 
     useEffect(() => {
+        const _pagination = (ttp: number): React.ReactElement | null => {
+            if (ttp == 1) {
+                return null;
+            } else if (ttp <= 5) {
+                return <div className='pagination'>
+                    {[...Array(ttp)].map((_, index) => {
+                        const pageNumber = index + 1;
+                        return (
+                            <a
+                                key={pageNumber}
+                                onClick={() => reloadPage({ p: pageNumber })}
+                                className={pageNumber === page ? "active" : ""}
+                            >
+                                {pageNumber}
+                            </a>
+                        );
+                    })}
 
+                </div>
+            }
+            else if (ttp > 5) {
+                let intial: number;
+                if (ttp - page < 5) {// last page
+                    intial = ttp - 4
+                } else if (page > 2) {
+                    intial = page - 2
+                }else if (page > 1) {
+                    intial = page - 1
+                }else{
+                    intial = page
+                }
+                return <div className="pagination">
+                    {/* Previous Button */}
+                    <a
+                        onClick={() => reloadPage({ p: page > 1 ? page - 1 : 1 })}
+                        className={page === 1 ? "disabled" : ""}
+                    >
+                        &laquo;
+                    </a>
+
+                    {/* Page Numbers */}
+                    {
+
+                        [...Array(5)].map((_, index) => {
+                            const pageNumber = intial + index;
+                            return (
+                                <a
+                                    key={pageNumber}
+                                    onClick={() => reloadPage({ p: pageNumber })}
+                                    className={pageNumber === page ? "active" : ""}
+                                >
+                                    {pageNumber}
+                                </a>
+                            );
+                        })}
+
+                    {/* Next Button */}
+                    <a
+                        onClick={() => reloadPage({ p: page + 1 })}
+                        className={page === ttp ? "disabled" : ""}
+                    >
+                        &raquo;
+                    </a>
+                </div>
+            }
+            else return null
+        };
         const getAlarm = async () => {
             try {
                 const res: IAlarm = await axiosGet(
@@ -109,7 +177,7 @@ export default function Alarm() {
                     const _time = res.payload[i].timestamp?.substring(11, 19);
                     alert.push({ id: res.payload[i].id, code: res.payload[i].code, vehicle_name: res.payload[i].vehicle_name, date: _date, time: _time, th: descript[1], en: descript[0] });
                 }
-                console.log(res.payload);
+                setPagination(_pagination(res.structure?.total_pages));
                 setalarmTable(alert);
 
             } catch (e: any) {
@@ -189,15 +257,7 @@ export default function Alarm() {
 
                         </tbody>
                     </table>
-                    {alarmTable.length != 0 && <div className="pagination">
-                        <a onClick={() => reloadPage({ p: "prev" })}>&laquo;</a>
-                        <a onClick={() => reloadPage({ p: page.toString() })} className={`${page == page ? "active" : ""}`}>{page}</a>
-                        <a onClick={() => reloadPage({ p: page.toString() })}>{Number(page) + 1}</a>
-                        <a onClick={() => reloadPage({ p: page.toString() })}>{Number(page) + 2}</a>
-                        <a onClick={() => reloadPage({ p: page.toString() })}>{Number(page) + 3}</a>
-                        <a onClick={() => reloadPage({ p: page.toString() })}>{Number(page) + 4}</a>
-                        <a onClick={() => reloadPage({ p: "next" })}>&raquo;</a>
-                    </div>}
+                    {pagination}
                 </div>
 
             </div>

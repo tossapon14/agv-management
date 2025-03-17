@@ -1,4 +1,4 @@
-import BgMap from '../assets/images/bg_map.webp';
+import BgMap from '../assets/images/bg_map.png';
 import Location from "../assets/images/location.png";
 import Switch from './switch';
 import { useState} from 'react'

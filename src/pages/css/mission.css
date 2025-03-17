@@ -251,6 +251,7 @@ tbody td{
   display: inline-block;
   float: right;
   margin-top: 1rem;
+  padding-right:12px ;
 }
 .pagination a {
   color: black;
@@ -264,7 +265,10 @@ tbody td{
   color: white;
   border-radius: 5px;
 }
-
+.pagination .disabled {
+  pointer-events: none;
+  color: gray;
+}
 .pagination a:hover:not(.active) {
   background-color: #ddd;
   border-radius: 5px;
