@@ -4,7 +4,7 @@ import { FaMapMarkerAlt } from "react-icons/fa";
 import MissionImage from '../assets/images/mission.png';
 import { useEffect, useState } from 'react';
 import { axiosGet } from "../api/axiosFetch";
-import { IMissionData, colorAgv } from './home';
+import { IMissionData } from './home';
 import { useSearchParams, useNavigate } from "react-router-dom";
 
 interface IMissionTables {
@@ -26,6 +26,20 @@ interface IMissionTables {
     drop: string
     pick: string
 }
+export const pairMissionStatus = function (state: number): { txt: string, color: string, bgcolor: string } {
+    switch (state) {
+        case 0: return { txt: "รออนุมัติ", color: "#444444", bgcolor: "#eeeeee" };
+        case 1: return { txt: "อนุมัติ", color: '#3d85c6', bgcolor: "#ebf6ff" };
+        case 2: return { txt: "เริ่มงาน", color: "#ffc000", bgcolor: "#fff9e6" };
+        case 3: return { txt: "สำเร็จ", color: "#58dd1e", bgcolor: "#e7ffe0" };
+        case 4: return { txt: "ปฏิเสธ", color: '#a64d79', bgcolor: "#ffeef8" };
+        case 5: return { txt: "ยกเลิก", color: "#cc0000", bgcolor: "#ffeeee" };
+        case 6: return { txt: "ไม่สำเร็จ", color: '#cc0000', bgcolor: "#ffeeee" };
+        default: return { txt: "รออนุมัติ", color: "#444444", bgcolor: "#fff" };
+    }
+}
+const colorAgv: { [key: string]: string } = { "AGV1": "#001494", "AGV2": "#cc0000", "AGV3": "#006a33", "AGV4": "#d7be00", "AGV5": "#94008d", "AGV6": "#0097a8" };
+
 export default function Mission() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -36,6 +50,10 @@ export default function Mission() {
     const start_date = searchParams.get("start_date") || new Date().toISOString().substring(0, 10)
     const end_date = searchParams.get("end_date") || new Date().toISOString().substring(0, 10)
     const [pagination, setPagination] = useState<React.ReactElement | null>(null);
+    const [loadSuccess, setLoadSuccess] = useState(false);
+    const [btnAGV, setbtnAGV] = useState<string[]>([])
+
+
     const reloadMissionByButton = async (data: { v?: string, s?: string, d?: string, de?: string, p?: number }) => {
         try {
             var params = "?";
@@ -85,13 +103,13 @@ export default function Mission() {
     };
 
     useEffect(() => {
-        const _pagination = (ttp: number): React.ReactElement|null => {
+        const _pagination = (ttp: number): React.ReactElement | null => {
             if (ttp == 1) {
                 return null;
             } else if (ttp <= 5) {
                 return <div className='pagination'>
                     {[...Array(ttp)].map((_, index) => {
-                        const pageNumber = index+1;
+                        const pageNumber = index + 1;
                         return (
                             <a
                                 key={pageNumber}
@@ -111,9 +129,9 @@ export default function Mission() {
                     intial = ttp - 4
                 } else if (page > 2) {
                     intial = page - 2
-                }else if (page > 1) {
+                } else if (page > 1) {
                     intial = page - 1
-                }else{
+                } else {
                     intial = page
                 }
                 return <div className="pagination">
@@ -152,18 +170,7 @@ export default function Mission() {
             }
             else return null
         };
-        const pairMissionStatus = function (state: number): { txt: string, color: string, bgcolor: string } {
-            switch (state) {
-                case 0: return { txt: "รออนุมัติ", color: "#444444", bgcolor: "#eeeeee" };
-                case 1: return { txt: "อนุมัติ", color: '#3d85c6', bgcolor: "#ebf6ff" };
-                case 2: return { txt: "เริ่มงาน", color: "#ffc000", bgcolor: "#fff9e6" };
-                case 3: return { txt: "สำเร็จ", color: "#58dd1e", bgcolor: "#e7ffe0" };
-                case 4: return { txt: "ปฏิเสธ", color: '#a64d79', bgcolor: "#ffeef8" };
-                case 5: return { txt: "ยกเลิก", color: "#cc0000", bgcolor: "#ffeeee" };
-                case 6: return { txt: "ไม่สำเร็จ", color: '#cc0000', bgcolor: "#ffeeee" };
-                default: return { txt: "รออนุมัติ", color: "#444444", bgcolor: "#fff" };
-            }
-        }
+
         const getMission = async () => {
             try {
                 const res: IMissionData = await axiosGet(
@@ -172,24 +179,38 @@ export default function Mission() {
 
                 );
                 setPagination(_pagination(res.structure?.total_pages));
-                setMissionTable(res.payload.map(ele => ({
-                    ...ele, str_status: pairMissionStatus(ele.status),
-                    drop: ele.nodes.substring(5),
-                    pick: ele.nodes.substring(0, 4),
-                    timestamp: ele.timestamp?.substring(0, 10),
-                    tpick: ele.timestamp?.substring(11, 19),
-                    tstart: ele.dispatch_time?.substring(11, 19),
-                    tend: ele.arriving_time?.substring(11, 19),
+                const _mission:IMissionTables[]  = []
+                const _btnAGV:string[] = []
+                res.payload.forEach((ele)=>{
+                    _mission.push({...ele, str_status: pairMissionStatus(ele.status),
+                        drop: ele.nodes.substring(5),
+                        pick: ele.nodes.substring(0, 4),
+                        timestamp: ele.timestamp?.substring(0, 10),
+                        tpick: ele.timestamp?.substring(11, 19),
+                        tstart: ele.dispatch_time?.substring(11, 19),
+                        tend: ele.arriving_time?.substring(11, 19),})
+                        if (!_btnAGV.includes(ele.vehicle_name)) {
+                            _btnAGV.push(ele.vehicle_name);
+                        }                
+                }); 
+                setbtnAGV(_btnAGV);  // for button AGV
+                setMissionTable(_mission);
 
-                })));
             } catch (e: any) {
                 console.error(e);
+            } finally {
+                if (!loadSuccess) {
+                    setLoadSuccess(true);
+                }
             }
         };
         getMission();
     }, []);
     return <>
         <section className='mission-box'>
+        {!loadSuccess&&<div className='loading-background'>
+        <div id="loading"></div>
+      </div>}
             <div className='mission-title-box'>
                 <h1>MISSION</h1>
                 <div className='box-title'>
@@ -198,8 +219,7 @@ export default function Mission() {
                         <span>view and manage your mission</span></p>
                     <div className="selected-agv-box">
                         <button onClick={() => reloadMissionByButton({ v: "ALL" })} className={`${vehicle === "ALL" ? "active" : ""}`}>ทั้งหมด</button>
-                        <button onClick={() => reloadMissionByButton({ v: "AGV1" })} className={`${vehicle === "AGV1" ? "active" : ""}`}>AGV1</button>
-                        <button onClick={() => reloadMissionByButton({ v: "AGV2" })} className={`${vehicle === "AGV2" ? "active" : ""}`}>AGV2</button>
+                        {btnAGV.map((name)=><button onClick={() => reloadMissionByButton({ v: name })} className={`${vehicle === name ? "active" : ""}`}>{name}</button>)}
                     </div>
                 </div>
 
@@ -241,7 +261,6 @@ export default function Mission() {
                                 <th scope="col">ผู้สั่ง</th>
                                 <th scope="col"><div className='head-table-flex'>
                                     <div className='pick-circle-icon'>
-                                        <div className='pick-circle-icon-inner'></div>
                                     </div>จุดจอด
                                 </div>
                                 </th>

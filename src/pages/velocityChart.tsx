@@ -43,7 +43,7 @@ const VelocityChart: React.FC<VelocityChartProps> = ({ level }) => {
           textAlign: "center",
         }}
       >
-        {level}
+        {level.toFixed(1)}
         <p style={{fontSize:"12px",fontWeight:"normal"}}>km/h</p>
         
       </div>

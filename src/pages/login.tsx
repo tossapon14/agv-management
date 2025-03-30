@@ -37,19 +37,36 @@ export default function Login() {
       params.append('username', name);
       params.append('password', password);
       const response: ILogin = await axiosLogin("/authentication/login", params);
-      sessionStorage.setItem("token", `${response.token_type} ${response.access_token}`);
-      setUser(response.user);
-      // console.log(response);
+      if(response.token_type ){
+       sessionStorage.setItem("token", `${response.token_type} ${response.access_token}`);
+       sessionStorage.setItem("user",`${response.user.employee_no}, ${response.user.name}, ${response.user.position}, ${response.user.status},${response.user.username}`);
+       setUser(response.user);
+      }else{
+        alert(response.message);
+      }
     } catch (error) {
       console.error(error);
     }
   };
   const onLogout = async () => {
-    
+    sessionStorage.removeItem("token");
+    setUser(null);
+    sessionStorage.removeItem("user");
   };
 
   useEffect(() => {
-    
+    if(sessionStorage.getItem("user")){
+      const [employee_no, name, position, status,username] = sessionStorage.getItem("user")!.split(", ");
+      const user:IUser = {
+        employee_no: employee_no,
+        name: name,
+        position: position,
+        status: status==="true"?true:false,
+        username: username
+      };
+    console.log(user);
+    setUser(user);
+    }
   }, []);
 
 
@@ -68,7 +85,7 @@ export default function Login() {
             <div className='mb-4'>{text["posi"]}</div><h3 className='ms-4 d-inline'>{user.position}</h3>
           </div>
           <div className='d-flex justify-content-between'>
-            <div className='mb-4'>{text["status"]}</div><h3 className='ms-4 d-inline text-warning fw-bold'>{text["on"]}</h3>
+            <div className='mb-4'>{text["status"]}</div><h3 className='ms-4 d-inline text-warning fw-bold'>{user.status?"ON":"OFFLINE"}</h3>
           </div>
 
           <button type="button" className='btn btn-signout fw-bold' onClick={onLogout} >{text["logout"]}</button>
@@ -81,13 +98,13 @@ export default function Login() {
           <h1>{text["signin"]}</h1>
           <div className="input-textbox">
             <span><BsPersonFill  ></BsPersonFill></span>
-            <input autoFocus type="text" onChange={(e) => setName(e.target.value)}  required />
+            <input autoFocus type="text" onChange={(e) => setName(e.target.value)} placeholder=' '  required />
             <label>Username</label>
           </div>
           <div className="input-textbox">
             <span onClick={() => setShowPass(prev => !prev)}>
               {showPass ? <FaRegEyeSlash ></FaRegEyeSlash> : <FaRegEye></FaRegEye>}</span>
-            <input type={showPass ? "text" : "password"}   onChange={(e) => setPassword(e.target.value)}  required />
+            <input type={showPass ? "text" : "password"}   onChange={(e) => setPassword(e.target.value)} placeholder=' '  required />
             <label>Password</label>
           </div>
           <button type="submit" className='btn btn-login fw-bold'>{text["login"]}</button>

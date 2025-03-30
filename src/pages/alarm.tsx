@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { axiosGet } from "../api/axiosFetch";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { BsConeStriped } from "react-icons/bs";
-import { colorAgv } from "./home";
 
 interface IAlarm {
     message: string
@@ -37,15 +36,20 @@ interface IStructure {
 }
 
 export default function Alarm() {
+    const colorAgv: { [key: string]: string } = { "AGV1": "#001494", "AGV2": "#cc0000", "AGV3": "#006a33", "AGV4": "#d7be00", "AGV5": "#94008d", "AGV6": "#0097a8" };
+
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [alarmTable, setalarmTable] = useState<IAlarmTable[]>([]);
     const [pagination, setPagination] = useState<React.ReactElement | null>(null);
+    const [btnAGV, setbtnAGV] = useState<string[]>([])
+
 
     const page: number = Number(searchParams.get("page") || 1);
     const vehicle = searchParams.get("vehicle_name") || "ALL"; // Default to "desc"
     const start_date = searchParams.get("start_date") || new Date().toISOString().substring(0, 10)
     const end_date = searchParams.get("end_date") || new Date().toISOString().substring(0, 10)
+    const [loadSuccess,setLoadSuccess] = useState(false);
 
 
     const reloadPage = function (data: { v?: string, s?: string, d?: string, de?: string, p?: number }) {
@@ -171,22 +175,35 @@ export default function Alarm() {
                     // `/alarm/alarms?vehicle_name=${vehicle}&start_date=${start_date}&end_date=${end_date}&page=${page}&page_size=10`
                 );
                 const alert: IAlarmTable[] = [];
+                const _btnAGV:string[] = [];
                 for (let i = 0; i < res.payload.length; i++) {
                     const descript = res.payload[i].description.split("|");
                     const _date = res.payload[i].timestamp?.substring(0, 10);
                     const _time = res.payload[i].timestamp?.substring(11, 19);
                     alert.push({ id: res.payload[i].id, code: res.payload[i].code, vehicle_name: res.payload[i].vehicle_name, date: _date, time: _time, th: descript[1], en: descript[0] });
+                    
+                    if (!_btnAGV.includes(res.payload[i].vehicle_name)) {
+                        _btnAGV.push(res.payload[i].vehicle_name);
+                    }
                 }
                 setPagination(_pagination(res.structure?.total_pages));
                 setalarmTable(alert);
+                setbtnAGV(_btnAGV);
 
             } catch (e: any) {
                 console.error(e);
+            }finally {
+                if (!loadSuccess) {
+                    setLoadSuccess(true);
+                }
             }
         };
         getAlarm();
     }, []);
     return <>
+    {!loadSuccess&&<div className='loading-background'>
+        <div id="loading"></div>
+      </div>}
         <section className='mission-box'>
             <div className='mission-title-box'>
                 <h1>SHOW ERROR</h1>
@@ -201,8 +218,7 @@ export default function Alarm() {
                 <div className='mission-header'>
                     <div className='selected-mission-btn'>
                         <button onClick={() => reloadPage({ v: "ALL" })} className={`${vehicle === "ALL" ? "active" : ""}`}>All</button>
-                        <button onClick={() => reloadPage({ v: "AGV1" })} className={`${vehicle === "AGV1" ? "active" : ""}`}>AGV1</button>
-                        <button onClick={() => reloadPage({ v: "AGV2" })} className={`${vehicle === "AGV2" ? "active" : ""}`}>AGV2</button>
+                        {btnAGV.map((name)=><button onClick={() => reloadPage({ v: name })} className={`${vehicle === name ? "active" : ""}`}>{name}</button>)}
 
                     </div>
                     <div className='input-date-box'>

@@ -1,7 +1,7 @@
  .velocity-title-box {
      width: 100%;
      /* background-color: #ABABAB; */
-     padding: 48px 32px 32px;
+     padding: 48px 32px 16px;
  }
 
  .title1 {
@@ -20,7 +20,7 @@
  }
 
  .vehicle-card {
-     width: 460px;
+     width: 420px;
      height: fit-content;
      border: 1px solid #91E3F5;
      margin-right: 2rem;
@@ -59,7 +59,6 @@
  .v-content-chart {
      display: flex;
      flex-direction: column;
-     width: 40%;
      height: 100%;
      justify-content: start;
      align-items: center;
@@ -69,8 +68,8 @@
  .border-of-image {
      width: 180px;
      height: 220px;
-     background: #FBE6E6;
-     border: 1px solid #ffefef;
+     background: rgb(255, 234, 217);
+     border: 1px solid #ffbbbb;
      border-radius: 8px;
      margin: 28px 0 0 60px;
      position: relative;
@@ -79,7 +78,7 @@
  .border-of-image img {
      position: absolute;
      top: 54px;
-     left: -50px;
+     left: -60px;
  }
 
  .battery-chart {
@@ -119,10 +118,20 @@
      justify-content: center;
      align-items: center;
  }
+ .box-state-icon{
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    margin:8px ;
+    background-color: #f2f2f2;
+    border-radius: 5px;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+ }
+
 
  .color-icon-1 {
      background: rgb(113, 236, 164);
-     background: linear-gradient(0deg, rgb(216, 255, 231) 0%, rgb(191, 255, 216) 70%);
+     background: linear-gradient(0deg, rgb(229, 229, 229) 0%, rgb(215, 255, 230) 70%);
  }
 
  .color-icon-2 {
@@ -137,15 +146,52 @@
  .color-icon-5{
     background: linear-gradient(0deg, rgb(226, 226, 226) 0%, rgb(255, 222, 181) 80%);
  }
+ .color-icon-6{
+    background: linear-gradient(0deg, rgb(235, 235, 235) 0%, rgb(197, 197, 197) 80%);
+ }
  .v-content-bottom2{
     display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    height: 72px;
-    padding: 0 2rem;
-    color:white;
+    height: 60px;
+    color:rgb(79, 79, 79);
     border-bottom-right-radius:5px;
     border-bottom-left-radius:5px;
-    background-color: #0a27ff;
+    /* background-color: #0a27ff; */
  }
+ .trapezoid {
+    display:flex;
+	border-bottom: 60px solid rgb(227, 223, 223);
+	border-right: 72px solid transparent;
+    border-bottom-left-radius:5px ;
+	height: 0;
+	width: 75%;
+    
+}
+.agvColorBoxIcon{
+    width: 60px;
+    height: 36px;
+    background-color: #0004ff;
+    border: 3px solid #151515;
+    opacity: 0.7;
+}
+.onlineneon{
+    display: inline-block;
+    animation: neon-glow 1.5s infinite alternate;
+    width: 32px;
+    height:32px;
+    border-radius: 50%;
+    margin-right:28px;
+    background-color: #000000;
+    animation: neon-glow 1.5s ease infinite alternate;
+
+}
+@keyframes neon-glow {
+    0% {
+      box-shadow: 0 0 5px #0dff20;
+    }
+    100% {
+        box-shadow: 0 0 10px #0dff20, 0 0 20px #0dff20, 0 0 40px #00ff00;
+    }
+  }

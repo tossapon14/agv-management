@@ -3,7 +3,9 @@
     top: 0;
     left: 0;
     width: var(--map-width);
-    height: var(--map-height);
+    aspect-ratio: 2155/1261;
+    height: auto;
+    /* height: var(--map-height); */
 }
 #map .map-img{
     position: absolute;
@@ -12,6 +14,15 @@
     height: 100%;
     width: 100%;
     z-index: 0;
+}
+.carmodel-position{
+    position: absolute;
+    height:24px;
+    width: auto;
+    aspect-ratio: 200/101;
+    /* transform: rotate(90deg); */
+    transform-origin: 20% 50%;
+    transition: left 2s ease-in-out, bottom 2s ease-in-out;
 }
 #map .switch-map-pick{
     position:absolute;
