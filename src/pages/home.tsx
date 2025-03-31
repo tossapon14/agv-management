@@ -12,7 +12,7 @@ import { FaMapMarkerAlt } from "react-icons/fa";
 import { axiosGet, axiosPost, axiosPut } from "../api/axiosFetch";
 import { useState, useRef, useEffect } from 'react';
 import { FaRegTrashCan } from "react-icons/fa6";
-import Mission, { pairMissionStatus } from './mission.tsx';
+import { pairMissionStatus } from './mission.tsx';
 
 interface IagvDataModel {
   agv: string;
@@ -262,7 +262,7 @@ export default function Home() {
       const pathList = path.split(", ");
       const nodesList = missNode.split(",");
       if(nodesList.length<=1) {
-        return { percents: 0, nodesList: [], numProcess: 0 };
+        return null;
       }
       const dropIndex:number[] = []
       nodesList.forEach(node => {
@@ -286,6 +286,7 @@ export default function Home() {
            }
          }
       }
+      console.log(nodesList)
       return { percents: percents, nodesList:nodesList , numProcess: numProcess };
     };
 
@@ -402,6 +403,7 @@ export default function Home() {
             str_state: pairAgvState(data.state),
             str_mission: pairMissionStatusHome(data.mission?.status ?? 0), agv_code_status: `${data.state}${data.mission?.status}${data.mission?.transport_state}`
           }
+          console.log(_agvData)
           if (data.mission?.nodes && data.name && `${data.state}${data.mission?.status}${data.mission?.transport_state}` == "721") {
             if (data.mission.nodes.split(",").length >= 1) {
               agvselectedMission.current[data.name] = { pickup: data.mission.nodes.split(",")[0] }
@@ -554,7 +556,7 @@ export default function Home() {
           <div className='mission-line-container'>
 
           </div>
-          {agv.processMission?.nodesList.length != 0 ?
+          {agv.processMission!=null  ?
             <div className='box-dotted-mission'>
               <div className='button-center'><FaArrowDown size={24} /></div>
               <div className='circle-1'></div>
