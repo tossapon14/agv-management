@@ -125,8 +125,9 @@ export default function Home() {
   const missionLoop = useRef(0);
   const [loadSuccess, setLoadSuccess] = useState(false);
   const [buttonDropList, setButtonDropList] = useState<number[]>([]);
-  const [mapData, setMapData] = useState<{ agv: string, position: string[] }[]>([])
+  const [mapData, setMapData] = useState<{ agv: string,online:boolean, position: string[] }[]>([])
   const prev_deg = useRef<{ [key: string]: number }>({});
+  const agvname = useRef<string>("ALL");
 
   const buttonsDrop = [
     { id: "01", top: "80%", left: "26%" },
@@ -254,16 +255,14 @@ export default function Home() {
         setShowModal("hidden-modal");
       }
     };
-    const calProcessMission = (missNode: string | undefined, path: string | undefined, curr: string | undefined): { percents: number, nodesList: string[], numProcess: number } | null => {
-      if (missNode === undefined || path === undefined||curr===undefined) return null;
+    const calProcessMission = (missNode: string | undefined, path: string | undefined, curr: string | undefined,transport_state:number|undefined): { percents: number, nodesList: string[], numProcess: number } | null => {
+      if (missNode === undefined || path === undefined||curr===undefined||transport_state ===undefined) return null;
       // path = "D15S, P02S, P03S, P05S, P0504N, P0505N, D11S, D12S, D1201N, P04S, D13S, D14S, D1401N, D1402N, D20S, D15S, D21S, D1501N, D22S";
       // curr = "D15S";
       // missNode = "P04S,D20S,D15S,D21S,D22S";
-      const pathList = path.split(", ");
       const nodesList = missNode.split(",");
-      if(nodesList.length<=1) {
-        return null;
-      }
+      if(nodesList.length<=1&&transport_state < 2) return null;
+      const pathList = path.split(", ");
       const dropIndex:number[] = []
       nodesList.forEach(node => {
         if(pathList.lastIndexOf(node)!=-1) {
@@ -286,7 +285,6 @@ export default function Home() {
            }
          }
       }
-      console.log(nodesList)
       return { percents: percents, nodesList:nodesList , numProcess: numProcess };
     };
 
@@ -331,12 +329,12 @@ export default function Home() {
         default: return "";
       }
     }
-    const pairMissionStatusHome = function (state: number): string | null {
+    const pairMissionStatusHome = function (state: number,transport_state:number): string {
       if (state === undefined) return "";
       switch (state) {
         case 0: return "รออนุมัติ";
         case 1: return "อนุมัติ";
-        case 2: return "เริ่มงาน";
+        case 2: return pairTransportState(transport_state);
         case 3: return "สำเร็จ";
         case 4: return "ปฏิเสธ";
         case 5: return "ยกเลิก";
@@ -345,17 +343,17 @@ export default function Home() {
       }
     }
 
-    // const pairTransportState = function (state: number): string {
-    //   switch (state) {
-    //     case 0: return "-";
-    //     case 1: return "กำลังขึ้นสินค้า";
-    //     case 2: return "ขึ้นสินค้า";
-    //     case 3: return "ขนส่ง";
-    //     case 4: return "กำลังลงสินค้า";
-    //     case 5: return "สำเร็จ";
-    //     default: return "";
-    //   }
-    // }
+    const pairTransportState = function (state: number): string {
+      switch (state) {
+        case 0: return "";
+        case 1: return "กำลังขึ้นสินค้า";
+        case 2: return "ขึ้นสินค้า";
+        case 3: return "ขนส่ง";
+        case 4: return "กำลังลงสินค้า";
+        case 5: return "สำเร็จ";
+        default: return "";
+      }
+    }
     const now = new Date();
     const getDate = `${now.getFullYear()}-${("0" + (now.getMonth() + 1)).slice(-2)}-${("0" + now.getDate()).slice(-2)}`;
 
@@ -386,24 +384,25 @@ export default function Home() {
     const getAgv = async () => {
       try {
         const res: IVehicles = await axiosGet(
-          "/vehicle/vehicles?vehicle_name=ALL&state=ALL",
+          `/vehicle/vehicles?vehicle_name=${agvname.current}&state=ALL`,
         );
 
-        const _mapData: { agv: string, position: string[] }[] = [];
+        const _mapData: { agv: string,online:boolean, position: string[] }[] = [];
         const _agv: IPayload[] = [];
         res.payload.forEach((data) => {
           const _data = {
             agv: data.name,
+            online:data.state != 0,
             position: calPositionAGV(data.coordinate, data.name),
           };
           const _agvData = {
             ...data,
 
-            processMission: calProcessMission(data.mission?.nodes, data.mission?.paths, data.node),
+            processMission: calProcessMission(data.mission?.nodes, data.mission?.paths, data.node,data.mission?.transport_state),
             str_state: pairAgvState(data.state),
-            str_mission: pairMissionStatusHome(data.mission?.status ?? 0), agv_code_status: `${data.state}${data.mission?.status}${data.mission?.transport_state}`
+            str_mission: pairMissionStatusHome(data.mission?.status ?? 0,data.mission?.transport_state??0), agv_code_status: `${data.state}${data.mission?.status}${data.mission?.transport_state}`
           }
-          console.log(_agvData)
+          // console.log(_agvData)
           if (data.mission?.nodes && data.name && `${data.state}${data.mission?.status}${data.mission?.transport_state}` == "721") {
             if (data.mission.nodes.split(",").length >= 1) {
               agvselectedMission.current[data.name] = { pickup: data.mission.nodes.split(",")[0] }
@@ -429,7 +428,7 @@ export default function Home() {
       timerInterval.current = setInterval(() => {
         missionLoop.current++;
         getAgv();
-        if (missionLoop.current === 3) {
+        if (missionLoop.current === 5) {
           missionLoop.current = 0;
           getMission();
         }
@@ -503,7 +502,7 @@ export default function Home() {
       <section className="col2">
         <div className='box-agv-btn'>
           <button onClick={() => selectAgvFunction(0)} className={`btn-agv ${selectedAgv === 0 ? 'active' : ''}`}>ทั้งหมด</button>
-          {agvAll.map((agv, index) => <button key={agv.name + index} onClick={() => selectAgvFunction(index + 1)} className={`btn-agv ${selectedAgv === index + 1 ? 'active' : ''}`}>{agv.name}</button>)}
+          {agvAll.map((agv, index) => <button key={agv.name} onClick={() => selectAgvFunction(index + 1)} className={`btn-agv ${selectedAgv === index + 1 ? 'active' : ''}`}>{agv.name}</button>)}
         </div>
         {agvAll.map((agv, index) => (agv.state === 0) ? <section key={index} className={`box-agv-data ${(selectedAgv === index + 1 || selectedAgv === 0) ? "" : "d-none"}`}
         >
@@ -576,7 +575,7 @@ export default function Home() {
                   <hr className="line4"></hr>
                   <div className="line-process" style={{width:`${agv.processMission!.percents}%`}}></div>
                   <div className="circle-pickup"></div>
-                  <div className="circle-goal"></div>
+                  <div className={`circle-goal ${agv.processMission?.numProcess === agv.processMission!.nodesList.length-1?'active':''}`}></div>
                   {/* <div className='list-drop-box-flex'> */}
                     {agv.processMission!.nodesList.slice(1, -1).map((drop, i) => <div key={i} className={`stations-box ${agv.processMission?.numProcess! >= i+1?'active':''}`} style={{left: `${(i+1) * 100/(agv.processMission!.nodesList.length-1)}%`}}>
                       <div className={`circle-top-stations ${agv.processMission?.numProcess! >= i+1?'active':''}`}></div>

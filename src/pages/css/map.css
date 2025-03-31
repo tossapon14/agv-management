@@ -15,14 +15,13 @@
     width: 100%;
     z-index: 0;
 }
-.carmodel-position{
+.carmodel-position {
     position: absolute;
-    height:24px;
-    width: auto;
+    height: 24px;
     aspect-ratio: 200/101;
-    /* transform: rotate(90deg); */
     transform-origin: 20% 50%;
-    transition: left 2s ease-in-out, bottom 2s ease-in-out;
+    transition: left 3s linear, bottom 3s linear, transform 3s linear;
+    will-change: transform, left, bottom;
 }
 #map .switch-map-pick{
     position:absolute;

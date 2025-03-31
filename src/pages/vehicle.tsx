@@ -37,30 +37,31 @@ export default function Vehicle() {
                 default: return "";
             }
         }
-        const pairMissionStatusHome = function (state: number): string {
+        const pairMissionStatusHome = function (state: number,transport_state:number): string {
+            if (state === undefined) return "";
             switch (state) {
-                case 0: return "รออนุมัติ";
-                case 1: return "อนุมัติ";
-                case 2: return "เริ่มงาน";
-                case 3: return "สำเร็จ";
-                case 4: return "ปฏิเสธ";
-                case 5: return "ยกเลิก";
-                case 6: return "ไม่สำเร็จ";
-                default: return "";
+              case 0: return "รออนุมัติ";
+              case 1: return "อนุมัติ";
+              case 2: return pairTransportState(transport_state);
+              case 3: return "สำเร็จ";
+              case 4: return "ปฏิเสธ";
+              case 5: return "ยกเลิก";
+              case 6: return "ไม่สำเร็จ";
+              default: return "";
             }
-        }
-        // const pairTransportState = function (state: number): string {
-        //     switch (state) {
-        //         case 0: return "-";
-        //         case 1: return "กำลังขึ้นสินค้า";
-        //         case 2: return "ขึ้นสินค้า";
-        //         case 3: return "ขนส่ง";
-        //         case 4: return "กำลังลงสินค้า";
-        //         case 5: return "สำเร็จ";
-        //         default: return "";
-        //     }
-        // }
-       
+          }
+      
+          const pairTransportState = function (state: number): string {
+            switch (state) {
+              case 0: return "";
+              case 1: return "กำลังขึ้นสินค้า";
+              case 2: return "ขึ้นสินค้า";
+              case 3: return "ขนส่ง";
+              case 4: return "กำลังลงสินค้า";
+              case 5: return "สำเร็จ";
+              default: return "";
+            }
+          }
         const getAgv = async () => {
             try {
                 const res: IVehicles = await axiosGet(
@@ -68,7 +69,7 @@ export default function Vehicle() {
                 );
                 const agv = res.payload.map((data) => ({
                     ...data, str_state: pairAgvState(data.state),
-                    str_mission: pairMissionStatusHome(data.mission?.status||7), btn_pick_drop_code: `${data.state}${data.mission?.status}${data.mission?.transport_state}`
+                    str_mission: pairMissionStatusHome(data.mission?.status??0,data.mission?.transport_state??0), btn_pick_drop_code: `${data.state}${data.mission?.status}${data.mission?.transport_state}`
                 }));
                 console.log(agv);
                 setAgvAll(agv);

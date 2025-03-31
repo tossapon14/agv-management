@@ -78,8 +78,8 @@
 .box-agv-data .top-box-data {
   display: flex;
   width: 100%;
-  height: 180px;
-  padding: .8rem;
+  height: 172px;
+  padding: .8rem 0.8rem 0;
 }
 
 .box-agv-data .box-name-agv {
@@ -275,24 +275,22 @@
 .pickup-box { 
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: start;
   align-items: start;
   width: fit-content;
   height: 100%;
+  padding-top: 32px;
   margin: 0 0.8rem 0 0.5rem;
-  /* background-color: #C9FFAC; */
-  border-radius: 5px;
 }
 .goal-box {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: start;
   align-items: end;
   width: fit-content;
   height: 100%;
   margin: 0 0.5rem 0 0.8rem;
-  /* background-color: #C9FFAC; */
-  border-radius: 5px;
+  padding-top: 32px;
 }
 
 
@@ -339,7 +337,7 @@
 .center-line-box .circle-pickup {
   position: absolute;
   top: 24%;
-  left: 0;
+  left: -8px;
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -349,10 +347,13 @@
 .center-line-box .circle-goal {
   position: absolute;
   top: 24%;
-  right: 0;
+  right: -8px;
   width: 22px;
   height: 22px;
   border-radius: 50%;
+  background-color: #878787;
+}
+.center-line-box .circle-goal.active {
   background-color: #ff6a00;
 }
 
@@ -484,10 +485,10 @@
 
 @keyframes drop-btn-animate {
   from{
-    box-shadow: 0 2px 0px rgba(255, 0, 0, 0.367);
+    box-shadow: 0 0px 0px rgba(255, 0, 0, 0.367);
   }
   to{
-    box-shadow: 0 2px 32px rgba(255, 0, 0, 0.367);
+    box-shadow: 0 0px 72px rgba(255, 0, 0, 0.367);
   }
 }
 .drop-btn:hover {
@@ -827,18 +828,9 @@
   font-size: 20px;
   cursor: pointer;
   border-radius:8px;
-  opacity: 0;
-  animation: fadedin 3.5s forwards;
 }
 
-@keyframes fadedin{
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
+
 .color-btn-warehouse{
   background-color: rgb(0, 0, 0);
   /* border-radius: 2px; */
