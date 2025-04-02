@@ -15,11 +15,20 @@
     width: 100%;
     z-index: 0;
 }
+#map .svg{
+    position: absolute;
+    top: 0%;
+    left: 0%;
+    width: 100%;
+    height: 100%;
+    /* background-color: #fcc931; */
+  }
 .carmodel-position {
     position: absolute;
     height: 24px;
     aspect-ratio: 200/101;
     transform-origin: 20% 50%;
+    -webkit-transform-origin:20% 50%;
     transition: left 3s linear, bottom 3s linear, transform 3s linear;
     will-change: transform, left, bottom;
 }
