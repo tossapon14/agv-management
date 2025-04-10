@@ -4,7 +4,7 @@
      padding: 48px 32px 16px;
  }
 
- .title1 {
+ .velocity-title-box .title1 {
      display: flex;
      align-items: center;
      font-style: italic;
@@ -24,6 +24,7 @@
      height: fit-content;
      border: 1px solid #91E3F5;
      margin-right: 2rem;
+     margin-bottom: 2rem;
      background: white;
      border-radius: 5px;
      box-shadow: rgba(72, 72, 72, 0.5) 0px 4px 8px;

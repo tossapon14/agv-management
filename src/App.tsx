@@ -8,10 +8,13 @@ import Mission from "./pages/mission";
 import Alarm from "./pages/alarm";
 import { BiHomeAlt, BiError, BiFile } from "react-icons/bi";
 import { TbTruckDelivery } from "react-icons/tb";
-import { PiChartDonutLight } from "react-icons/pi";
+import { PiChartDonutLight, PiBatteryCharging } from "react-icons/pi";
+
 import { IoIosLogIn } from "react-icons/io";
 import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, } from "react-router-dom";
+import Statistics from "./pages/statistics";
+import Battery from "./pages/battery";
 
 // Helper function to protect routes
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -19,11 +22,11 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 function App() {
-  const [linkFocused, setLinkFocused] = useState<string[]>(Array(6).fill(""));
+  const [linkFocused, setLinkFocused] = useState<string[]>(Array(7).fill(""));
 
   useEffect(() => {
     let path = window.location.pathname;
-    let index = 5; // Default to "login"
+    let index = 6; // Default to "login"
 
     switch (path) {
       case "/home":
@@ -38,18 +41,21 @@ function App() {
       case "/statistics":
         index = 3;
         break;
-      case "/alarms":
+      case "/battery":
         index = 4;
         break;
-      case "/login":
+      case "/alarms":
         index = 5;
         break;
+      case "/login":
+        index = 6;
+        break;
       default:
-        index = 5; // Redirect unknown paths to login
+        index = 6; // Redirect unknown paths to login
         break;
     }
 
-    const _linkFocused = Array(6).fill("");
+    const _linkFocused = Array(7).fill("");
     _linkFocused[index] = "link-focused";
     setLinkFocused(_linkFocused);
   }, []);
@@ -86,13 +92,19 @@ function App() {
                 </a>
               </li>
               <li>
-                <a href="/alarms" className={linkFocused[4]}>
+                <a href="/battery" className={linkFocused[4]}>
+                  <PiBatteryCharging size="32" />
+                  แบตเตอรี
+                </a>
+              </li>
+              <li>
+                <a href="/alarms" className={linkFocused[5]}>
                   <BiError size="32" />
                   ขัดข้อง
                 </a>
               </li>
               <li>
-                <a href="/login" className={linkFocused[5]}>
+                <a href="/login" className={linkFocused[6]}>
                   <IoIosLogIn size="32" />
                   เข้าสู่ระบบ
                 </a>
@@ -109,7 +121,8 @@ function App() {
             <Route path="/home" element={<PrivateRoute><Home /></PrivateRoute>} />
             <Route path="/mission" element={<PrivateRoute><Mission /></PrivateRoute>} />
             <Route path="/vehicle" element={<PrivateRoute><Vehicle /></PrivateRoute>} />
-            <Route path="/statistics" element={<PrivateRoute><Home /></PrivateRoute>} />
+            <Route path="/statistics" element={<PrivateRoute><Statistics /></PrivateRoute>} />
+            <Route path="/battery" element={<PrivateRoute><Battery /></PrivateRoute>} />
             <Route path="/alarms" element={<PrivateRoute><Alarm /></PrivateRoute>} />
 
             {/* Catch all */}

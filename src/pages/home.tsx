@@ -12,7 +12,9 @@ import { FaMapMarkerAlt } from "react-icons/fa";
 import { axiosGet, axiosPost, axiosPut } from "../api/axiosFetch";
 import { useState, useRef, useEffect } from 'react';
 import { pairMissionStatus } from './mission.tsx';
-import { BiError } from "react-icons/bi";
+import { BiSolidError  } from "react-icons/bi";
+import StatusOnline from './statusOnline';
+
 
 interface IagvDataModel {
   agv: string;
@@ -129,7 +131,7 @@ export default function Home() {
   const prev_deg = useRef<{ [key: string]: number }>({});
   const [agvPath, setAgvPath] = useState<number[][][]>([]);
   const [positionDrop, setPositionDrop] = useState<{ x: string, y: string }[]>([]);
-
+  const [onlineBar, setOnlineBar] = useState<null | boolean>(null);
 
 
 
@@ -327,7 +329,7 @@ export default function Home() {
 
     const pairAgvState = function (state: number): string {
       switch (state) {
-        case 0: return "ไม่ออฟไลน์";
+        case 0: return "ออฟไลน์";
         case 1: return "ออนไลน์";
         case 2: return "พร้อมรับงาน"
         case 3: return "กำลังทำงาน";
@@ -393,6 +395,9 @@ export default function Home() {
 
     const getAgv = async () => {
       try {
+        if (onlineBar == false) {
+          setOnlineBar(true);
+        }
         const res: IVehicles = await axiosGet(
           '/vehicle/vehicles?vehicle_name=ALL&state=ALL',
         );
@@ -448,7 +453,7 @@ export default function Home() {
 
       } catch (e: any) {
         if (e.message === "Network Error") {
-
+          setOnlineBar(false);
         }
       }
 
@@ -481,6 +486,7 @@ export default function Home() {
       {!loadSuccess && <div className='loading-background'>
         <div id="loading"></div>
       </div>}
+      {onlineBar!==null &&<StatusOnline online={onlineBar}></StatusOnline>}
       <section className="col1">
         <MapAnimate data={mapData} paths={agvPath} positionDrop={positionDrop}></MapAnimate>
         <div className="container mt-4 px-0">
@@ -625,7 +631,7 @@ export default function Home() {
 
                 <div className='pickup-data'><div className='circle88'></div>
                 <div>จอดจุด <span>{agv.processMission!.nodesList[0]}</span></div></div>
-                {agv.agv_code_status === "721"&&<div className='alert-pickup'><BiError size={28} color={'#ffa100'} /> &nbsp;&nbsp;เลือกจุดลงสินค้า</div>}
+                {agv.agv_code_status === "721"&&<div className='alert-pickup'><BiSolidError  size={28} color={'#ffce03'}  /> &nbsp;&nbsp;เลือกจุดลงสินค้า</div>}
 
                 </div>}
             </div> : <div className="box-no-mossion">
@@ -649,10 +655,10 @@ export default function Home() {
       <div ref={modalRef} className={`modal ${showModal}`}>
         <div className='modal-content-home'>
           <div className='box-map-and-btn'>
-            {buttonDropList.length === 0 && missionModel.codePickup === "721" ? <div className='modal-loading-background'>
+            {buttonDropList.length === 0 && missionModel.codePickup === "721" && <div className='modal-loading-background'>
               <div id="loading"></div>
-            </div> :
-              <img src={Map_btn} className="map-img" alt='map' loading="lazy"></img>}
+            </div>}
+            <img src={Map_btn} className="map-img" alt='map' loading="lazy"></img>
             {missionModel.codePickup !== "721" ? (
               <>
                 <button className="btn-pickup-agv" onClick={() => clickPickup(0)} style={{ top: "74%", left: "66%" }}>P1</button>

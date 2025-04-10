@@ -56,7 +56,7 @@ export default function Mission() {
 
     const reloadMissionByButton = async (data: { v?: string, s?: string, d?: string, de?: string, p?: number }) => {
         try {
-            var params = "?";
+            var params = "";
             if (data.v) {
                 params = `?vehicle_name=${data.v}&status=${status}&start_date=${start_date}&end_date=${end_date}&page=1&page_size=10`
             }

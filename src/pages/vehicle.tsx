@@ -1,7 +1,7 @@
 import Car3D from '../assets/images/3d-truck.png';
 import './css/vehicle.css';
 import AgvImg from '../assets/images/plyagvmirror.png';
-import BatteryDonutChart from './batteryDonut.tsx';
+import BatteryDonutChart from './chart/batteryDonut.tsx';
 import VelocityChart from './velocityChart.tsx';
 import { CiWifiOn } from "react-icons/ci";
 import { RiBusWifiLine } from "react-icons/ri";
@@ -25,7 +25,7 @@ export default function Vehicle() {
     useEffect(() => {
         const pairAgvState = function (state: number): string {
             switch (state) {
-                case 0: return "ไม่ออฟไลน์";
+                case 0: return "ออฟไลน์";
                 case 1: return "ออนไลน์";
                 case 2: return "พร้อมรับงาน";
                 case 3: return "กำลังทำงาน";
