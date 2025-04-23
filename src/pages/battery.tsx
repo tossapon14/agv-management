@@ -26,7 +26,6 @@ const Battery = () => {
   const start_date = searchParams.get("start_date") || new Date().toISOString().substring(0, 10)
   const end_date = searchParams.get("end_date") || new Date().toISOString().substring(0, 10)
   const [battery, setBattery] = useState<IDataSeries>({ series: [] });
-  const [agvEachOne, setAGVEachOne] = useState<{ name: string, series: {} }[]>([]);
 
 
   const reloadDataByDate = async (data: { d?: string, de?: string }) => {

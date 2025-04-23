@@ -1,5 +1,4 @@
 import ReactApexChart from 'react-apexcharts';
-import { IDataSeries } from '../battery';
 interface IBatteryProps {
   data: {
     name: string;

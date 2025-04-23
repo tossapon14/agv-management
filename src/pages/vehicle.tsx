@@ -8,7 +8,7 @@ import { RiBusWifiLine } from "react-icons/ri";
 import { BsFillGearFill } from "react-icons/bs";
 import { PiPath } from "react-icons/pi";
 import { BsFillRocketTakeoffFill } from "react-icons/bs";
-import { HiOutlineStatusOffline,HiOutlineStatusOnline  } from "react-icons/hi";
+import { HiOutlineStatusOnline  } from "react-icons/hi";
 
 import { useEffect, useState, useRef } from 'react';
 import { IVehicles, IPayload } from './home.tsx';
@@ -179,10 +179,11 @@ export default function Vehicle() {
                         <div className='v-content-bottom2'>
                             {/* <div className='trapezoid' style={{borderBottom:`72px solid ${colorAgv[agv.name]}`}}><MdOnlinePrediction size={50} color='#0dff20' style={{margin:'12px 16px 0'}} /></div> */}
                             <div className='trapezoid' >
-                                <h3 style={{ margin: '16px 32px 0', fontWeight: '600' }}>{agv.name}</h3>
+                                <h3 style={{color:'white', margin: '16px 32px 0', fontWeight: '500' }}>{agv.name}</h3>
                                 <div className="agvColorBoxIcon" style={{ margin: '14px 0px 0', background: colorAgv[agv.name] }}></div>
                             </div>
-                            {agv.state == 0 ? <HiOutlineStatusOffline size={50} color={'#5b5b5b'} style={{ margin: '0px 28px 0 0' }} /> : <div className ='onlineneon'><HiOutlineStatusOnline  size={32} color='#0dff20' /></div>}
+                            {agv.state == 0 ? <HiOutlineStatusOnline  size={40} color={'#cccc'} style={{ margin: '0px 28px 0 0' }} /> 
+                            : <div className ='onlineneon'><HiOutlineStatusOnline  size={32} color='#0dff20' /></div>}
                         </div>
                     </div>
 

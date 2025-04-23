@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactApexChart from 'react-apexcharts';
 import { IStatisticsData } from '../statistics';
-import { data } from 'react-router-dom';
 
 interface BGBarChartProps {
   data: IStatisticsData|undefined;
