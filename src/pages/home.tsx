@@ -835,7 +835,7 @@ export default function Home() {
                       <h5>{missionSavePickUp.current[missionModel.agv]?.pickup || pickup}</h5>
                     </div>
                   </div> : <h3 className="selectPickup">Select your pickup</h3>}
-                  {selectWarehouse.map((warehouse) => <div key={warehouse} className='data-warehouse-box data-drop-box'>
+                  {selectWarehouse.map((warehouse) => <div key={warehouse} id={warehouse} className='data-warehouse-box data-drop-box'>
                     <div className='circle-goal-outline blue-circle-bg'>
                       <FaMapMarkerAlt size={32} color='#003092' />
                     </div>
