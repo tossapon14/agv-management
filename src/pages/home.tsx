@@ -4,14 +4,15 @@ import AgvImg from '../assets/images/plyagvmirror.png';
 import AgvImg2 from '../assets/images/plyagv.png';
 import Map_btn from '../assets/images/bg_btn.webp';
 import MissionImage from '../assets/images/mission.png';
+import Forkliift from '../assets/images/forklift.png'
 
 import { FaRegCircleCheck } from "react-icons/fa6";
-import { CiBatteryFull} from "react-icons/ci";
+import { CiBatteryFull } from "react-icons/ci";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { IoMdSettings, IoMdClose } from "react-icons/io";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { axiosGet, axiosPost, axiosPut } from "../api/axiosFetch";
-import { useState, useRef, useEffect, Fragment,ReactNode } from 'react';
+import { useState, useRef, useEffect, Fragment, ReactNode } from 'react';
 import { pairMissionStatus } from './mission.tsx';
 import { BiSolidError } from "react-icons/bi";
 import StatusOnline from './statusOnline';
@@ -117,7 +118,7 @@ export default function Home() {
 
   const modalRef = useRef<HTMLDivElement>(null);
 
-  const [missionModel, setMissionModel] = useState<IagvDataModel>({ agv: "", codePickup: '', state: 0, str_state: '', mode: '' });
+  const [missionModel, setMissionModel] = useState<IagvDataModel>({ agv: "", codePickup: '', state: 0, str_state: '', mode: ''});
   const [showModal, setShowModal] = useState<string>("");
   const [selectedAgv, setSelectedAgv] = useState(0);
   const [agvAll, setAgvAll] = useState<IPayload[]>([]);
@@ -139,10 +140,9 @@ export default function Home() {
   const [waitMode, setWaitMode] = useState<boolean>(false);
   const initialAgv = useRef<boolean>(false);
   const summaryDialog = useRef<HTMLDivElement>(null);
-  const [dialogSummary, setDialogSummary] = useState<{ show: boolean, name?: string, id?: number, codePickup?: string }>({ show: false });
+  const [dialogSummary, setDialogSummary] = useState<{ show: boolean, name?: string, id?: number, codePickup?: string,dropName?:string}>({ show: false });
   const [showResponse, setShowResponse] = useState<ReactNode>(null);
 
-  
 
   const buttonsDrop = [
     { id: "01", top: "80%", left: "26%" },
@@ -170,41 +170,51 @@ export default function Home() {
   ];
 
 
-  const responseDivElement = (error:boolean,message:string|undefined)=>{
-    if(error){
-      setShowResponse( 
+  const responseDivElement = (error: boolean, message: string | undefined) => {
+    if (error) {
+      setShowResponse(
         <div className='show-response-error'>
-          <BiSolidError size={54} color='#f44336'/>
-          <h5 className='ms-3'>{message||'Unknown Error'}</h5>
-       </div>);
-      
-    }else{ setShowResponse( 
-      <div className='show-response'>
-        <FaRegCircleCheck size={54} color='#00ff5a'/>
-        <h5 className='ms-3'>{message}</h5>
-     </div>);
-     
+          <BiSolidError size={54} color='#f44336' />
+          <h5 className='ms-3'>{message || 'Unknown Error'}</h5>
+        </div>);
+
+    } else {
+      setShowResponse(
+        <div className='show-response'>
+          <FaRegCircleCheck size={54} color='#00ff5a' />
+          <h5 className='ms-3'>{message}</h5>
+        </div>);
+
     }
     setTimeout(() => {
-        setShowResponse(null);
-      }, 3100);
+      setShowResponse(null);
+    }, 3100);
   }
   const showDialogSummary = (id: number, name: string, codePickup: string) => {
     setShowModal("hidden-modal");
     setDialogSummary({ show: true, name: name, id: id, codePickup: codePickup });
   }
-  const btnMissionConfirm = (id: number, name: string, codePickup: string) => {
+  const btnDrop = ( name: string,dropName:string)=>{  // codePickup === '724'
+    setDialogSummary({ show: true,id:0, name, codePickup:'724',dropName});
+  }
+
+  const btnDialogConfirm = (id: number|undefined, name: string|undefined, codePickup: string|undefined) => {
+    if(id === undefined || name === undefined || codePickup === undefined) return;
     setDialogSummary({ show: false });
-    setShowResponse( 
+    setShowResponse(
       <div className='show-response-loading'>
         <div id='loading2'></div>
-     </div>);
-    if (codePickup === '721') {
-      modalPutDropMission(name, id)
-    } else {
-      modalPostMissionPickup(name)
+      </div>);
+    if (codePickup === '721'&&id!=undefined&&name!=undefined) {
+      APIPutDropMission(id!,name!)
+    }else if(codePickup === '724'&&name!=undefined){
+      APIPutDropProduct(name!)
+    }
+    else if(name!=undefined){
+      APIPostPickupMission(name!)
     }
   }
+ 
 
   const getCanDrop = async (pick: string): Promise<string[]> => {
     // console.log("444444", pick);
@@ -212,37 +222,37 @@ export default function Home() {
     return response.payload;
   };
 
-  const sendMissionDrop = async (name: string) => {
-    setShowResponse( 
+  const APIPutDropProduct = async (name: string) => {
+    setShowResponse(
       <div className='show-response-loading'>
         <div id='loading2'></div>
-     </div>);
+      </div>);
     try {
       await axiosPut(`fleet/command?command=next&vehicle_name=${name}`);
-      responseDivElement(false,"drop success")
-    } catch (e:any) {
+      responseDivElement(false, "drop success")
+    } catch (e: any) {
       console.error("drop product", e)
-      responseDivElement(true,e?.message)
+      responseDivElement(true, e?.message)
     }
 
 
   }
   const sendCommand = async (agv: string, command: string) => {
-    setShowResponse( 
+    setShowResponse(
       <div className='show-response-loading'>
         <div id='loading2'></div>
-     </div>);
+      </div>);
     try {
       const response = await axiosPut(`fleet/command?command=${command}&vehicle_name=${agv}`);
       console.log(response);
-      responseDivElement(false,`${command} send success`)
+      responseDivElement(false, `${command} send success`)
     } catch (e: any) {
       console.error('send stop or continue', e)
-      responseDivElement(true,e?.message)
+      responseDivElement(true, e?.message)
     }
 
   }
-  const modalPutDropMission = async (agv: string, id: number) => {
+  const APIPutDropMission = async (id:number,agv: string) => {
     if (missionSavePickUp.current[agv]?.pickup) { //select drop
       const dataMission: IMissionDrop = {
         id: id,
@@ -255,31 +265,31 @@ export default function Home() {
       try {
         await axiosPut("/mission/update", dataMission);
         delete missionSavePickUp.current[agv];
-        responseDivElement(false,"success")
-      } catch (e:any) {
+        responseDivElement(false, "success")
+      } catch (e: any) {
         console.error(e?.message);
-        responseDivElement(true,e?.message)
+        responseDivElement(true, e?.message)
       }
 
     }
   }
-  const modalPostMissionPickup = async (agv: string) => {
+  const APIPostPickupMission = async (agv: string) => {
     const dataMission: IMissionCreate = {
       "nodes": pickup!,
       "requester": "admin",
       "type": 1,
       "vehicle_name": agv
     }
-   try{
-     await axiosPost("/mission/create", dataMission);
-     responseDivElement(false,"success")
-   }catch(e:any){
-    console.error(e?.message);
-    responseDivElement(true,e?.message)
+    try {
+      await axiosPost("/mission/create", dataMission);
+      responseDivElement(false, "success")
+    } catch (e: any) {
+      console.error(e?.message);
+      responseDivElement(true, e?.message)
 
-  }
-    
-    
+    }
+
+
 
   }
 
@@ -354,15 +364,15 @@ export default function Home() {
         setDialogSummary({ show: false });
       }
     };
-    const calProcessMission = (missNode: string | undefined, path: string | undefined, curr: string | undefined, transport_state: number | undefined): { percents: number, nodesList: string[], numProcess: number } | null => {
-      if (missNode === undefined || path === undefined || curr === undefined || transport_state === undefined) return null;
+    const calProcessMission = (dropNode: string | undefined, path: string | undefined, curr: string | undefined): { percents: number, nodesList: string[], numProcess: number } | null => {
+      if (dropNode === undefined || path === undefined || curr === undefined) return null;
       // path = "D15S, P02S, P03S, P05S, P0504N, P0505N, D11S, D12S, D1201N, P04S, D13S, D14S, D1401N, D1402N, D20S, D15S, D21S, D1501N, D22S";
       // curr = "D15S";
-      // missNode = "P04S,D20S,D15S,D21S,D22S";
-      const nodesList = missNode.split(",");
+      // dropNode = "P04S,D20S,D15S,D21S,D22S";
+      const nodesList = dropNode.split(",");
       if (nodesList.length == 1) return { percents: 0, nodesList: nodesList, numProcess: 0 };
       const pathList = path.split(", ");
-      const dropIndex: number[] = []
+      const dropIndex: number[] = [];
       nodesList.forEach(node => {
         if (pathList.lastIndexOf(node) != -1) {
           dropIndex.push(pathList.lastIndexOf(node));
@@ -404,6 +414,21 @@ export default function Home() {
       prev_deg.current[name] = prev_deg.current[name] + delta;
 
       return [positionX, positionY, prev_deg.current[name].toString()];
+    }
+    const calPath = (arrPoint: number[][],position:string):number[][] => {
+          var d=Infinity;
+          const position2 = position.split(",");
+          var indexStart = 0;
+          for(let i = 0;i<arrPoint.length;i++){
+              const distance = Math.hypot(arrPoint[i][0]-Number(position2[0]),arrPoint[i][1]-Number(position2[1])); 
+              if(distance<d){
+                  d = distance;
+                  indexStart = i;
+              }
+          }
+          const path = arrPoint.slice(indexStart);
+          path.unshift([Number(position2[0]),Number(position2[1])]);
+          return path;
     }
 
     const pairAgvState = function (state: number): string {
@@ -489,19 +514,20 @@ export default function Home() {
             online: data.state != 0,
             position: calPositionAGV(data.coordinate, data.name),
           };
-          if (data.mission?.paths_coordinate && data.mission?.nodes_coordinate && data.state > 2 && selectAgv.current !== 'ALL') {  // condition find path color
-            _paths = data.mission.paths_coordinate;
-            _positionDrop = data.mission?.nodes_coordinate;
-            if (data.mission?.nodes_coordinate.length > 1) {
-              _positionDrop.shift();
-            }
-
-          }
+          
           var _agvData: IPayload;
           if (data.state > 0) {
+            if (data.mission?.paths_coordinate && data.mission?.nodes_coordinate && data.state > 2 && selectAgv.current !== 'ALL') {  // condition find path color
+              _paths = calPath(data.mission.paths_coordinate,data.coordinate);
+              _positionDrop = data.mission.nodes_coordinate
+              if (data.mission?.nodes_coordinate.length > 1) {
+                _positionDrop.shift();
+              }
+  
+            }
             _agvData = {
               ...data,
-              processMission: calProcessMission(data.mission?.nodes, data.mission?.paths, data.node, data.mission?.transport_state),
+              processMission: calProcessMission(data.mission?.nodes, data.mission?.paths, data.node),
               str_state: pairAgvState(data.state),
               str_mission: pairMissionStatusHome(data.mission?.status ?? 0, data.mission?.transport_state ?? 0),
               agv_code_status: `${data.state}${data.mission?.status}${data.mission?.transport_state}`,
@@ -737,7 +763,7 @@ export default function Home() {
             </div>}
           <div className='mission-container'>
             <div className={`${agv.agv_code_status === "724" || agv.agv_code_status === "721" ? 'd-none' : 'mission-status'}`}>{agv.str_mission}</div>
-            {agv.agv_code_status === "724" ? <button className='drop-btn' onClick={() => sendMissionDrop(agv.name)}>ลงสินค้า</button> :
+            {agv.agv_code_status === "724" ? <button className='drop-btn' onClick={() => btnDrop(agv.name,agv.node)}>ลงสินค้า</button> :
               agv.agv_code_status === "721" ? <button className='mission-btn miss-animate' onClick={() => btnCallModal({ agv: agv.name, codePickup: "721", id: agv.mission?.id, str_state: agv.str_state!, state: agv.state, mode: agv.mode })}>
                 จองจุดลง
               </button> :
@@ -748,33 +774,52 @@ export default function Home() {
           </div>
         </section>)}
       </section>
-     {showResponse}
+      {showResponse}
       <div ref={summaryDialog} className={`modal-summaryCommand ${!dialogSummary.show && 'd-none'}`}>
         <div className='card-summaryCommand'>
-          <div className='card-summaryCommand-header'>
-            <div className="icon-name-agv">
-              <div className='bg-img'>
-                <img src={MissionImage} alt="Logo rocket" width="32" height="32" />
-              </div><h6>{dialogSummary.name || 'AGV'}</h6>
+          {dialogSummary.codePickup === "724"? <>
+            <div className='card-summaryCommand-header'>
+              <div className="icon-name-agv">
+              <div className='bg-img' style={{background:'#FFF1EA'}}>
+                <img src={Forkliift} alt="Logo forklift" width="40" height="40" />
+              </div>
+              <h5>{dialogSummary.name} <span className='h6'>ลงสินค้า</span></h5>
+              </div>
+              <button className='btn-close-summary' onClick={() => setDialogSummary({ show: false })}><IoMdClose size={16} /></button>
             </div>
-            <button className='btn-close-summary' onClick={() => setDialogSummary({ show: false })}><IoMdClose size={16} /></button>
-          </div>
-          <div className='summary-command-pickup'>
-            <div className='pickup-name-box border-bottom-color'>{missionSavePickUp.current[missionModel.agv]?.pickup || pickup}</div>
-          </div>
-          <p>จุดจอด</p>
-          <div className='summary-command-pickup'>
-            {selectWarehouse?.map((drop, index) => <Fragment key={drop}>
-              <div key={drop + 'sum'} className='pickup-name-box drop-name-box border-bottom-color'>{drop}</div>
-              {index < selectWarehouse.length - 1 && <div className='border-bottom-color'>
-                <hr style={{ width: '20px', border: '1px solid black' }} />
-              </div>}
-            </Fragment>
-            )}
-          </div>
-          {selectWarehouse.length != 0 && <p>จุดลง</p>}
-          <p style={{ color: '#ccc' }}>กดยืนยันเพื่อสั่งงาน</p>
-          <button className='btn-confirm' onClick={() => btnMissionConfirm(dialogSummary.id!, dialogSummary.name!, dialogSummary.codePickup!)}>ยืนยัน</button>
+            <div className='summary-command-pickup'>
+              <div className='pickup-name-box' style={{borderBottom:'2px solid red'}}>{dialogSummary.dropName}</div>
+            </div>
+            <p>จุดลง</p>
+            <p style={{ color: '#ccc' }}>กดยืนยันเพื่อสั่งงาน</p>
+            <button className='btn-confirm' onClick={() => btnDialogConfirm(dialogSummary.id, dialogSummary.name, dialogSummary.codePickup)}>ยืนยัน</button>
+          </> : <>
+            <div className='card-summaryCommand-header'>
+              <div className="icon-name-agv">
+                <div className='bg-img'>
+                  <img src={MissionImage} alt="Logo rocket" width="40" height="40" />
+                </div>
+                <h5>{dialogSummary.name}</h5>
+              </div>
+              <button className='btn-close-summary' onClick={() => setDialogSummary({ show: false })}><IoMdClose size={16} /></button>
+            </div>
+            <div className='summary-command-pickup'>
+              <div className='pickup-name-box border-bottom-color'>{missionSavePickUp.current[dialogSummary.name!]?.pickup || pickup}</div>
+            </div>
+            <p>จุดจอด</p>
+            <div className='summary-command-pickup'>
+              {selectWarehouse?.map((drop, index) => <Fragment key={drop}>
+                <div className='pickup-name-box drop-name-box border-bottom-color'>{drop}</div>
+                {index < selectWarehouse.length - 1 && <div className='border-bottom-color'>
+                  <hr style={{ width: '20px', border: '1px solid black' }} />
+                </div>}
+              </Fragment>
+              )}
+            </div>
+            {selectWarehouse.length != 0 && <p>จุดลง</p>}
+            <p style={{ color: '#ccc' }}>กดยืนยันเพื่อสั่งงาน</p>
+            <button className='btn-confirm' onClick={() => btnDialogConfirm(dialogSummary.id, dialogSummary.name, dialogSummary.codePickup)}>ยืนยัน</button>
+          </>}
         </div>
       </div>
       <div ref={modalRef} className={`modal ${showModal}`}>
@@ -847,7 +892,7 @@ export default function Home() {
                   </div>)}
                 </div>
               </div>
-              {missionModel.codePickup === '721' ? <button className='btn-send-command mt-4' disabled={!(selectWarehouse.length>0)} onClick={() => showDialogSummary(missionModel.id ?? 0, missionModel.agv,'721')}>สั่งงาน</button> :
+              {missionModel.codePickup === '721' ? <button className='btn-send-command mt-4' disabled={!(selectWarehouse.length > 0)} onClick={() => showDialogSummary(missionModel.id ?? 0, missionModel.agv, '721')}>สั่งงาน</button> :
                 <button className='btn-send-command mt-4' disabled={!(pickup)} onClick={() => showDialogSummary(missionModel.id ?? 0, missionModel.agv, missionModel.codePickup)}>สั่งงาน</button>
               }
             </div>

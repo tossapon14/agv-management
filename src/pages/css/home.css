@@ -668,7 +668,7 @@
 }
 .modal-content-home{
   width: 1660px;
-  height: 900px;
+  height: 870px;
   border-radius: 12px;
   padding: 1rem;
   background: #ffffff;
@@ -986,8 +986,8 @@
   justify-content: space-between;
 }
 .card-summaryCommand-header .bg-img{
-  width: 54px;
-  height: 54px;
+  width: 64px;
+  height: 64px;
   display: flex;
   justify-content: center;
   align-items: center;  

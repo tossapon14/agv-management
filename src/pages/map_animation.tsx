@@ -87,10 +87,10 @@ function MapAnimate({ data, paths, positionDrop }: MapAnimateProps) {
       <circle 
         cx={drop.x} 
         cy={drop.y} 
-        r="12" 
+        r="10" 
         fill="white" 
         stroke="black" 
-        strokeWidth="3" 
+        strokeWidth="2" 
       />
       <image 
         x={Number(drop.x) - 20}  // Center the pin image if needed
