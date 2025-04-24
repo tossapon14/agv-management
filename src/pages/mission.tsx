@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { axiosGet } from "../api/axiosFetch";
 import { IMissionData } from './home';
 import { useSearchParams, useNavigate } from "react-router-dom";
-
+import { pairMissionStatus, colorAgv} from '../utils/centerFunction';
 interface IMissionTables {
     arriving_time: string
     dispatch_time: string
@@ -26,19 +26,6 @@ interface IMissionTables {
     drop: string
     pick: string
 }
-export const pairMissionStatus = function (state: number): { txt: string, color: string, bgcolor: string } {
-    switch (state) {
-        case 0: return { txt: "รออนุมัติ", color: "#444444", bgcolor: "#eeeeee" };
-        case 1: return { txt: "อนุมัติ", color: '#3d85c6', bgcolor: "#ebf6ff" };
-        case 2: return { txt: "เริ่มงาน", color: "#ffc000", bgcolor: "#fff9e6" };
-        case 3: return { txt: "สำเร็จ", color: "#58dd1e", bgcolor: "#e7ffe0" };
-        case 4: return { txt: "ปฏิเสธ", color: '#a64d79', bgcolor: "#ffeef8" };
-        case 5: return { txt: "ยกเลิก", color: "#cc0000", bgcolor: "#ffeeee" };
-        case 6: return { txt: "ไม่สำเร็จ", color: '#cc0000', bgcolor: "#ffeeee" };
-        default: return { txt: "รออนุมัติ", color: "#444444", bgcolor: "#fff" };
-    }
-}
-const colorAgv: { [key: string]: string } = { "AGV1": "#001494", "AGV2": "#cc0000", "AGV3": "#006a33", "AGV4": "#d7be00", "AGV5": "#94008d", "AGV6": "#0097a8" };
 
 export default function Mission() {
     const navigate = useNavigate();
@@ -170,6 +157,24 @@ export default function Mission() {
             }
             else return null
         };
+        const isoDurationToMinSec =  (duration: string|undefined): string=> {
+            if(duration === undefined) return "";
+            else{
+            const regex = /PT(?:(\d+)M)?(?:(\d+)S)?/;
+            const matches = duration.match(regex);
+            if (matches === null) return "00:00"
+            else {
+                const minutes = parseInt(matches[1]);
+                const seconds = parseInt(matches[2]);
+
+                // Format to m:ss (add leading zero to seconds if needed)
+                const formatted = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                return formatted;
+            } 
+            }
+            
+
+        }
 
         const getMission = async () => {
             try {
@@ -179,20 +184,23 @@ export default function Mission() {
 
                 );
                 setPagination(_pagination(res.structure?.total_pages));
-                const _mission:IMissionTables[]  = []
-                const _btnAGV:string[] = []
-                res.payload.forEach((ele)=>{
-                    _mission.push({...ele, str_status: pairMissionStatus(ele.status),
+                const _mission: IMissionTables[] = []
+                const _btnAGV: string[] = []
+                res.payload.forEach((ele) => {
+                    _mission.push({
+                        ...ele, str_status: pairMissionStatus(ele.status),
                         drop: ele.nodes.substring(5),
                         pick: ele.nodes.substring(0, 4),
                         timestamp: ele.timestamp?.substring(0, 10),
                         tpick: ele.timestamp?.substring(11, 19),
                         tstart: ele.dispatch_time?.substring(11, 19),
-                        tend: ele.arriving_time?.substring(11, 19),})
-                        if (!_btnAGV.includes(ele.vehicle_name)) {
-                            _btnAGV.push(ele.vehicle_name);
-                        }                
-                }); 
+                        tend: ele.arriving_time?.substring(11, 19),
+                        duration: isoDurationToMinSec(ele.duration),
+                    })
+                    if (!_btnAGV.includes(ele.vehicle_name)) {
+                        _btnAGV.push(ele.vehicle_name);
+                    }
+                });
                 setbtnAGV(_btnAGV);  // for button AGV
                 setMissionTable(_mission);
 
@@ -208,9 +216,9 @@ export default function Mission() {
     }, []);
     return <>
         <section className='mission-box'>
-        {!loadSuccess&&<div className='loading-background'>
-        <div id="loading"></div>
-      </div>}
+            {!loadSuccess && <div className='loading-background'>
+                <div id="loading"></div>
+            </div>}
             <div className='mission-title-box'>
                 <h1>MISSION</h1>
                 <div className='box-title'>
@@ -219,7 +227,7 @@ export default function Mission() {
                         <span>view and manage your mission</span></p>
                     <div className="selected-agv-box">
                         <button onClick={() => reloadMissionByButton({ v: "ALL" })} className={`${vehicle === "ALL" ? "active" : ""}`}>ทั้งหมด</button>
-                        {btnAGV.map((name)=><button onClick={() => reloadMissionByButton({ v: name })} className={`${vehicle === name ? "active" : ""}`}>{name}</button>)}
+                        {btnAGV.map((name) => <button onClick={() => reloadMissionByButton({ v: name })} className={`${vehicle === name ? "active" : ""}`}>{name}</button>)}
                     </div>
                 </div>
 
@@ -264,19 +272,20 @@ export default function Mission() {
                                     </div>จุดจอด
                                 </div>
                                 </th>
+                                <th scope="col">
+                                    <div className="head-table-flex">
+                                        <div className='mission-circle-icon color-blue'>
+                                            <FaMapMarkerAlt color='#003092' />
+                                        </div>
+                                        จุดลง</div>
+                                </th>
                                 <th scope="col"><div className="head-table-flex">
                                     <div className='mission-circle-icon'>
                                         <IoMdSettings color='#E9762B' />
                                     </div>
                                     status</div>
                                 </th>
-                                <th scope="col">
-                                    <div className="head-table-flex">
-                                        <div className='mission-circle-icon color-blue'>
-                                            <FaMapMarkerAlt color='#003092' />
-                                        </div>
-                                        จุดหมาย</div>
-                                </th>
+                               
                                 <th scope="col">วัน</th>
                                 <th scope="col">เวลาจอง</th>
                                 <th scope="col">เริ่มวิ่ง</th>
@@ -291,16 +300,16 @@ export default function Mission() {
                                 <td scope="row">#{miss.id}</td>
                                 <td><div className='td-vehicle-name'><div className='circle-vehicle-icon' style={{ background: `${colorAgv[miss.vehicle_name]}` }}></div><span>{miss.vehicle_name}</span></div></td>
                                 <td>{miss.requester}</td>
-                                <td>{miss.pick}</td>
-                                <td><div className='box-status' style={{ background: miss.str_status.bgcolor, color: miss.str_status.color }}>{miss.str_status.txt}</div></td>
+                                <td>{miss.pick}</td> 
                                 <td>{miss.drop}</td>
+                                <td><div className='box-status' style={{ background: miss.str_status.bgcolor, color: miss.str_status.color }}>{miss.str_status.txt}</div></td>
                                 <td>{miss.timestamp}</td>
                                 <td>{miss.tpick}</td>
                                 <td>{miss.tstart}</td>
                                 <td>{miss.tend}</td>
                                 <td>{miss.duration}</td>
 
-                                <td><button className='btn-cancel'>cancel</button></td>
+                                <td>{miss.status == 0 && <button className='btn-cancel'>cancel</button>}</td>
                             </tr>)}
 
                         </tbody>

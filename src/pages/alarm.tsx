@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { axiosGet } from "../api/axiosFetch";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { BsConeStriped } from "react-icons/bs";
+import { colorAgv} from '../utils/centerFunction';
 
 interface IAlarm {
     message: string
@@ -36,7 +37,6 @@ interface IStructure {
 }
 
 export default function Alarm() {
-    const colorAgv: { [key: string]: string } = { "AGV1": "#001494", "AGV2": "#cc0000", "AGV3": "#006a33", "AGV4": "#d7be00", "AGV5": "#94008d", "AGV6": "#0097a8" };
 
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
@@ -246,19 +246,20 @@ export default function Alarm() {
                                 <th scope="col" style={{ width: "100px" }}>#</th>
                                 <th scope="col" style={{ width: "150px" }}>รถ</th>
                                 <th scope="col"><div className="head-table-flex">
-                                    <div className='mission-circle-icon'>
-                                        <IoMdSettings color='#E9762B' />
+                                    <div className='mission-circle-icon' style={{ background: "#ffe6e6"}}>  
+                                        <IoMdSettings color='red' />
                                     </div>
-                                    status</div>
+                                    code</div>
                                 </th>
-                                <th scope="col" style={{ width: "150px" }}>วัน</th>
-                                <th scope="col" style={{ width: "150px" }}>เวลา</th>
                                 <th scope="col"><div className="head-table-flex">
                                     <div className='mission-circle-icon'>
                                         <BiError color='#E9762B' size={16} />
                                     </div>
                                     status</div>
                                 </th>
+                                <th scope="col" style={{ width: "150px" }}>วัน</th>
+                                <th scope="col" style={{ width: "150px" }}>เวลา</th>
+                               
                             </tr>
                         </thead>
                         <tbody className='text-center'>
@@ -266,9 +267,9 @@ export default function Alarm() {
                                 <td scope="row">#{i + 1}</td>
                                 <td><div className='td-vehicle-name'><div className='circle-vehicle-icon' style={{ background: `${colorAgv[data.vehicle_name]}` }}></div><span>{data.vehicle_name}</span></div></td>
                                 <td><div className='box-status' style={{ background: "#f5f5f5", color: "#444444", }}>{data.code}</div></td>
+                                <td>{data["th"]}</td>
                                 <td>{data.date}</td>
                                 <td>{data.time}</td>
-                                <td>{data["th"]}</td>
                             </tr>)}
 
                         </tbody>

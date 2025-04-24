@@ -587,7 +587,7 @@
 .btn-cancel {
   background-color: #ffffff;
   width: 90px;
-  height: 36px;
+  padding-block:4px ;
   border-radius: 5px;
   font-weight: 500;
   color: rgb(0, 0, 0);

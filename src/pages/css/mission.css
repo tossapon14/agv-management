@@ -147,13 +147,13 @@
  }
 
  .export-btn{
-    width: 120px;
-    height: 40px;
+    width: 110px;
+    padding: 4px 0;
     font-size: 20px;
     margin-left: 1rem;
     background-color: #0921fb;
     border: none;
-    border-radius: 8px;
+    border-radius: 5px;
     color:white;
     box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
 
@@ -198,10 +198,11 @@
   /* height: 32px; */
   margin: 0 auto;
   font-weight: 600;
-  padding: 0.4rem 0;
+  padding: 0.3rem 0;
   text-align: center;
   border-radius:2px;
   font-size: 14px;
+  box-shadow: rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
 }
 .tb-mission-pause{
   display: flex;

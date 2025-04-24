@@ -8,19 +8,23 @@ import { RiBusWifiLine } from "react-icons/ri";
 import { BsFillGearFill } from "react-icons/bs";
 import { PiPath } from "react-icons/pi";
 import { BsFillRocketTakeoffFill } from "react-icons/bs";
-import { HiOutlineStatusOnline  } from "react-icons/hi";
+import { HiOutlineStatusOnline } from "react-icons/hi";
 
 import { useEffect, useState, useRef } from 'react';
 import { IVehicles, IPayload } from './home.tsx';
 import { axiosGet } from "../api/axiosFetch";
+import { colorAgv } from '../utils/centerFunction';
+import StatusOnline from './statusOnline';
 
 
 export default function Vehicle() {
-    const colorAgv: { [key: string]: string } = { "AGV1": "#001494", "AGV2": "#cc0000", "AGV3": "#006a33", "AGV4": "#d7be00", "AGV5": "#94008d", "AGV6": "#0097a8" };
 
     const timerInterval = useRef<NodeJS.Timeout>(null);
     const [agvAll, setAgvAll] = useState<IPayload[]>([]);
     const [loadSuccess, setLoadSuccess] = useState(false);
+    const [onlineBar, setOnlineBar] = useState<null | boolean>(null);
+    const onlineRef = useRef<boolean | null>(null);
+
 
     useEffect(() => {
         const pairAgvState = function (state: number): string {
@@ -37,44 +41,49 @@ export default function Vehicle() {
                 default: return "";
             }
         }
-        const pairMissionStatusHome = function (state: number,transport_state:number): string {
+        const pairMissionStatusHome = function (state: number, transport_state: number): string {
             if (state === undefined) return "";
             switch (state) {
-              case 0: return "รออนุมัติ";
-              case 1: return "อนุมัติ";
-              case 2: return pairTransportState(transport_state);
-              case 3: return "สำเร็จ";
-              case 4: return "ปฏิเสธ";
-              case 5: return "ยกเลิก";
-              case 6: return "ไม่สำเร็จ";
-              default: return "";
+                case 0: return "รออนุมัติ";
+                case 1: return "อนุมัติ";
+                case 2: return pairTransportState(transport_state);
+                case 3: return "สำเร็จ";
+                case 4: return "ปฏิเสธ";
+                case 5: return "ยกเลิก";
+                case 6: return "ไม่สำเร็จ";
+                default: return "";
             }
-          }
-      
-          const pairTransportState = function (state: number): string {
+        }
+
+        const pairTransportState = function (state: number): string {
             switch (state) {
-              case 0: return "";
-              case 1: return "กำลังขึ้นสินค้า";
-              case 2: return "ขึ้นสินค้า";
-              case 3: return "ขนส่ง";
-              case 4: return "กำลังลงสินค้า";
-              case 5: return "สำเร็จ";
-              default: return "";
+                case 0: return "";
+                case 1: return "กำลังขึ้นสินค้า";
+                case 2: return "ขึ้นสินค้า";
+                case 3: return "ขนส่ง";
+                case 4: return "กำลังลงสินค้า";
+                case 5: return "สำเร็จ";
+                default: return "";
             }
-          }
+        }
         const getAgv = async () => {
             try {
                 const res: IVehicles = await axiosGet(
                     "/vehicle/vehicles?vehicle_name=ALL&state=ALL",
                 );
+                if (onlineRef.current == false) {
+                    setOnlineBar(true);
+                    onlineRef.current = true;
+                }
                 const agv = res.payload.map((data) => ({
                     ...data, str_state: pairAgvState(data.state),
-                    str_mission: pairMissionStatusHome(data.mission?.status??0,data.mission?.transport_state??0), btn_pick_drop_code: `${data.state}${data.mission?.status}${data.mission?.transport_state}`
+                    str_mission: pairMissionStatusHome(data.mission?.status ?? 0, data.mission?.transport_state ?? 0), btn_pick_drop_code: `${data.state}${data.mission?.status}${data.mission?.transport_state}`
                 }));
-                console.log(agv);
                 setAgvAll(agv);
             } catch (e) {
                 console.log(e);
+                setOnlineBar(false);
+                onlineRef.current = false;
             } finally {
                 if (!loadSuccess) {
                     setLoadSuccess(true);
@@ -87,7 +96,7 @@ export default function Vehicle() {
             getAgv();
             timerInterval.current = setInterval(() => {
                 getAgv();
-            }, 3000);
+            }, 5000);
         }
         return () => {
             clearInterval(timerInterval.current as NodeJS.Timeout);
@@ -98,6 +107,7 @@ export default function Vehicle() {
             {!loadSuccess && <div className='loading-background'>
                 <div id="loading"></div>
             </div>}
+            {onlineBar !== null && <StatusOnline online={onlineBar}></StatusOnline>}
             <div className="velocity-title-box">
                 <h1>AUTONOMOUS VEHICLE</h1>
                 <p className="title1">
@@ -140,7 +150,7 @@ export default function Vehicle() {
                             </div>
                             <div className='d-flex flex-column'>
                                 <p className='ms-2 fs-6 my-0' style={{ color: '#646464', fontWeight: '500' }}>{agv.mode}</p>
-                                <p className='ms-2 my-0' style={{ color: '#c2c2c2', fontSize: '12px' }}>truck system</p>
+                                <p className='ms-2 my-0' style={{ color: 'rgb(194, 194, 194)', fontSize: '12px' }}>truck system</p>
 
                             </div>
                         </div>
@@ -150,7 +160,7 @@ export default function Vehicle() {
                             </div>
                             <div className='d-flex flex-column'>
                                 <p className='ms-2 fs-6 my-0' style={{ color: '#646464', fontWeight: '500' }}>{agv.str_state}</p>
-                                <p className='ms-2  my-0' style={{ color: '#c2c2c2', fontSize: '12px' }}>status</p>
+                                <p className='ms-2  my-0' style={{ color: 'rgb(194, 194, 194)', fontSize: '12px' }}>status</p>
 
                             </div>
                         </div>
@@ -160,7 +170,7 @@ export default function Vehicle() {
                             </div>
                             <div className='d-flex flex-column'>
                                 <p className='ms-2 fs-6 my-0' style={{ color: '#646464', fontWeight: '500' }}>{agv.mode} </p>
-                                <p className='ms-2 my-0' style={{ color: '#c2c2c2', fontSize: '12px' }}>distance km</p>
+                                <p className='ms-2 my-0' style={{ color: 'rgb(194, 194, 194)', fontSize: '12px' }}>distance km</p>
 
                             </div>
                         </div>
@@ -170,20 +180,21 @@ export default function Vehicle() {
                             </div>
                             <div className='d-flex flex-column'>
                                 <p className='ms-2 fs-6 my-0' style={{ color: '#646464', fontWeight: '500' }}>#{agv.mission_id}</p>
-                                <p className='ms-2 my-0' style={{ color: '#c2c2c2', fontSize: '12px' }}>mission id</p>
+                                <p className='ms-2 my-0' style={{ color: 'rgb(194, 194, 194)', fontSize: '12px' }}>mission id</p>
 
                             </div>
+                            <button className='btn-extend'>เพิ่มเติม</button>
                         </div>
                     </div>
                     <div>
                         <div className='v-content-bottom2'>
                             {/* <div className='trapezoid' style={{borderBottom:`72px solid ${colorAgv[agv.name]}`}}><MdOnlinePrediction size={50} color='#0dff20' style={{margin:'12px 16px 0'}} /></div> */}
                             <div className='trapezoid' >
-                                <h3 style={{color:'white', margin: '16px 32px 0', fontWeight: '500' }}>{agv.name}</h3>
+                                <h3 style={{ color: 'white', margin: '16px 32px 0', fontWeight: '500' }}>{agv.name}</h3>
                                 <div className="agvColorBoxIcon" style={{ margin: '14px 0px 0', background: colorAgv[agv.name] }}></div>
                             </div>
-                            {agv.state == 0 ? <HiOutlineStatusOnline  size={40} color={'#cccc'} style={{ margin: '0px 28px 0 0' }} /> 
-                            : <div className ='onlineneon'><HiOutlineStatusOnline  size={32} color='#0dff20' /></div>}
+                            {agv.state == 0 ? <HiOutlineStatusOnline size={40} color={'#cccc'} style={{ margin: '0px 28px 0 0' }} />
+                                : <div className='onlineneon'><HiOutlineStatusOnline size={32} color='#0dff20' /></div>}
                         </div>
                     </div>
 

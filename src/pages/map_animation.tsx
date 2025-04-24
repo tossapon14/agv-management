@@ -11,7 +11,7 @@ import { useState, useEffect, useRef } from 'react'
 import './css/map.css';
 
 interface MapAnimateProps {
-  data: { agv: string, online: boolean, position: string[] }[] // Optional prop to toggle station visibility initially
+  data: { agv: string, position: string[] }[] // Optional prop to toggle station visibility initially
   paths: number[][]
   positionDrop: number[][]
 }
@@ -96,15 +96,13 @@ function MapAnimate({ data, paths, positionDrop }: MapAnimateProps) {
         x={Number(drop.x) - 20}  // Center the pin image if needed
         y={Number(drop.y) - 40} 
         href={Pin} 
-        // width="40" 
-        // height="40" 
         className="pin-animate" 
       />
     </g>
   ))}
 </svg>
       {/* {positionDrop.map((drop, index) => <img key={index} src={Pin} width={48} height={48} className='pin-animate' alt='pin' style={{ position: 'absolute', left: drop.x, bottom: drop.y }} />)} */}
-      {data.map(agv => agv.online && <img key={agv.agv} src={AGV[agv.agv]} className='carmodel-position' style={{ left: `${agv.position[0]}`, bottom: `${agv.position[1]}`, transform: `rotate(${agv.position[2]}deg)` }} alt={`${agv.agv}`}></img>)}
+      {data.map(agv => <img key={agv.agv} src={AGV[agv.agv]} className='carmodel-position' style={{ left: `${agv.position[0]}`, bottom: `${agv.position[1]}`, transform: `rotate(${agv.position[2]}deg)` }} alt={`${agv.agv}`}></img>)}
       <div className="switch-map-pick">
         <h5>{sw ? "show" : "hide"}</h5>
         <Switch isOn={sw} handleToggle={setSwitchShow} />
