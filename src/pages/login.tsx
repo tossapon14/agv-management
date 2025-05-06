@@ -3,6 +3,7 @@ import { BsPersonFill } from "react-icons/bs";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 // import { RiLockPasswordFill } from "react-icons/ri";
 import './css/login.css';
+import { IoInformationCircleOutline } from "react-icons/io5";
 
 import { useState, useEffect, FormEvent } from "react";
 import { axiosLogin,axiosPost } from "../api/axiosFetch";
@@ -100,6 +101,8 @@ export default function Login() {
       {load && <div className='loading-background'>
         <div id="loading"></div>
       </div>}
+      <div className="about-version"><IoInformationCircleOutline size={24} /><span> power by BGC v.1.5.6</span>
+      </div>
       {user ? <div className='profile'>
         <h1>{text["imfor"]}</h1>
         <div className="subprofile-box">
