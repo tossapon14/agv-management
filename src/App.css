@@ -27,12 +27,11 @@
   justify-content: flex-start;
   flex-wrap: nowrap;
   height: 100vh;
+  padding-top:60px ;
 }
 .drawer{
   /* width: 100px; */
   background: #F4F4F4;
-  top: 0;
-  left: 0px;
 }
 .drawer a{
   display: flex;

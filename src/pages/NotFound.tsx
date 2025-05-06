@@ -1,7 +1,7 @@
 import './css/notfound.css';
 export default function NotFound() {
   return (
-    <div className="container">
+    <div className="container mt-5">
     <h1> 404 </h1>
     <p>
         Oops! The page you're

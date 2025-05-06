@@ -7,6 +7,7 @@ import { IoMdDownload } from "react-icons/io";
 import { RiBatteryChargeLine } from "react-icons/ri";
 import BatteryDonutChart2 from "./chart/batteryDonus2.tsx";
 import BatteryAreaChart2 from "./chart/BatteryAreaChart2.tsx";
+import NetworkError from './networkError';
 
 
 import './css/battery.css';
@@ -26,6 +27,7 @@ const Battery = () => {
   const start_date = searchParams.get("start_date") || new Date().toISOString().substring(0, 10)
   const end_date = searchParams.get("end_date") || new Date().toISOString().substring(0, 10)
   const [battery, setBattery] = useState<IDataSeries>({ series: [] });
+  const [checkNetwork, setCheckNetwork] = useState(true);
 
 
   const reloadDataByDate = async (data: { d?: string, de?: string }) => {
@@ -77,20 +79,35 @@ const Battery = () => {
         }
       }
     };
-    getBattery();
+    const checkNetwork = async () => {
+      try {
+          const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
+          if(response.ok) {
+            getBattery(); 
+          }
+      } catch (e: any) {
+          console.error(e);
+          setCheckNetwork(false);
+      }finally {
+          if (!loadSuccess) {
+              setLoadSuccess(true);
+          }
+      }
+  };
+      checkNetwork();
   }, []);
   return <div className="statistics-box">
     {!loadSuccess && <div className='loading-background'>
       <div id="loading"></div>
     </div>}
-    <div className='d-flex align-items-center justify-content-between'>
-      <div className='mb-4'>
+    <div className='d-flex align-items-center justify-content-between mb-3'>
+      <div>
         <h1>Battery</h1>
         <p> <FcChargeBattery size={32} style={{ transform: ' rotate(45deg)' }} />
           <span className='ms-3'>Battery cost of each vehicle</span></p>
       </div>
 
-      <div className='input-date-box ms-5'>
+      {checkNetwork&&<div className='input-date-box ms-5'>
         <div className="form-group">
           <label >From</label>
           <input type="text" value={start_date} readOnly></input>
@@ -116,8 +133,9 @@ const Battery = () => {
             }} />
         </div>
         <button className="export-btn2" onClick={() => { }}><IoMdDownload /> <span>export</span> </button>
-      </div>
+      </div>}
     </div>
+    {!checkNetwork?<NetworkError/>:<>
     <div className='chart-all-agv'>
       <h5>All AGV</h5>
       <p className='p-subtitle'>แสดงข้อมูลแบตเตอรี ในช่วงเวลาที่เลือก</p>
@@ -144,6 +162,8 @@ const Battery = () => {
       </div>
 
     </div>)}
+    </>}
+    
   </div>;
 }
 export default Battery;

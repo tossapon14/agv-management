@@ -1,7 +1,13 @@
+.vehicle-box-page{
+    padding-top: 32px;
+    width: 100%;
+    overflow: scroll;
+    /* background-color: #ABABAB; */
+  }
  .velocity-title-box {
      width: 100%;
      /* background-color: #ABABAB; */
-     padding: 48px 32px 16px;
+     padding: 0 32px 16px;
  }
 
  .velocity-title-box .title1 {
@@ -75,20 +81,21 @@
      border-radius: 8px;
      margin: 28px 0 0 60px;
      position: relative;
-    
+ }
+ .border-of-image.agv-offline{
+    background: rgb(236, 236, 236);
+    border: 1px solid #bbbbbb;
  }
 
  .border-of-image img {
      position: absolute;
-     top: 40px;
-     left: -40px;
      animation: img-agv 1s forwards;
  }
 
  @keyframes img-agv {
      from {
          top: 40px;
-         left: -40px;
+         left: -30px;
      }
 
      to {
@@ -113,7 +120,7 @@
  .v-content-name {
      font-size: 16px;
      width: 100%;
-     padding: 0.8rem 1rem;
+     padding: 0.8rem 0 0 1rem;
      height: 80px;
      /* background-color: #90ec93; */
  }
@@ -123,7 +130,6 @@
      height: 8px;
      background-color: #ff5500;
      border-radius: 10px;
-     opacity: 0.5;
      border: none;
  }
 
@@ -148,8 +154,8 @@
 
 
  .color-icon-1 {
-     background: rgb(113, 236, 164);
-     background: linear-gradient(0deg, rgb(229, 229, 229) 0%, rgb(215, 255, 230) 70%);
+     background: rgb(189, 253, 239);
+     background: linear-gradient(0deg, rgb(241, 255, 235) 0%, rgb(189, 253, 239) 70%);
  }
 
  .color-icon-2 {
@@ -157,7 +163,7 @@
  }
 
  .color-icon-3 {
-     background: linear-gradient(0deg, rgb(237, 237, 237) 0%, rgb(165, 239, 255) 80%);
+     background: linear-gradient(0deg, rgb(233, 228, 255) 0%, rgb(165, 239, 255) 80%);
  }
 
  .color-icon-4 {
@@ -210,7 +216,7 @@
      border-radius: 50%;
      margin-right: 28px;
      background-color: #000000;
-     animation: neon-glow 1.5s ease infinite alternate;
+     animation: neon-glow 1s linear infinite alternate;
 
  }
 
@@ -233,5 +239,57 @@
      color: #585858;
      text-decoration-line: underline;
      text-decoration-thickness: 3px;
-     text-decoration-color: rgb(0, 221, 255);
+     text-decoration-color: rgb(255, 119, 0);
+ }
+ .fix-bg-info-vehicle{
+    position: fixed;
+    top:0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+    width: 100vw;
+    height:100vh;
+    z-index: 3;
+ }
+ .box-vehicle-info{
+    width: 500px;
+    height: 350px;
+    background-color: #ffffff;
+    overflow-y: auto;
+    border-radius: 5px;
+    padding:  0 0 16px;
+    border: 1px solid #4f4f4f;
+ }
+ .box-vehicle-info-misstion{
+    width: 100%;
+    padding: 0 16px;
+ }
+ .box-vehicle-info-misstion h5{
+   text-decoration: 3px underline #00ffaa;
+ }
+ .box-vehicle-info .name-sticky{
+  position: sticky;
+  top: 0;
+  left: 0;
+  background-color: #f1f1f1;
+  padding: 12px;
+ }
+ .EmergencyBtn{
+    width: fit-content;
+    margin: 8px 0 0; 
+    height: 30px;
+    background-color: #000000;
+    color: white;
+    padding:2px 8px;
+    animation: emergencyAnimate 1s ease-in infinite;
+
+ }
+ @keyframes emergencyAnimate {
+    from{
+        opacity: 1;
+    }to{
+        opacity: 0;
+    }
  }

@@ -6,16 +6,16 @@ import Map_btn from '../assets/images/bg_btn.webp';
 import MissionImage from '../assets/images/mission.png';
 import Forkliift from '../assets/images/forklift.png'
 
-import { FaRegCircleCheck } from "react-icons/fa6";
 import { CiBatteryFull } from "react-icons/ci";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { IoMdSettings, IoMdClose } from "react-icons/io";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { axiosGet, axiosPost, axiosPut } from "../api/axiosFetch";
-import { useState, useRef, useEffect, Fragment, ReactNode } from 'react';
+import { useState, useRef, useEffect, Fragment } from 'react';
 import { BiSolidError } from "react-icons/bi";
 import StatusOnline from './statusOnline';
 import { pairMissionStatus, colorAgv} from '../utils/centerFunction';
+import ResponseElement from './responseElement';
 
 
 
@@ -116,8 +116,6 @@ interface IMapData { agv: string,position: string[] }
 
 export default function Home() {
 
-  const modalRef = useRef<HTMLDivElement>(null);
-
   const [missionModel, setMissionModel] = useState<IagvDataModel>({ agv: "", codePickup: '', state: 0, str_state: '', mode: '' });
   const [showModal, setShowModal] = useState<string>("");
   const [selectedAgv, setSelectedAgv] = useState(0);
@@ -143,8 +141,8 @@ export default function Home() {
   const initialAgv = useRef<boolean>(false);
   const summaryDialog = useRef<HTMLDivElement>(null);
   const [dialogSummary, setDialogSummary] = useState<{ show: boolean, name?: string, id?: number, codePickup?: string, dropName?: string }>({ show: false });
-  const [showResponse, setShowResponse] = useState<ReactNode>(null);
-
+  const [responseData, setResponseData] = useState<{ error: boolean|null,message?: string }>({error:null});
+  
 
   const buttonsDrop = [
     { id: "01", top: "80%", left: "26%" },
@@ -171,27 +169,7 @@ export default function Home() {
     { id: "22", top: "68%", left: "69%" },
   ];
 
-
-  const responseDivElement = (error: boolean, message: string | undefined) => {
-    if (error) {
-      setShowResponse(
-        <div className='show-response-error'>
-          <BiSolidError size={54} color='#f44336' />
-          <h5 className='ms-3'>{message || 'Unknown Error'}</h5>
-        </div>);
-
-    } else {
-      setShowResponse(
-        <div className='show-response'>
-          <FaRegCircleCheck size={54} color='#00ff5a' />
-          <h5 className='ms-3'>{message}</h5>
-        </div>);
-
-    }
-    setTimeout(() => {
-      setShowResponse(null);
-    }, 3100);
-  }
+  
   const showDialogSummary = (id: number, name: string, codePickup: string) => {
     setShowModal("hidden-modal");
     setDialogSummary({ show: true, name: name, id: id, codePickup: codePickup });
@@ -201,12 +179,8 @@ export default function Home() {
   }
 
   const btnDialogConfirm = (id: number | undefined, name: string | undefined, codePickup: string | undefined) => {
-    if (id === undefined || name === undefined || codePickup === undefined) return;
     setDialogSummary({ show: false });
-    setShowResponse(
-      <div className='show-response-loading'>
-        <div id='loading2'></div>
-      </div>);
+    setResponseData({error:null,message:"loading"});
     if (codePickup === '721' && id != undefined && name != undefined) {
       APIPutDropMission(id!, name!)
     } else if (codePickup === '724' && name != undefined) {
@@ -225,32 +199,26 @@ export default function Home() {
   };
 
   const APIPutDropProduct = async (name: string) => {
-    setShowResponse(
-      <div className='show-response-loading'>
-        <div id='loading2'></div>
-      </div>);
+    setResponseData({error:null,message:"loading"});
     try {
       await axiosPut(`fleet/command?command=next&vehicle_name=${name}`);
-      responseDivElement(false, "drop success")
+      setResponseData({error:false,message: "drop success"})
     } catch (e: any) {
       console.error("drop product", e)
-      responseDivElement(true, e?.message)
+      setResponseData({error:true,message: e?.message})
     }
 
 
   }
   const sendCommand = async (agv: string, command: string) => {
-    setShowResponse(
-      <div className='show-response-loading'>
-        <div id='loading2'></div>
-      </div>);
+    setResponseData({error:null,message:"loading"});
     try {
       const response = await axiosPut(`fleet/command?command=${command}&vehicle_name=${agv}`);
       console.log(response);
-      responseDivElement(false, `${command} send success`)
+      setResponseData({error:false,message: `${command} send success`})
     } catch (e: any) {
       console.error('send stop or continue', e)
-      responseDivElement(true, e?.message)
+      setResponseData({error:true,message: e?.message})
     }
 
   }
@@ -267,10 +235,10 @@ export default function Home() {
       try {
         await axiosPut("/mission/update", dataMission);
         delete missionSavePickUp.current[agv];
-        responseDivElement(false, "success")
+        setResponseData({error: false, message:"send command success"})
       } catch (e: any) {
         console.error(e?.message);
-        responseDivElement(true, e?.message)
+        setResponseData({error:true,message: e?.message})
       }
 
     }
@@ -284,10 +252,11 @@ export default function Home() {
     }
     try {
       await axiosPost("/mission/create", dataMission);
-      responseDivElement(false, "success")
+      setResponseData({error: false, message:"send command success"})
     } catch (e: any) {
       console.error(e?.message);
-      responseDivElement(true, e?.message)
+      setResponseData({error:true,message: e?.message})
+
 
     }
 
@@ -356,16 +325,8 @@ export default function Home() {
   }
 
   useEffect(() => {
-    const handleMouseUp = (e: MouseEvent) => {
-      if (e.target === modalRef.current) {
-        setShowModal("hidden-modal");
-      }
-    };
-    const handleMouseUp1 = (e: MouseEvent) => {
-      if (e.target === summaryDialog.current) {
-        setDialogSummary({ show: false });
-      }
-    };
+    
+    
     const calProcessMission = (dropNode: string | undefined, path: string | undefined, curr: string | undefined): { percents: number, nodesList: string[], numProcess: number } | null => {
       if (dropNode === undefined || path === undefined || curr === undefined) return null;
       // path = "D15S, P02S, P03S, P05S, P0504N, P0505N, D11S, D12S, D1201N, P04S, D13S, D14S, D1401N, D1402N, D20S, D15S, D21S, D1501N, D22S";
@@ -571,14 +532,6 @@ export default function Home() {
       }
 
     }
-
-    if (modalRef.current) {
-      modalRef.current.addEventListener("mouseup", handleMouseUp);
-    }
-    if (summaryDialog.current) {
-      summaryDialog.current.addEventListener("mouseup", handleMouseUp1);
-    }
-    if (sessionStorage.getItem("token")) {
       getAgv();
       getMission();
       timerInterval.current = setInterval(() => {
@@ -589,14 +542,8 @@ export default function Home() {
           getMission();
         }
       }, 3000);
-    }
     return () => {
-      if (summaryDialog.current) {
-        summaryDialog.current.removeEventListener("mouseup", handleMouseUp1);
-      }
-      if (modalRef.current) {
-        modalRef.current.removeEventListener("mouseup", handleMouseUp);
-      }
+     
       clearInterval(timerInterval.current as NodeJS.Timeout);
     };
   }, []);
@@ -608,7 +555,7 @@ export default function Home() {
       {onlineBar !== null && <StatusOnline online={onlineBar}></StatusOnline>}
       <section className="col1">
         <MapAnimate data={mapData} paths={agvPath} positionDrop={positionDrop}></MapAnimate>
-        <div className="container mt-4 px-0">
+        <div className="mt-4 px-0">
           <div className="card mb-3">
             <div className="card-body">
               <div className="d-flex align-items-center mb-4">
@@ -703,7 +650,8 @@ export default function Home() {
               </div>
 
               <div className={`auto-manual ${agv.mode}`}>{agv.mode}</div>
-              <div className='agv-state'>{agv.str_state}</div>
+              {agv.emergency_state?<div className='EmergencyBtn'><BiSolidError size={20} color='red'/>&nbsp;&nbsp;Emergency is pressed</div>:
+              <div className='agv-state'>{agv.str_state}</div>}
             </div>
             <div className='velocity'>
               <h1 className='velocity-number'>{agv.velocity.toFixed(1)}</h1>
@@ -770,12 +718,12 @@ export default function Home() {
                 <button className='mission-btn' onClick={() => btnCallModal({ agv: agv.name, codePickup: agv.agv_code_status, id: agv.mission?.id, str_state: agv.str_state!, state: agv.state, mode: agv.mode })}>
                   สร้างคิวงาน
                 </button>}
-
+  
           </div>
         </section>)}
       </section>
-      {showResponse}
-      <div ref={summaryDialog} className={`modal-summaryCommand ${!dialogSummary.show && 'd-none'}`}>
+      <ResponseElement response={responseData}/>
+      <div ref={summaryDialog} onClick={()=>setDialogSummary({ show: false })} className={`modal-summaryCommand ${!dialogSummary.show && 'd-none'}`}>
         <div className='card-summaryCommand'>
           {dialogSummary.codePickup === "724" ? <>
             <div className='card-summaryCommand-header'>
@@ -822,7 +770,7 @@ export default function Home() {
           </>}
         </div>
       </div>
-      <div ref={modalRef} className={`modal ${showModal}`}>
+      <div  onClick={()=>setShowModal("hidden-modal")} className={`modal ${showModal}`}>
         <div className='modal-content-home'>
           <div className='box-map-and-btn'>
             {buttonDropList.length === 0 && missionModel.codePickup === "721" && <div className='modal-loading-background'>
@@ -843,7 +791,7 @@ export default function Home() {
             ) : null}
             {buttonDropList.map((i) => (
               <button
-                key={buttonsDrop[i].id}
+                key={i}
                 className="btn-pickup-agv color-btn-warehouse"
                 onClick={() => clickDrop(buttonsDrop[i].id)}
                 style={{ top: buttonsDrop[i].top, left: buttonsDrop[i].left }}

@@ -5,6 +5,7 @@ import { axiosGet } from "../api/axiosFetch";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { BsConeStriped } from "react-icons/bs";
 import { colorAgv} from '../utils/centerFunction';
+import NetworkError from './networkError';
 
 interface IAlarm {
     message: string
@@ -50,6 +51,7 @@ export default function Alarm() {
     const start_date = searchParams.get("start_date") || new Date().toISOString().substring(0, 10)
     const end_date = searchParams.get("end_date") || new Date().toISOString().substring(0, 10)
     const [loadSuccess,setLoadSuccess] = useState(false);
+    const [checkNetwork, setCheckNetwork] = useState(true);
 
 
     const reloadPage = function (data: { v?: string, s?: string, d?: string, de?: string, p?: number }) {
@@ -198,14 +200,30 @@ export default function Alarm() {
                 }
             }
         };
-        getAlarm();
+        const checkNetwork = async () => {
+            try {
+                const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
+                if(response.ok) {
+                  getAlarm();
+                }
+            } catch (e: any) {
+                console.error(e);
+                setCheckNetwork(false);
+            }finally {
+                if (!loadSuccess) {
+                    setLoadSuccess(true);
+                }
+            }
+        };
+        checkNetwork();
+        
     }, []);
     return <>
     {!loadSuccess&&<div className='loading-background'>
         <div id="loading"></div>
       </div>}
-        <section className='mission-box'>
-            <div className='mission-title-box'>
+        <section className='mission-box-page'>
+            <div className='mission-title-box mb-3'>
                 <h1>SHOW ERROR</h1>
                 <div className='box-title'>
                     <p className="title1">
@@ -214,7 +232,7 @@ export default function Alarm() {
                 </div>
 
             </div>
-            <div className='container-card'>
+            {!checkNetwork?<NetworkError/>: <div className='container-card'>
                 <div className='mission-header'>
                     <div className='selected-mission-btn'>
                         <button onClick={() => reloadPage({ v: "ALL" })} className={`${vehicle === "ALL" ? "active" : ""}`}>All</button>
@@ -277,7 +295,7 @@ export default function Alarm() {
                     {pagination}
                 </div>
 
-            </div>
+            </div>}
         </section>
 
     </>;

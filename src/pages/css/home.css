@@ -16,9 +16,10 @@
 .home>.col1 {
   grid-area: col1;
   display: block;
-  height: 95%;
+  height: 100%;
   width: 100%;
-  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+  padding-bottom: 2rem;
   overflow-y: auto;
   /* background-color: #fbc0c0; */
 }
@@ -56,12 +57,11 @@
 }
 
 .box-agv-btn .btn-agv:hover {
-  transform: scale(1.1);
-  background-color: #bfc8ff;
+  background-color: #8f8f8f;
 
 }
 .box-agv-btn .btn-agv.active {
-  transform: scale(1.2);
+  transform: scale(1.1);
   background-color: #000000;
 }
 .box-agv-data {
@@ -71,8 +71,6 @@
   background-color: white;
   border-radius: 5px;
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-  /* transition: height 0.5s ease; */
-  /* border-top: 12px solid #0720c0; */
 }
 
 .box-agv-data .top-box-data {
@@ -86,7 +84,6 @@
   display: flex;
   flex-direction: column;
   justify-content: start;
-  width: 100px;
   height: fit-content;
   /* background-color: rgb(215, 250, 217); */
 }
@@ -902,7 +899,7 @@
 .loading-background {
   display: flex;
   position: fixed;
-  top: 0;
+  top: 60px;
   left: 0;
   width: 100%;
   height: 100%;
@@ -911,14 +908,17 @@
   align-items: center;
   z-index: 100;
 }
+.loading-background.top-positio-0{
+  top:0;
+}
 .bg-opacity{
   background-color: #ffffffc4;
 }
 #loading {
   display: inline-block;
-  width: 100px;
-  height: 100px;
-  border: 6px solid rgba(162, 162, 162, 0.3);
+  width: 80px;
+  height: 80px;
+  border: 3px solid rgba(162, 162, 162, 0.3);
   border-radius: 50%;
   border-top-color: #0006b7;
   border-bottom-color: #0006b7;

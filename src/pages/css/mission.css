@@ -1,6 +1,6 @@
 
-.mission-box{
-  padding-top: 48px;
+.mission-box-page{
+  padding-top: 32px;
   width: 100%;
   /* background-color: #ABABAB; */
 }
@@ -13,9 +13,10 @@
   width: 100%;
   padding-left: 30px;
   height: 100px;
+  margin-bottom: 1rem;
   /* background-color: #ABABAB; */
 }
-.mission-box .title1{
+.mission-box-page .title1{
   font-size: 16px;
   color:rgb(9, 84, 84);
   font-style: italic;
@@ -159,11 +160,11 @@
 
  }
  .export-btn:hover{
-  transform: scale(1.05);
+  background-color: #0016df;
  }
  .export-btn:active{
   transform: scale(0.95);
-  background-color: #374bff;
+  background-color: #0016df;
  }
  .table-container{
     margin: 2rem 1rem 1rem;

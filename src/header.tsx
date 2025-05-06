@@ -18,7 +18,7 @@ export default function Headers() {
     }, []);
 
     return (
-        <nav className="px-2 py-0  bg-primary-bg d-flex justify-content-between w-100">
+        <nav className="headder-nav-bar">
             <div className='float-end my-0 my-xl-3 my-lg-1 mx-lg-2'>
                 <img src={BGClogo} className='img-logo' alt='logo'></img>
             </div>

@@ -15,6 +15,11 @@ const axiosPost = async (endpoint: string,body: { [key: string]: any; }) => {
       return response.data;
     
   };
+  const axiosDelete = async (endpoint: string,data?: { [key: string]: any; }) => {
+    const response = await API.delete(endpoint,{data});
+    return response.data;
+  
+};
   const axiosLogin = async (endpoint: string,body: { [key: string]: any; }) => {
     try {
       const response = await APILogin.post(endpoint,body);
@@ -24,4 +29,4 @@ const axiosPost = async (endpoint: string,body: { [key: string]: any; }) => {
       return error;
     }
   };
-export { axiosGet, axiosPost,axiosLogin,axiosPut};
+export { axiosGet, axiosPost,axiosLogin,axiosPut,axiosDelete};

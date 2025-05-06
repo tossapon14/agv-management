@@ -16,6 +16,9 @@ interface MapAnimateProps {
   positionDrop: number[][]
 }
 const AGV: { [key: string]: string } = { AGV1: AGV1, AGV2: AGV2, AGV3: AGV3, AGV4: AGV4 }
+
+
+
 function MapAnimate({ data, paths, positionDrop }: MapAnimateProps) {
   const [stationshow, setStationshow] = useState(true);
   const [sw, setSwitch] = useState(true);

@@ -15,6 +15,10 @@ import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, } from "react-router-dom";
 import Statistics from "./pages/statistics";
 import Battery from "./pages/battery";
+import User from "./pages/user";
+import CreateUser from "./pages/createUser";
+import ChangePassword from "./pages/changePassword";
+import EditUser from "./pages/editUser";
 
 // Helper function to protect routes
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -23,10 +27,12 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 
 function App() {
   const [linkFocused, setLinkFocused] = useState<string[]>(Array(7).fill(""));
-
+  const isAdmin =  (sessionStorage.getItem("user")?.split(",")[2]==="admin");
   useEffect(() => {
-    let path = window.location.pathname;
-    let index = 6; // Default to "login"
+
+ 
+    const path = window.location.pathname;
+    var index = 6; // Default to "login"
 
     switch (path) {
       case "/home":
@@ -85,24 +91,26 @@ function App() {
                   รถยนต์
                 </a>
               </li>
-              <li>
-                <a href="/statistics" className={linkFocused[3]}>
-                  <PiChartDonutLight size="32" />
-                  สถิติ
-                </a>
-              </li>
-              <li>
-                <a href="/battery" className={linkFocused[4]}>
-                  <PiBatteryCharging size="32" />
-                  แบตเตอรี
-                </a>
-              </li>
-              <li>
-                <a href="/alarms" className={linkFocused[5]}>
-                  <BiError size="32" />
-                  ขัดข้อง
-                </a>
-              </li>
+              {isAdmin && <>
+                <li>
+                  <a href="/statistics" className={linkFocused[3]}>
+                    <PiChartDonutLight size="32" />
+                    สถิติ
+                  </a>
+                </li>
+                <li>
+                  <a href="/battery" className={linkFocused[4]}>
+                    <PiBatteryCharging size="32" />
+                    แบตเตอรี
+                  </a>
+                </li>
+                <li>
+                  <a href="/alarms" className={linkFocused[5]}>
+                    <BiError size="32" />
+                    ขัดข้อง
+                  </a>
+                </li>
+              </>}
               <li>
                 <a href="/login" className={linkFocused[6]}>
                   <IoIosLogIn size="32" />
@@ -124,8 +132,11 @@ function App() {
             <Route path="/statistics" element={<PrivateRoute><Statistics /></PrivateRoute>} />
             <Route path="/battery" element={<PrivateRoute><Battery /></PrivateRoute>} />
             <Route path="/alarms" element={<PrivateRoute><Alarm /></PrivateRoute>} />
+            <Route path="/signup-admin" element={<PrivateRoute><User /></PrivateRoute>} />
+            <Route path="/create-User" element={<PrivateRoute><CreateUser /></PrivateRoute>} />
+            <Route path="/edit-user" element={<PrivateRoute><EditUser /></PrivateRoute>} />
+            <Route path="/change-password" element={<PrivateRoute><ChangePassword /></PrivateRoute>} />
 
-            {/* Catch all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </section>

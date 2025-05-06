@@ -65,6 +65,7 @@ export default function Statistics() {
           // `/mission/missions?vehicle_name=ALL&status=ALL&start_date=${getDate}&end_date=${getDate}&page=1&page_size=10`
           `/statistics/report?start_date=${start_date}&end_date=${end_date}`
         );
+        console.log(res);
         const _drop: IStatisticsData = {};
         const _pickup: IStatisticsData = {};
         const _miss: IStatisticsData = {};

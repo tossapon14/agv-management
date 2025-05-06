@@ -6,7 +6,9 @@ import { useEffect, useState } from 'react';
 import { axiosGet } from "../api/axiosFetch";
 import { IMissionData } from './home';
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { pairMissionStatus, colorAgv} from '../utils/centerFunction';
+import { pairMissionStatus, colorAgv } from '../utils/centerFunction';
+import NetworkError from './networkError';
+
 interface IMissionTables {
     arriving_time: string
     dispatch_time: string
@@ -39,7 +41,7 @@ export default function Mission() {
     const [pagination, setPagination] = useState<React.ReactElement | null>(null);
     const [loadSuccess, setLoadSuccess] = useState(false);
     const [btnAGV, setbtnAGV] = useState<string[]>([])
-
+    const [checkNetwork, setCheckNetwork] = useState(true);
 
     const reloadMissionByButton = async (data: { v?: string, s?: string, d?: string, de?: string, p?: number }) => {
         try {
@@ -157,22 +159,22 @@ export default function Mission() {
             }
             else return null
         };
-        const isoDurationToMinSec =  (duration: string|undefined): string=> {
-            if(duration === undefined) return "";
-            else{
-            const regex = /PT(?:(\d+)M)?(?:(\d+)S)?/;
-            const matches = duration.match(regex);
-            if (matches === null) return "00:00"
+        const isoDurationToMinSec = (duration: string | undefined): string => {
+            if (duration === undefined) return "";
             else {
-                const minutes = parseInt(matches[1]);
-                const seconds = parseInt(matches[2]);
+                const regex = /PT(?:(\d+)M)?(?:(\d+)S)?/;
+                const matches = duration.match(regex);
+                if (matches === null) return "00:00"
+                else {
+                    const minutes = parseInt(matches[1]);
+                    const seconds = parseInt(matches[2]);
 
-                // Format to m:ss (add leading zero to seconds if needed)
-                const formatted = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                return formatted;
-            } 
+                    // Format to m:ss (add leading zero to seconds if needed)
+                    const formatted = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    return formatted;
+                }
             }
-            
+
 
         }
 
@@ -206,16 +208,27 @@ export default function Mission() {
 
             } catch (e: any) {
                 console.error(e);
-            } finally {
+            }
+        };
+        const checkNetwork = async () => {
+            try {
+                const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
+                if(response.ok) {
+                   getMission(); 
+                }
+            } catch (e: any) {
+                console.error(e);
+                setCheckNetwork(false);
+            }finally {
                 if (!loadSuccess) {
                     setLoadSuccess(true);
                 }
             }
         };
-        getMission();
-    }, []);
+            checkNetwork();
+        }, []);
     return <>
-        <section className='mission-box'>
+        <section className='mission-box-page'>
             {!loadSuccess && <div className='loading-background'>
                 <div id="loading"></div>
             </div>}
@@ -226,13 +239,13 @@ export default function Mission() {
                         <img src={MissionImage} alt="Logo with a yellow circle and blue border" className="me-3" width="32" height="32" />
                         <span>view and manage your mission</span></p>
                     <div className="selected-agv-box">
-                        <button onClick={() => reloadMissionByButton({ v: "ALL" })} className={`${vehicle === "ALL" ? "active" : ""}`}>ทั้งหมด</button>
-                        {btnAGV.map((name) => <button onClick={() => reloadMissionByButton({ v: name })} className={`${vehicle === name ? "active" : ""}`}>{name}</button>)}
+                        {checkNetwork&&<button onClick={() => reloadMissionByButton({ v: "ALL" })} className={`${vehicle === "ALL" ? "active" : ""}`}>ทั้งหมด</button>}
+                        {btnAGV.map((name) => <button key={name} onClick={() => reloadMissionByButton({ v: name })} className={`${vehicle === name ? "active" : ""}`}>{name}</button>)}
                     </div>
                 </div>
 
             </div>
-            <div className='container-card'>
+            {!checkNetwork?<NetworkError/>: <div className='container-card'>
                 <div className='mission-header'>
                     <div className='selected-mission-btn'>
                         <button onClick={() => reloadMissionByButton({ s: "ALL" })} className={`${status === "ALL" ? "active" : ""}`}>All</button>
@@ -285,13 +298,13 @@ export default function Mission() {
                                     </div>
                                     status</div>
                                 </th>
-                               
+
                                 <th scope="col">วัน</th>
                                 <th scope="col">เวลาจอง</th>
                                 <th scope="col">เริ่มวิ่ง</th>
                                 <th scope="col">จบงาน</th>
                                 <th scope="col">ใช้เวลา</th>
-                                <th scope="col" style={{ width: "120px" }}></th>
+                                <th scope="col" style={{ width: "120px" }}>ยกเลิก</th>
 
                             </tr>
                         </thead>
@@ -300,7 +313,7 @@ export default function Mission() {
                                 <td scope="row">#{miss.id}</td>
                                 <td><div className='td-vehicle-name'><div className='circle-vehicle-icon' style={{ background: `${colorAgv[miss.vehicle_name]}` }}></div><span>{miss.vehicle_name}</span></div></td>
                                 <td>{miss.requester}</td>
-                                <td>{miss.pick}</td> 
+                                <td>{miss.pick}</td>
                                 <td>{miss.drop}</td>
                                 <td><div className='box-status' style={{ background: miss.str_status.bgcolor, color: miss.str_status.color }}>{miss.str_status.txt}</div></td>
                                 <td>{miss.timestamp}</td>
@@ -321,7 +334,7 @@ export default function Mission() {
 
                 </div>
 
-            </div>
+            </div>}
         </section>
 
     </>;
