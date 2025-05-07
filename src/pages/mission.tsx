@@ -8,6 +8,8 @@ import { IMissionData } from './home';
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { pairMissionStatus, colorAgv } from '../utils/centerFunction';
 import NetworkError from './networkError';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 interface IMissionTables {
     arriving_time: string
@@ -38,36 +40,50 @@ export default function Mission() {
     const status = searchParams.get("status") || "ALL"; // Default to "asc"
     const start_date = searchParams.get("start_date") || new Date().toISOString().substring(0, 10)
     const end_date = searchParams.get("end_date") || new Date().toISOString().substring(0, 10)
+    const page_size = searchParams.get('page_size') || 10;
+
     const [pagination, setPagination] = useState<React.ReactElement | null>(null);
     const [loadSuccess, setLoadSuccess] = useState(false);
     const [btnAGV, setbtnAGV] = useState<string[]>([])
     const [checkNetwork, setCheckNetwork] = useState(true);
 
-    const reloadMissionByButton = async (data: { v?: string, s?: string, d?: string, de?: string, p?: number }) => {
+    const reloadMission = async (data: { v?: string, s?: string, d?: Date, de?: Date, p?: number, ps?: string }) => {
         try {
             var params = "";
             if (data.v) {
-                params = `?vehicle_name=${data.v}&status=${status}&start_date=${start_date}&end_date=${end_date}&page=1&page_size=10`
+                params = `?vehicle_name=${data.v}&status=${status}&start_date=${start_date}&end_date=${end_date}&page=1&page_size=${page_size}`
             }
             else if (data.s) {
-                params = `?vehicle_name=${vehicle}&status=${data.s}&start_date=${start_date}&end_date=${end_date}&page=1&page_size=10`
+                params = `?vehicle_name=${vehicle}&status=${data.s}&start_date=${start_date}&end_date=${end_date}&page=1&page_size=${page_size}`
             }
             else if (data.d) {
-                if (new Date(data.d) > new Date(end_date)) {
+                if (data.d > new Date(end_date)) {
                     return;
                 }
-                params = `?vehicle_name=${vehicle}&status=${status}&start_date=${data.d}&end_date=${end_date}&page=1&page_size=10`
+                const bangkokOffsetMs = 7 * 60 * 60 * 1000;
+                const localTime = data.d!.getTime() + bangkokOffsetMs;
+                const _date: string = new Date(localTime).toISOString().substring(0, 10);
+                params = `?vehicle_name=${vehicle}&status=${status}&start_date=${_date}&end_date=${end_date}&page=1&page_size=${page_size}`
 
             }
             else if (data.de) {
-                if (new Date(data.de) < new Date(start_date)) {
+                if (data.de < new Date(start_date)) {
                     return;
                 }
-                params = `?vehicle_name=${vehicle}&status=${status}&start_date=${start_date}&end_date=${data.de}&page=1&page_size=10`
+                const bangkokOffsetMs = 7 * 60 * 60 * 1000;
+                const localTime = data.de!.getTime() + bangkokOffsetMs;
+                const _date: string = new Date(localTime).toISOString().substring(0, 10);
+                params = `?vehicle_name=${vehicle}&status=${status}&start_date=${start_date}&end_date=${_date}&page=1&page_size=${page_size}`
 
             }
             else if (data.p) {
-                params = `?vehicle_name=${vehicle}&status=${status}&start_date=${start_date}&end_date=${end_date}&page=${data.p.toString()}&page_size=10`
+                params = `?vehicle_name=${vehicle}&status=${status}&start_date=${start_date}&end_date=${end_date}&page=${data.p}&page_size=${page_size}`
+
+            } else if (data.ps) {
+                if (Number(data.ps) === 0) {
+                    return;
+                }
+                params = `?vehicle_name=${vehicle}&status=${status}&start_date=${start_date}&end_date=${end_date}&page=1&page_size=${data.ps}`
 
             }
             navigate(params, { replace: true });
@@ -91,18 +107,41 @@ export default function Mission() {
         URL.revokeObjectURL(url);
     };
 
+    const handleKeyDown = (e: any) => {
+        if (e.key === 'Enter') {
+            reloadMission({ ps: e.target.value })
+        }
+    };
+
     useEffect(() => {
         const _pagination = (ttp: number): React.ReactElement | null => {
             if (ttp == 1) {
-                return null;
+                return (<div className='pagination'>
+                    <div className='mt-1'>
+                        <span className="me-2">{page_size} mission/pages</span>
+                        <div className="tooltip-container">
+                            <input type="number" className="input-total_items" onKeyDown={handleKeyDown} placeholder='10' />
+                            <div className="tooltip">load when enter</div>
+
+                        </div>
+                    </div>
+                </div>);
             } else if (ttp <= 5) {
-                return <div className='pagination'>
+                return (<div className='pagination'>
+                    <div className='mt-1'>
+                        <span className="me-2">{page_size} mission/pages</span>
+                        <div className="tooltip-container">
+                            <input type="number" className="input-total_items" onKeyDown={handleKeyDown} placeholder='10' />
+                            <div className="tooltip">load when enter</div>
+
+                        </div>
+                    </div>
                     {[...Array(ttp)].map((_, index) => {
                         const pageNumber = index + 1;
                         return (
                             <a
                                 key={pageNumber}
-                                onClick={() => reloadMissionByButton({ p: pageNumber })}
+                                onClick={() => reloadMission({ p: pageNumber })}
                                 className={pageNumber === page ? "active" : ""}
                             >
                                 {pageNumber}
@@ -110,7 +149,7 @@ export default function Mission() {
                         );
                     })}
 
-                </div>
+                </div>);
             }
             else if (ttp > 5) {
                 let intial: number;
@@ -123,10 +162,19 @@ export default function Mission() {
                 } else {
                     intial = page
                 }
-                return <div className="pagination">
+                return (<div className="pagination">
                     {/* Previous Button */}
+                    <div className='mt-1'>
+                        <span className="me-2">{page_size} mission/pages</span>
+                        <div className="tooltip-container">
+                            <input type="number" className="input-total_items" onKeyDown={handleKeyDown} placeholder='10' />
+                            <div className="tooltip">load when enter</div>
+
+                        </div>
+                    </div>
+
                     <a
-                        onClick={() => reloadMissionByButton({ p: page > 1 ? page - 1 : 1 })}
+                        onClick={() => reloadMission({ p: page > 1 ? page - 1 : 1 })}
                         className={page === 1 ? "disabled" : ""}
                     >
                         &laquo;
@@ -140,7 +188,7 @@ export default function Mission() {
                             return (
                                 <a
                                     key={pageNumber}
-                                    onClick={() => reloadMissionByButton({ p: pageNumber })}
+                                    onClick={() => reloadMission({ p: pageNumber })}
                                     className={pageNumber === page ? "active" : ""}
                                 >
                                     {pageNumber}
@@ -150,12 +198,12 @@ export default function Mission() {
 
                     {/* Next Button */}
                     <a
-                        onClick={() => reloadMissionByButton({ p: page + 1 })}
+                        onClick={() => reloadMission({ p: page + 1 })}
                         className={page === ttp ? "disabled" : ""}
                     >
                         &raquo;
                     </a>
-                </div>
+                </div>);
             }
             else return null
         };
@@ -181,8 +229,7 @@ export default function Mission() {
         const getMission = async () => {
             try {
                 const res: IMissionData = await axiosGet(
-                    // `/mission/missions?vehicle_name=ALL&status=ALL&start_date=${getDate}&end_date=${getDate}&page=1&page_size=10`
-                    `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${start_date}&end_date=${end_date}&page=${page}&page_size=10`
+                    `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${start_date}&end_date=${end_date}&page=1&page_size=10`
 
                 );
                 setPagination(_pagination(res.structure?.total_pages));
@@ -213,20 +260,20 @@ export default function Mission() {
         const checkNetwork = async () => {
             try {
                 const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
-                if(response.ok) {
-                   getMission(); 
+                if (response.ok) {
+                    getMission();
                 }
             } catch (e: any) {
                 console.error(e);
                 setCheckNetwork(false);
-            }finally {
+            } finally {
                 if (!loadSuccess) {
                     setLoadSuccess(true);
                 }
             }
         };
-            checkNetwork();
-        }, []);
+        checkNetwork();
+    }, []);
     return <>
         <section className='mission-box-page'>
             {!loadSuccess && <div className='loading-background'>
@@ -239,36 +286,37 @@ export default function Mission() {
                         <img src={MissionImage} alt="Logo with a yellow circle and blue border" className="me-3" width="32" height="32" />
                         <span>view and manage your mission</span></p>
                     <div className="selected-agv-box">
-                        {checkNetwork&&<button onClick={() => reloadMissionByButton({ v: "ALL" })} className={`${vehicle === "ALL" ? "active" : ""}`}>ทั้งหมด</button>}
-                        {btnAGV.map((name) => <button key={name} onClick={() => reloadMissionByButton({ v: name })} className={`${vehicle === name ? "active" : ""}`}>{name}</button>)}
+                        {checkNetwork && <button onClick={() => reloadMission({ v: "ALL" })} className={`${vehicle === "ALL" ? "active" : ""}`}>ทั้งหมด</button>}
+                        {btnAGV.map((name) => <button key={name} onClick={() => reloadMission({ v: name })} className={`${vehicle === name ? "active" : ""}`}>{name}</button>)}
                     </div>
                 </div>
 
             </div>
-            {!checkNetwork?<NetworkError/>: <div className='container-card'>
+            {!checkNetwork ? <NetworkError /> : <div className='container-card'>
                 <div className='mission-header'>
                     <div className='selected-mission-btn'>
-                        <button onClick={() => reloadMissionByButton({ s: "ALL" })} className={`${status === "ALL" ? "active" : ""}`}>All</button>
-                        <button onClick={() => reloadMissionByButton({ s: "RUNNING" })} className={`${status === "RUNNING" ? "active" : ""}`}>Running</button>
-                        <button onClick={() => reloadMissionByButton({ s: "SUCCESS" })} className={`${status === "SUCCESS" ? "active" : ""}`}>Success</button>
-                        <button onClick={() => reloadMissionByButton({ s: "FAILED" })} className={`${status === "FAILED" ? "active" : ""}`}>Failed</button>
-                        <button onClick={() => reloadMissionByButton({ s: "CANCEL" })} className={`${status === "CANCEL" ? "active" : ""}`}>Cancel</button>
+                        <button onClick={() => reloadMission({ s: "ALL" })} className={`${status === "ALL" ? "active" : ""}`}>All</button>
+                        <button onClick={() => reloadMission({ s: "RUNNING" })} className={`${status === "RUNNING" ? "active" : ""}`}>Running</button>
+                        <button onClick={() => reloadMission({ s: "SUCCESS" })} className={`${status === "SUCCESS" ? "active" : ""}`}>Success</button>
+                        <button onClick={() => reloadMission({ s: "FAILED" })} className={`${status === "FAILED" ? "active" : ""}`}>Failed</button>
+                        <button onClick={() => reloadMission({ s: "CANCEL" })} className={`${status === "CANCEL" ? "active" : ""}`}>Cancel</button>
 
                     </div>
                     <div className='input-date-box'>
                         <div className="form-group">
                             <label >From</label>
-                            <input type="text" value={start_date} readOnly></input>
-                            <input
-                                type="date"
-                                onChange={(e) => reloadMissionByButton({ d: e.target.value })} />
+                            <div className='box-of-text-date'>
+                                <div className='ps-2'>{start_date}</div>
+                                <DatePicker selected={new Date(start_date)} onChange={(e) => reloadMission({ d: e ?? undefined })} />
+                            </div>
                         </div>
 
                         <div className="form-group">
                             <label >To</label>
-                            <input type="text" value={end_date} readOnly></input>
-                            <input type="date"
-                                onChange={(e) => reloadMissionByButton({ de: e.target.value })} />
+                            <div className='box-of-text-date'>
+                                <div className='ps-2'>{end_date}</div>
+                                <DatePicker selected={new Date(end_date)} onChange={(e) => reloadMission({ de: e ?? undefined })} />
+                            </div>
                         </div>
                         <button className="export-btn" onClick={downloadCSV}>export</button>
                     </div>
@@ -309,7 +357,7 @@ export default function Mission() {
                             </tr>
                         </thead>
                         <tbody className='text-center'>
-                            {missionTable.map((miss) => <tr key={miss.id}>
+                            {missionTable.map((miss, i) => <tr key={i}>
                                 <td scope="row">#{miss.id}</td>
                                 <td><div className='td-vehicle-name'><div className='circle-vehicle-icon' style={{ background: `${colorAgv[miss.vehicle_name]}` }}></div><span>{miss.vehicle_name}</span></div></td>
                                 <td>{miss.requester}</td>
@@ -328,11 +376,11 @@ export default function Mission() {
                         </tbody>
                     </table>
 
-                    {
-                        pagination
-                    }
 
                 </div>
+                {
+                    pagination
+                }
 
             </div>}
         </section>

@@ -21,12 +21,7 @@ const axiosPost = async (endpoint: string,body: { [key: string]: any; }) => {
   
 };
   const axiosLogin = async (endpoint: string,body: { [key: string]: any; }) => {
-    try {
       const response = await APILogin.post(endpoint,body);
       return response.data;
-    } catch (error) {
-      // console.error("Error fetching data", error);
-      return error;
-    }
   };
 export { axiosGet, axiosPost,axiosLogin,axiosPut,axiosDelete};

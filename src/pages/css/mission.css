@@ -107,45 +107,36 @@
   font-weight: 600;
 }
  .form-group {
+  width: 150px;
+  height: 56px;
+  margin-right: 16px;
+  background-color: transparent;
+}
+.form-group label{
+  font-size: 14px;
+  color:#5a5a5a;
+  display: block;
+}
+.form-group>.box-of-text-date{
   position: relative;
   width: 150px;
-  height:32px;
-  margin-right: 16px;
+  height: 32px;
+  background-color: #ffffff;
 }
 .form-group input[type="text"]{
-  width: 100%;
-  height: 100%;
-  padding: 0 1rem;
-  font-size: 16px;
-  border-radius: 4px;
-  margin-right:1rem;
-  color:#8F8F8F;
-  position: absolute;
-  border: 1px solid #838383;
-  top:0;
+  width: 150px;
+  height: 32px;
+  top:-45px;
   left:0;
+  color:transparent;
+  position: absolute;
+  background-color: transparent;
+  border: 1px solid #8c8c8c;
+   
 }
 
-.form-group input[type="text"]:focus{
-  border: 1px solid #838383;
-}
- .form-group input[type="date"]{
-   position: absolute;
-   top:5px;
-   right:2px;
-   width: 24px;
-   height: 24px;
-   font-size: 20px;
-   padding: 0;
-   border: none;
- }
- .form-group label{
-   position: absolute;
-   top: -20px;
-   left: 2px;
-   font-size: 14px;
-   color:#5a5a5a;
- }
+ 
+ 
 
  .export-btn{
     width: 110px;
@@ -170,15 +161,16 @@
     margin: 2rem 1rem 1rem;
     border: 1px solid #979797;
     border-radius: 8px;
-    height: 660px;
+    max-height: 550px;
+    height: 550px;
  }
 
  .table-container thead{
   background-color: transparent;
   position: sticky;
   top: 0;
-  z-index: 1;
- }
+  left: 0;
+  }
  .table-container tbody td{
    color:#515151;
  }
@@ -259,4 +251,33 @@ tbody td{
 .pagination a:hover:not(.active) {
   background-color: #ddd;
   border-radius: 5px;
+}
+.pagination .input-total_items{
+  width: 64px;
+  margin:4px 32px 0 0;
+}
+.pagination .tooltip-container {
+  position: relative;
+  display: inline-block;
+}
+
+.pagination .tooltip-container input:focus + .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+.pagination .tooltip {
+  visibility: hidden;
+  opacity: 0;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 4px;
+  padding: 5px;
+  position: absolute;
+  top: 120%;
+  left: 0;
+  z-index: 1;
+  transition: opacity 0.3s;
+  white-space: nowrap;
 }

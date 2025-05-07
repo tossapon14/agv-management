@@ -8,6 +8,7 @@ import { RiBatteryChargeLine } from "react-icons/ri";
 import BatteryDonutChart2 from "./chart/batteryDonus2.tsx";
 import BatteryAreaChart2 from "./chart/BatteryAreaChart2.tsx";
 import NetworkError from './networkError';
+import DatePicker from "react-datepicker";
 
 
 import './css/battery.css';
@@ -30,20 +31,26 @@ const Battery = () => {
   const [checkNetwork, setCheckNetwork] = useState(true);
 
 
-  const reloadDataByDate = async (data: { d?: string, de?: string }) => {
+  const reloadDataByDate = async (data: { d?: Date, de?: Date, }) => {
     try {
       var params = "";
       if (data.d) {
-        if (new Date(data.d) > new Date(end_date)) {
+        if (data.d > new Date(end_date)) {
           return;
         }
-        params = `?vehicle_name=ALL&start_date=${data.d}&end_date=${end_date}`
+        const bangkokOffsetMs = 7 * 60 * 60 * 1000;
+        const localTime = data.d!.getTime() + bangkokOffsetMs;
+        const _date: string = new Date(localTime).toISOString().substring(0, 10);
+        params = `?vehicle_name=ALL&start_date=${_date}&end_date=${end_date}`
       }
       else if (data.de) {
-        if (new Date(data.de) < new Date(start_date)) {
+        if (data.de < new Date(start_date)) {
           return;
         }
-        params = `?vehicle_name=ALL&start_date=${start_date}&end_date=${data.de}`
+        const bangkokOffsetMs = 7 * 60 * 60 * 1000;
+        const localTime = data.de!.getTime() + bangkokOffsetMs;
+        const _date: string = new Date(localTime).toISOString().substring(0, 10);
+        params = `?vehicle_name=ALL&start_date=${start_date}&end_date=${_date}`
 
       }
       navigate(params, { replace: true });
@@ -81,20 +88,20 @@ const Battery = () => {
     };
     const checkNetwork = async () => {
       try {
-          const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
-          if(response.ok) {
-            getBattery(); 
-          }
+        const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
+        if (response.ok) {
+          getBattery();
+        }
       } catch (e: any) {
-          console.error(e);
-          setCheckNetwork(false);
-      }finally {
-          if (!loadSuccess) {
-              setLoadSuccess(true);
-          }
+        console.error(e);
+        setCheckNetwork(false);
+      } finally {
+        if (!loadSuccess) {
+          setLoadSuccess(true);
+        }
       }
-  };
-      checkNetwork();
+    };
+    checkNetwork();
   }, []);
   return <div className="statistics-box">
     {!loadSuccess && <div className='loading-background'>
@@ -107,63 +114,54 @@ const Battery = () => {
           <span className='ms-3'>Battery cost of each vehicle</span></p>
       </div>
 
-      {checkNetwork&&<div className='input-date-box ms-5'>
+      {checkNetwork && <div className='input-date-box ms-5'>
         <div className="form-group">
           <label >From</label>
-          <input type="text" value={start_date} readOnly></input>
-          <input
-            type="date"
-            onChange={(e) => {
-              const date = e.target.value;
-              if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
-                reloadDataByDate({ d: date });
-              }
-            }} />
+          <div className='box-of-text-date'>
+            <div className='ps-2'>{start_date}</div>
+            <DatePicker selected={new Date(start_date)} onChange={(e) => reloadDataByDate({ d: e ?? undefined })} />
+          </div>
         </div>
 
         <div className="form-group">
           <label >To</label>
-          <input type="text" value={end_date} readOnly></input>
-          <input type="date"
-            onChange={(e) => {
-              const date = e.target.value;
-              if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
-                reloadDataByDate({ de: date });
-              }
-            }} />
+          <div className='box-of-text-date'>
+            <div className='ps-2'>{end_date}</div>
+            <DatePicker selected={new Date(end_date)} onChange={(e) => reloadDataByDate({ de: e ?? undefined })} />
+          </div>
         </div>
         <button className="export-btn2" onClick={() => { }}><IoMdDownload /> <span>export</span> </button>
       </div>}
     </div>
-    {!checkNetwork?<NetworkError/>:<>
-    <div className='chart-all-agv'>
-      <h5>All AGV</h5>
-      <p className='p-subtitle'>แสดงข้อมูลแบตเตอรี ในช่วงเวลาที่เลือก</p>
-      <div className='chart'>
-        <BatteryAreaChart data={battery} />
-      </div>
-
-    </div>
-
-    {battery.series.map((agv,i)=><div className="agv-one-box" key={agv.name}>
-      <div className="battery-current">
-       <h5><RiBatteryChargeLine size={32} color='red' /><span className="ms-2">{agv.name}</span></h5> 
-        <p className="p-subtitle">ระดับแบตเตอรี</p>
-        <div className="d-flex w-100 h-100 justify-content-center align-items-center">
-          <BatteryDonutChart2 level={agv.data[agv.data.length-1].y}></BatteryDonutChart2>
-        </div>
-      </div>
-      <div className='agv-one-chart'>
-        <h5>{agv.name}</h5>
-        <p className='p-subtitle'>แสดงข้อมูลแบตเตอรี</p>
+    {!checkNetwork ? <NetworkError /> : <>
+      <div className='chart-all-agv'>
+        <h5>All AGV</h5>
+        <p className='p-subtitle'>แสดงข้อมูลแบตเตอรี ในช่วงเวลาที่เลือก</p>
         <div className='chart'>
-          <BatteryAreaChart2 data={agv} color={colorLine[i]}/>
+          <BatteryAreaChart data={battery} />
         </div>
+
       </div>
 
-    </div>)}
+      {battery.series.map((agv, i) => <div className="agv-one-box" key={agv.name}>
+        <div className="battery-current">
+          <h5><RiBatteryChargeLine size={32} color='red' /><span className="ms-2">{agv.name}</span></h5>
+          <p className="p-subtitle">ระดับแบตเตอรี</p>
+          <div className="d-flex w-100 h-100 justify-content-center align-items-center">
+            <BatteryDonutChart2 level={agv.data[agv.data.length - 1].y}></BatteryDonutChart2>
+          </div>
+        </div>
+        <div className='agv-one-chart'>
+          <h5>{agv.name}</h5>
+          <p className='p-subtitle'>แสดงข้อมูลแบตเตอรี</p>
+          <div className='chart'>
+            <BatteryAreaChart2 data={agv} color={colorLine[i]} />
+          </div>
+        </div>
+
+      </div>)}
     </>}
-    
+
   </div>;
 }
 export default Battery;

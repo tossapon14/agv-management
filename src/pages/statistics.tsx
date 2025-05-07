@@ -8,6 +8,10 @@ import { IoCheckmarkCircle } from "react-icons/io5";
 import { MdCancel } from "react-icons/md";
 import { axiosGet } from "../api/axiosFetch";
 import BGBarChart from './chart/barChart2';
+import DatePicker from "react-datepicker";
+
+
+
 interface IStatistics {
   [key: string]: {
     [key: string]: number
@@ -35,20 +39,26 @@ export default function Statistics() {
   const [totalMission, setTotalMission] = useState<{ mission: number, complete: number, cancel: number, other: number }>();
 
 
-  const reloadDataByDate = async (data: { d?: string, de?: string }) => {
+  const reloadDataByDate = async (data: { d?: Date, de?: Date, }) => {
     try {
       var params = "";
       if (data.d) {
-        if (new Date(data.d) > new Date(end_date)) {
+        if (data.d > new Date(end_date)) {
           return;
         }
-        params = `?start_date=${data.d}&end_date=${end_date}`
+        const bangkokOffsetMs = 7 * 60 * 60 * 1000;
+        const localTime = data.d!.getTime() + bangkokOffsetMs;
+        const _date: string = new Date(localTime).toISOString().substring(0, 10);
+        params = `?start_date=${_date}&end_date=${end_date}`
       }
       else if (data.de) {
-        if (new Date(data.de) < new Date(start_date)) {
+        if (data.de < new Date(start_date)) {
           return;
         }
-        params = `?start_date=${start_date}&end_date=${data.de}`
+        const bangkokOffsetMs = 7 * 60 * 60 * 1000;
+        const localTime = data.de!.getTime() + bangkokOffsetMs;
+        const _date: string = new Date(localTime).toISOString().substring(0, 10);
+        params = `?start_date=${start_date}&end_date=${_date}`
 
       }
       navigate(params, { replace: true });
@@ -153,27 +163,18 @@ export default function Statistics() {
         <div className='input-date-box ms-5'>
           <div className="form-group">
             <label >From</label>
-            <input type="text" value={start_date} readOnly></input>
-            <input
-              type="date"
-              onChange={(e) => {
-                const date = e.target.value;
-                if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
-                  reloadDataByDate({ d: date });
-                }
-              }} />
+            <div className='box-of-text-date'>
+              <div className='ps-2'>{start_date}</div>
+              <DatePicker selected={new Date(start_date)} onChange={(e) => reloadDataByDate({ d: e ?? undefined })} />
+            </div>
           </div>
 
           <div className="form-group">
             <label >To</label>
-            <input type="text" value={end_date} readOnly></input>
-            <input type="date"
-              onChange={(e) => {
-                const date = e.target.value;
-                if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
-                  reloadDataByDate({ de: date });
-                }
-              }} />
+            <div className='box-of-text-date'>
+              <div className='ps-2'>{end_date}</div>
+              <DatePicker selected={new Date(end_date)} onChange={(e) => reloadDataByDate({ de: e ?? undefined })} />
+            </div>
           </div>
           <button className="export-btn2" onClick={() => { }}><IoMdDownload /> <span>export</span> </button>
         </div>

@@ -14,7 +14,7 @@ import { axiosGet, axiosPost, axiosPut } from "../api/axiosFetch";
 import { useState, useRef, useEffect, Fragment } from 'react';
 import { BiSolidError } from "react-icons/bi";
 import StatusOnline from './statusOnline';
-import { pairMissionStatus, colorAgv} from '../utils/centerFunction';
+import { pairMissionStatus, colorAgv } from '../utils/centerFunction';
 import ResponseElement from './responseElement';
 
 
@@ -111,7 +111,7 @@ interface Structure {
 interface IAgvSelected {
   [key: string]: { pickup?: string; }
 }
-interface IMapData { agv: string,position: string[] }
+interface IMapData { agv: string, position: string[] }
 
 
 export default function Home() {
@@ -134,15 +134,15 @@ export default function Home() {
   const [positionDrop, setPositionDrop] = useState<number[][]>([]);
   const [onlineBar, setOnlineBar] = useState<null | boolean>(null);
   const onlineRef = useRef<boolean | null>(null);
-
+  const modalRef = useRef<HTMLDivElement>(null);
+  const confirmModalRef = useRef<HTMLDivElement>(null);
   const selectAgv = useRef<string>('ALL');
   const [btnAGVName, setBtnAGVName] = useState<string[] | null>(null);
   const [waitMode, setWaitMode] = useState<boolean>(false);
   const initialAgv = useRef<boolean>(false);
-  const summaryDialog = useRef<HTMLDivElement>(null);
   const [dialogSummary, setDialogSummary] = useState<{ show: boolean, name?: string, id?: number, codePickup?: string, dropName?: string }>({ show: false });
-  const [responseData, setResponseData] = useState<{ error: boolean|null,message?: string }>({error:null});
-  
+  const [responseData, setResponseData] = useState<{ error: boolean | null, message?: string }>({ error: null });
+
 
   const buttonsDrop = [
     { id: "01", top: "80%", left: "26%" },
@@ -169,7 +169,7 @@ export default function Home() {
     { id: "22", top: "68%", left: "69%" },
   ];
 
-  
+
   const showDialogSummary = (id: number, name: string, codePickup: string) => {
     setShowModal("hidden-modal");
     setDialogSummary({ show: true, name: name, id: id, codePickup: codePickup });
@@ -180,7 +180,7 @@ export default function Home() {
 
   const btnDialogConfirm = (id: number | undefined, name: string | undefined, codePickup: string | undefined) => {
     setDialogSummary({ show: false });
-    setResponseData({error:null,message:"loading"});
+    setResponseData({ error: null, message: "loading" });
     if (codePickup === '721' && id != undefined && name != undefined) {
       APIPutDropMission(id!, name!)
     } else if (codePickup === '724' && name != undefined) {
@@ -199,26 +199,26 @@ export default function Home() {
   };
 
   const APIPutDropProduct = async (name: string) => {
-    setResponseData({error:null,message:"loading"});
+    setResponseData({ error: null, message: "loading" });
     try {
       await axiosPut(`fleet/command?command=next&vehicle_name=${name}`);
-      setResponseData({error:false,message: "drop success"})
+      setResponseData({ error: false, message: "drop success" })
     } catch (e: any) {
       console.error("drop product", e)
-      setResponseData({error:true,message: e?.message})
+      setResponseData({ error: true, message: e?.message })
     }
 
 
   }
   const sendCommand = async (agv: string, command: string) => {
-    setResponseData({error:null,message:"loading"});
+    setResponseData({ error: null, message: "loading" });
     try {
       const response = await axiosPut(`fleet/command?command=${command}&vehicle_name=${agv}`);
       console.log(response);
-      setResponseData({error:false,message: `${command} send success`})
+      setResponseData({ error: false, message: `${command} send success` })
     } catch (e: any) {
       console.error('send stop or continue', e)
-      setResponseData({error:true,message: e?.message})
+      setResponseData({ error: true, message: e?.message })
     }
 
   }
@@ -235,10 +235,10 @@ export default function Home() {
       try {
         await axiosPut("/mission/update", dataMission);
         delete missionSavePickUp.current[agv];
-        setResponseData({error: false, message:"send command success"})
+        setResponseData({ error: false, message: "send command success" })
       } catch (e: any) {
         console.error(e?.message);
-        setResponseData({error:true,message: e?.message})
+        setResponseData({ error: true, message: e?.message })
       }
 
     }
@@ -252,10 +252,10 @@ export default function Home() {
     }
     try {
       await axiosPost("/mission/create", dataMission);
-      setResponseData({error: false, message:"send command success"})
+      setResponseData({ error: false, message: "send command success" })
     } catch (e: any) {
       console.error(e?.message);
-      setResponseData({error:true,message: e?.message})
+      setResponseData({ error: true, message: e?.message })
 
 
     }
@@ -325,8 +325,8 @@ export default function Home() {
   }
 
   useEffect(() => {
-    
-    
+
+
     const calProcessMission = (dropNode: string | undefined, path: string | undefined, curr: string | undefined): { percents: number, nodesList: string[], numProcess: number } | null => {
       if (dropNode === undefined || path === undefined || curr === undefined) return null;
       // path = "D15S, P02S, P03S, P05S, P0504N, P0505N, D11S, D12S, D1201N, P04S, D13S, D14S, D1401N, D1402N, D20S, D15S, D21S, D1501N, D22S";
@@ -460,7 +460,7 @@ export default function Home() {
         const res: IVehicles = await axiosGet(
           `/vehicle/vehicles?vehicle_name=${selectAgv.current}&state=ALL`,
         );
-        if (onlineRef.current==false) {
+        if (onlineRef.current == false) {
           setOnlineBar(true);
           onlineRef.current = true;
         }
@@ -532,18 +532,37 @@ export default function Home() {
       }
 
     }
+    getAgv();
+    getMission();
+    timerInterval.current = setInterval(() => {
+      missionLoop.current++;
       getAgv();
-      getMission();
-      timerInterval.current = setInterval(() => {
-        missionLoop.current++;
-        getAgv();
-        if (missionLoop.current === 5) {
-          missionLoop.current = 0;
-          getMission();
-        }
-      }, 3000);
+      if (missionLoop.current === 5) {
+        missionLoop.current = 0;
+        getMission();
+      }
+    }, 3000);
+
+    const handleClickOutside = (event: any) => {
+      if (modalRef.current === event.target) {
+        setShowModal("hidden-modal");
+      }
+    };
+    const handleClickOutsideConfirm = (event: any) => {
+      if (confirmModalRef.current === event.target) {
+        setDialogSummary({ show: false })
+      }
+    };
+    if (modalRef.current) {
+      modalRef.current.addEventListener("mouseup", handleClickOutside);
+    }
+    if (confirmModalRef.current) {
+      confirmModalRef.current.addEventListener("mouseup", handleClickOutsideConfirm)
+    }
+
     return () => {
-     
+      modalRef.current!.removeEventListener("mouseup", handleClickOutside);
+      confirmModalRef.current!.removeEventListener("mouseup", handleClickOutsideConfirm);
       clearInterval(timerInterval.current as NodeJS.Timeout);
     };
   }, []);
@@ -588,7 +607,7 @@ export default function Home() {
                     </tr>
                   </thead>
                   <tbody className='text-center'>
-                    {missionTable.map((data) => <tr key={data.id}>
+                    {missionTable.map((data, i) => <tr key={i}>
                       <td>#{data.id}</td>
                       <td><div className='td-vehicle-name'><div className='circle-vehicle-icon' style={{ background: `${colorAgv[data.vehicle_name]}` }}></div><span className="dot dot-blue"></span>{data.vehicle_name}</div></td>
                       <td>{data.pick}</td>
@@ -596,7 +615,7 @@ export default function Home() {
                       <td>{data.drop}</td>
                       <td>{data.timestamp.substring(0, 10)}</td>
                       <td>{data.timestamp.substring(11, 19)}</td>
-                     <td>{data.status==0&&<button className="btn-cancel">cancel</button>}</td>
+                      <td>{data.status == 0 && <button className="btn-cancel">cancel</button>}</td>
                     </tr>
                     )}
                   </tbody>
@@ -650,8 +669,8 @@ export default function Home() {
               </div>
 
               <div className={`auto-manual ${agv.mode}`}>{agv.mode}</div>
-              {agv.emergency_state?<div className='EmergencyBtn'><BiSolidError size={20} color='red'/>&nbsp;&nbsp;Emergency is pressed</div>:
-              <div className='agv-state'>{agv.str_state}</div>}
+              {agv.emergency_state ? <div className='EmergencyBtn'><BiSolidError size={20} color='red' />&nbsp;&nbsp;Emergency is pressed</div> :
+                <div className='agv-state'>{agv.str_state}</div>}
             </div>
             <div className='velocity'>
               <h1 className='velocity-number'>{agv.velocity.toFixed(1)}</h1>
@@ -718,12 +737,12 @@ export default function Home() {
                 <button className='mission-btn' onClick={() => btnCallModal({ agv: agv.name, codePickup: agv.agv_code_status, id: agv.mission?.id, str_state: agv.str_state!, state: agv.state, mode: agv.mode })}>
                   สร้างคิวงาน
                 </button>}
-  
+
           </div>
         </section>)}
       </section>
-      <ResponseElement response={responseData}/>
-      <div ref={summaryDialog} onClick={()=>setDialogSummary({ show: false })} className={`modal-summaryCommand ${!dialogSummary.show && 'd-none'}`}>
+      <ResponseElement response={responseData} />
+      <div ref={confirmModalRef} className={`modal-summaryCommand ${!dialogSummary.show && 'd-none'}`}>
         <div className='card-summaryCommand'>
           {dialogSummary.codePickup === "724" ? <>
             <div className='card-summaryCommand-header'>
@@ -770,7 +789,7 @@ export default function Home() {
           </>}
         </div>
       </div>
-      <div  onClick={()=>setShowModal("hidden-modal")} className={`modal ${showModal}`}>
+      <div ref={modalRef} className={`modal ${showModal}`}>
         <div className='modal-content-home'>
           <div className='box-map-and-btn'>
             {buttonDropList.length === 0 && missionModel.codePickup === "721" && <div className='modal-loading-background'>

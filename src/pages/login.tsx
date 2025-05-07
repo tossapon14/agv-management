@@ -57,9 +57,12 @@ export default function Login() {
       else if (response.message) {
         setResponse(response.message)
       }
-
+ 
     } catch (error: any) {
       console.error(error);
+      setResponse(error.message)
+    }finally{
+      setLoad(false);
     }
   };
   const onLogout = async () => {

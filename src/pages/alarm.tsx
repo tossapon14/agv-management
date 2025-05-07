@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import { axiosGet } from "../api/axiosFetch";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { BsConeStriped } from "react-icons/bs";
-import { colorAgv} from '../utils/centerFunction';
+import { colorAgv } from '../utils/centerFunction';
 import NetworkError from './networkError';
+import DatePicker from "react-datepicker";
 
 interface IAlarm {
     message: string
@@ -50,31 +51,42 @@ export default function Alarm() {
     const vehicle = searchParams.get("vehicle_name") || "ALL"; // Default to "desc"
     const start_date = searchParams.get("start_date") || new Date().toISOString().substring(0, 10)
     const end_date = searchParams.get("end_date") || new Date().toISOString().substring(0, 10)
-    const [loadSuccess,setLoadSuccess] = useState(false);
+    const page_size =searchParams.get('page_size')|| 10;
+    const [loadSuccess, setLoadSuccess] = useState(false);
     const [checkNetwork, setCheckNetwork] = useState(true);
 
 
-    const reloadPage = function (data: { v?: string, s?: string, d?: string, de?: string, p?: number }) {
+    const reloadPage = function (data: { v?: string, s?: string, d?: Date, de?: Date, p?: number,ps?:string }) {
 
         try {
             var params = "/";
             if (data.p) {
-                params = `/alarms?vehicle_name=${vehicle}&start_date=2025-03-01&end_date=${end_date}&page=${data.p}&page_size=10`
+                params = `/alarms?vehicle_name=${vehicle}&start_date=2025-03-01&end_date=${end_date}&page=${data.p}&page_size=${page_size}`
             }
             else if (data.d) {
-                if (new Date(data.d) > new Date(end_date)) {
+                if (data.d > new Date(end_date)) {
                     return;
                 }
-                params = `/alarms?vehicle_name=${vehicle}&start_date=${data.d}&end_date=${end_date}&page=1&page_size=10`
+                const bangkokOffsetMs = 7 * 60 * 60 * 1000;
+                const localTime = data.d!.getTime() + bangkokOffsetMs;
+                const _date: string = new Date(localTime).toISOString().substring(0, 10);
+                params = `/alarms?vehicle_name=${vehicle}&start_date=${_date}&end_date=${end_date}&page=1&page_size=${page_size}`
             }
             else if (data.de) {
                 if (new Date(data.de) < new Date(start_date)) {
                     return;
                 }
-                params = `/alarms?vehicle_name=${vehicle}&start_date=${start_date}&end_date=${data.de}&page=1&page_size=10`
+                const bangkokOffsetMs = 7 * 60 * 60 * 1000;
+                const localTime = data.de!.getTime() + bangkokOffsetMs;
+                const _date: string = new Date(localTime).toISOString().substring(0, 10);
+                params = `/alarms?vehicle_name=${vehicle}&start_date=${start_date}&end_date=${_date}&page=1&page_size=${page_size}`
             }
             else if (data.v) {
-                params = `/alarms?vehicle_name=${data.v}&start_date=${start_date}&end_date=${end_date}&page=1&page_size=10`
+                params = `/alarms?vehicle_name=${data.v}&start_date=${start_date}&end_date=${end_date}&page=1&page_size=${page_size}`
+
+            }
+            else if(data.ps){
+                params = `/alarms?vehicle_name=${vehicle}&start_date=${start_date}&end_date=${end_date}&page=1&page_size=${data.ps}`
 
             }
             navigate(params, { replace: true });
@@ -105,9 +117,12 @@ export default function Alarm() {
     useEffect(() => {
         const _pagination = (ttp: number): React.ReactElement | null => {
             if (ttp == 1) {
-                return null;
+                return <div className='pagination'>
+                    <p className="m-0 me-5"><input type="number" className="input-total_items"  value={10}/> page</p> 
+                </div>;
             } else if (ttp <= 5) {
                 return <div className='pagination'>
+                    <p className="m-0 me-5"><input type="number" className="input-total_items"  value={10}/> page</p> 
                     {[...Array(ttp)].map((_, index) => {
                         const pageNumber = index + 1;
                         return (
@@ -129,13 +144,14 @@ export default function Alarm() {
                     intial = ttp - 4
                 } else if (page > 2) {
                     intial = page - 2
-                }else if (page > 1) {
+                } else if (page > 1) {
                     intial = page - 1
-                }else{
+                } else {
                     intial = page
                 }
                 return <div className="pagination">
                     {/* Previous Button */}
+                    <p className="m-0 me-5"><input type="number" className="input-total_items"  value={10}/> page</p> 
                     <a
                         onClick={() => reloadPage({ p: page > 1 ? page - 1 : 1 })}
                         className={page === 1 ? "disabled" : ""}
@@ -177,13 +193,13 @@ export default function Alarm() {
                     // `/alarm/alarms?vehicle_name=${vehicle}&start_date=${start_date}&end_date=${end_date}&page=${page}&page_size=10`
                 );
                 const alert: IAlarmTable[] = [];
-                const _btnAGV:string[] = [];
+                const _btnAGV: string[] = [];
                 for (let i = 0; i < res.payload.length; i++) {
                     const descript = res.payload[i].description.split("|");
                     const _date = res.payload[i].timestamp?.substring(0, 10);
                     const _time = res.payload[i].timestamp?.substring(11, 19);
                     alert.push({ id: res.payload[i].id, code: res.payload[i].code, vehicle_name: res.payload[i].vehicle_name, date: _date, time: _time, th: descript[1], en: descript[0] });
-                    
+
                     if (!_btnAGV.includes(res.payload[i].vehicle_name)) {
                         _btnAGV.push(res.payload[i].vehicle_name);
                     }
@@ -194,7 +210,7 @@ export default function Alarm() {
 
             } catch (e: any) {
                 console.error(e);
-            }finally {
+            } finally {
                 if (!loadSuccess) {
                     setLoadSuccess(true);
                 }
@@ -203,25 +219,25 @@ export default function Alarm() {
         const checkNetwork = async () => {
             try {
                 const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
-                if(response.ok) {
-                  getAlarm();
+                if (response.ok) {
+                    getAlarm();
                 }
             } catch (e: any) {
                 console.error(e);
                 setCheckNetwork(false);
-            }finally {
+            } finally {
                 if (!loadSuccess) {
                     setLoadSuccess(true);
                 }
             }
         };
         checkNetwork();
-        
+
     }, []);
     return <>
-    {!loadSuccess&&<div className='loading-background'>
-        <div id="loading"></div>
-      </div>}
+        {!loadSuccess && <div className='loading-background'>
+            <div id="loading"></div>
+        </div>}
         <section className='mission-box-page'>
             <div className='mission-title-box mb-3'>
                 <h1>SHOW ERROR</h1>
@@ -232,27 +248,28 @@ export default function Alarm() {
                 </div>
 
             </div>
-            {!checkNetwork?<NetworkError/>: <div className='container-card'>
+            {!checkNetwork ? <NetworkError /> : <div className='container-card'>
                 <div className='mission-header'>
                     <div className='selected-mission-btn'>
                         <button onClick={() => reloadPage({ v: "ALL" })} className={`${vehicle === "ALL" ? "active" : ""}`}>All</button>
-                        {btnAGV.map((name)=><button onClick={() => reloadPage({ v: name })} className={`${vehicle === name ? "active" : ""}`}>{name}</button>)}
+                        {btnAGV.map((name) => <button onClick={() => reloadPage({ v: name })} className={`${vehicle === name ? "active" : ""}`}>{name}</button>)}
 
                     </div>
                     <div className='input-date-box'>
                         <div className="form-group">
                             <label >From</label>
-                            <input type="text" value={start_date} readOnly></input>
-                            <input
-                                type="date"
-                                onChange={(e) => reloadPage({ d: e.target.value })} />
+                            <div className='box-of-text-date'>
+                                <div className='ps-2'>{start_date}</div>
+                                <DatePicker selected={new Date(start_date)} onChange={(e) => reloadPage({ d: e ?? undefined })} />
+                            </div>
                         </div>
 
                         <div className="form-group">
                             <label >To</label>
-                            <input type="text" value={end_date} readOnly></input>
-                            <input type="date"
-                                onChange={(e) => reloadPage({ de: e.target.value })} />
+                            <div className='box-of-text-date'>
+                                <div className='ps-2'>{end_date}</div>
+                                <DatePicker selected={new Date(end_date)} onChange={(e) => reloadPage({ de: e ?? undefined })} />
+                            </div>
                         </div>
                         <button className="export-btn" onClick={downloadCSV}>export</button>
                     </div>
@@ -264,7 +281,7 @@ export default function Alarm() {
                                 <th scope="col" style={{ width: "100px" }}>#</th>
                                 <th scope="col" style={{ width: "150px" }}>รถ</th>
                                 <th scope="col"><div className="head-table-flex">
-                                    <div className='mission-circle-icon' style={{ background: "#ffe6e6"}}>  
+                                    <div className='mission-circle-icon' style={{ background: "#ffe6e6" }}>
                                         <IoMdSettings color='red' />
                                     </div>
                                     code</div>
@@ -277,7 +294,7 @@ export default function Alarm() {
                                 </th>
                                 <th scope="col" style={{ width: "150px" }}>วัน</th>
                                 <th scope="col" style={{ width: "150px" }}>เวลา</th>
-                               
+
                             </tr>
                         </thead>
                         <tbody className='text-center'>
