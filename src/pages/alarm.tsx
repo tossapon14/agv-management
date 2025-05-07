@@ -51,12 +51,12 @@ export default function Alarm() {
     const vehicle = searchParams.get("vehicle_name") || "ALL"; // Default to "desc"
     const start_date = searchParams.get("start_date") || new Date().toISOString().substring(0, 10)
     const end_date = searchParams.get("end_date") || new Date().toISOString().substring(0, 10)
-    const page_size =searchParams.get('page_size')|| 10;
+    const page_size = searchParams.get('page_size') || 10;
     const [loadSuccess, setLoadSuccess] = useState(false);
     const [checkNetwork, setCheckNetwork] = useState(true);
 
 
-    const reloadPage = function (data: { v?: string, s?: string, d?: Date, de?: Date, p?: number,ps?:string }) {
+    const reloadPage = function (data: { v?: string, s?: string, d?: Date, de?: Date, p?: number, ps?: string }) {
 
         try {
             var params = "/";
@@ -85,7 +85,7 @@ export default function Alarm() {
                 params = `/alarms?vehicle_name=${data.v}&start_date=${start_date}&end_date=${end_date}&page=1&page_size=${page_size}`
 
             }
-            else if(data.ps){
+            else if (data.ps) {
                 params = `/alarms?vehicle_name=${vehicle}&start_date=${start_date}&end_date=${end_date}&page=1&page_size=${data.ps}`
 
             }
@@ -116,13 +116,9 @@ export default function Alarm() {
 
     useEffect(() => {
         const _pagination = (ttp: number): React.ReactElement | null => {
-            if (ttp == 1) {
-                return <div className='pagination'>
-                    <p className="m-0 me-5"><input type="number" className="input-total_items"  value={10}/> page</p> 
-                </div>;
-            } else if (ttp <= 5) {
-                return <div className='pagination'>
-                    <p className="m-0 me-5"><input type="number" className="input-total_items"  value={10}/> page</p> 
+            if (ttp <= 5) {
+                return (<div className='pagination'>
+
                     {[...Array(ttp)].map((_, index) => {
                         const pageNumber = index + 1;
                         return (
@@ -136,7 +132,7 @@ export default function Alarm() {
                         );
                     })}
 
-                </div>
+                </div>);
             }
             else if (ttp > 5) {
                 let intial: number;
@@ -149,9 +145,8 @@ export default function Alarm() {
                 } else {
                     intial = page
                 }
-                return <div className="pagination">
-                    {/* Previous Button */}
-                    <p className="m-0 me-5"><input type="number" className="input-total_items"  value={10}/> page</p> 
+                return (<div className="pagination">
+
                     <a
                         onClick={() => reloadPage({ p: page > 1 ? page - 1 : 1 })}
                         className={page === 1 ? "disabled" : ""}
@@ -182,7 +177,7 @@ export default function Alarm() {
                     >
                         &raquo;
                     </a>
-                </div>
+                </div>);
             }
             else return null
         };
@@ -309,9 +304,21 @@ export default function Alarm() {
 
                         </tbody>
                     </table>
+
+                </div>
+                <div className='page-number-d-flex'>
+
+                    <div className="tooltip-container">
+                        <button type="button" onClick={() => { }}>{page_size}</button>
+                        <div className="box-tooltip">
+                             <button className='btn-page-size' onClick={() => reloadPage({ ps: '10' })}>10</button>
+                            <button className='btn-page-size' onClick={() => reloadPage({ ps: '50' })}>50</button>
+                            <button className='btn-page-size' onClick={() => reloadPage({ ps: '100' })}>100</button>
+                        </div>
+                    </div>
+                    <span className='ms-1 me-3'>mission/pages</span>
                     {pagination}
                 </div>
-
             </div>}
         </section>
 

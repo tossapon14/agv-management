@@ -175,7 +175,7 @@ export default function Vehicle() {
                                     </div>
                                     <span className='ms-2 fs-6' style={{ color: '#646464', fontWeight: '500' }}>{agv.ip_address}:{agv.port}</span>
                                 </div>
-                                {agv.emergency_state&&<div className='EmergencyBtn'><BiSolidError size={20} color='red'/>&nbsp;&nbsp;Emergency is pressed</div>}
+                                {agv.emergency_state||agv.state==6&&<div className='EmergencyBtn'><BiSolidError size={20} color='red'/>&nbsp;&nbsp;{agv.emergency_state?'Emergency is pressed':agv.str_state}</div>}
                             </div>
                         </div>
                         <div className="v-content-chart">

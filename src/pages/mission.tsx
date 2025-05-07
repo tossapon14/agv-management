@@ -80,11 +80,7 @@ export default function Mission() {
                 params = `?vehicle_name=${vehicle}&status=${status}&start_date=${start_date}&end_date=${end_date}&page=${data.p}&page_size=${page_size}`
 
             } else if (data.ps) {
-                if (Number(data.ps) === 0) {
-                    return;
-                }
                 params = `?vehicle_name=${vehicle}&status=${status}&start_date=${start_date}&end_date=${end_date}&page=1&page_size=${data.ps}`
-
             }
             navigate(params, { replace: true });
             window.location.reload(); // Force reload if needed
@@ -107,35 +103,13 @@ export default function Mission() {
         URL.revokeObjectURL(url);
     };
 
-    const handleKeyDown = (e: any) => {
-        if (e.key === 'Enter') {
-            reloadMission({ ps: e.target.value })
-        }
-    };
+
 
     useEffect(() => {
         const _pagination = (ttp: number): React.ReactElement | null => {
-            if (ttp == 1) {
+            if (ttp <= 5) {
                 return (<div className='pagination'>
-                    <div className='mt-1'>
-                        <span className="me-2">{page_size} mission/pages</span>
-                        <div className="tooltip-container">
-                            <input type="number" className="input-total_items" onKeyDown={handleKeyDown} placeholder='10' />
-                            <div className="tooltip">load when enter</div>
 
-                        </div>
-                    </div>
-                </div>);
-            } else if (ttp <= 5) {
-                return (<div className='pagination'>
-                    <div className='mt-1'>
-                        <span className="me-2">{page_size} mission/pages</span>
-                        <div className="tooltip-container">
-                            <input type="number" className="input-total_items" onKeyDown={handleKeyDown} placeholder='10' />
-                            <div className="tooltip">load when enter</div>
-
-                        </div>
-                    </div>
                     {[...Array(ttp)].map((_, index) => {
                         const pageNumber = index + 1;
                         return (
@@ -163,15 +137,6 @@ export default function Mission() {
                     intial = page
                 }
                 return (<div className="pagination">
-                    {/* Previous Button */}
-                    <div className='mt-1'>
-                        <span className="me-2">{page_size} mission/pages</span>
-                        <div className="tooltip-container">
-                            <input type="number" className="input-total_items" onKeyDown={handleKeyDown} placeholder='10' />
-                            <div className="tooltip">load when enter</div>
-
-                        </div>
-                    </div>
 
                     <a
                         onClick={() => reloadMission({ p: page > 1 ? page - 1 : 1 })}
@@ -207,7 +172,7 @@ export default function Mission() {
             }
             else return null
         };
-        const isoDurationToMinSec = (duration: string | undefined|null): string => {
+        const isoDurationToMinSec = (duration: string | undefined | null): string => {
             if (!duration) return "";
             else {
                 const regex = /PT(?:(\d+)M)?(?:(\d+)S)?/;
@@ -380,10 +345,21 @@ export default function Mission() {
 
 
                 </div>
-                {
-                    pagination
-                }
+                <div className='page-number-d-flex'>
 
+                    <div className="tooltip-container">
+                        <button type="button" onClick={() => { }}>{page_size}</button>
+                        <div className="box-tooltip">
+                             
+                            <button className='btn-page-size' onClick={() => reloadMission({ ps: '10' })}>10</button>
+                            <button className='btn-page-size' onClick={() => reloadMission({ ps: '50' })}>50</button>
+                            <button className='btn-page-size' onClick={() => reloadMission({ ps: '100' })}>100</button>
+                        </div>
+
+                    </div>
+                    <span className='ms-1 me-3'>mission/pages</span>
+                    {pagination}
+                </div>
             </div>}
         </section>
 

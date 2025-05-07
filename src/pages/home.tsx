@@ -329,9 +329,7 @@ export default function Home() {
 
     const calProcessMission = (dropNode: string | undefined, path: string | undefined, curr: string | undefined): { percents: number, nodesList: string[], numProcess: number } | null => {
       if (dropNode === undefined || path === undefined || curr === undefined) return null;
-      // path = "D15S, P02S, P03S, P05S, P0504N, P0505N, D11S, D12S, D1201N, P04S, D13S, D14S, D1401N, D1402N, D20S, D15S, D21S, D1501N, D22S";
-      // curr = "D15S";
-      // dropNode = "P04S,D20S,D15S,D21S,D22S";
+      
       const nodesList = dropNode.split(",");
       if (nodesList.length == 1) return { percents: 0, nodesList: nodesList, numProcess: 0 };
       const pathList = path.split(", ");
@@ -452,6 +450,10 @@ export default function Home() {
           console.log('mission', e.response.data.detail);
         }
         return e.response?.data || { message: "Unknown error occurred" };
+      }finally{
+        if (!loadSuccess) {
+          setLoadSuccess(true);
+        }
       }
     };
 
@@ -669,8 +671,8 @@ export default function Home() {
               </div>
 
               <div className={`auto-manual ${agv.mode}`}>{agv.mode}</div>
-              {agv.emergency_state ? <div className='EmergencyBtn'><BiSolidError size={20} color='red' />&nbsp;&nbsp;Emergency is pressed</div> :
-                <div className='agv-state'>{agv.str_state}</div>}
+              {agv.emergency_state||agv.state ==6 ? <div className='EmergencyBtn'><BiSolidError size={20} color='red' />&nbsp;&nbsp;{agv.emergency_state?'Emergency is pressed':agv.str_state}</div> 
+              :<div className='agv-state'>{agv.str_state}</div>}
             </div>
             <div className='velocity'>
               <h1 className='velocity-number'>{agv.velocity.toFixed(1)}</h1>

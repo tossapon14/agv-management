@@ -25,7 +25,7 @@
 .container-card{
   /* width: 100%; */
   border-radius: 12px;
-  height: 800px;
+  height: 760px;
   margin:0 1rem 2rem;
   background-color: white !important;
 }
@@ -125,7 +125,7 @@
 }
 .form-group input[type="text"]{
   width: 150px;
-  height: 32px;
+  height: 34px;
   top:-45px;
   left:0;
   color:transparent;
@@ -143,6 +143,7 @@
     padding: 4px 0;
     font-size: 20px;
     margin-left: 1rem;
+    margin-bottom:2px;
     background-color: #0921fb;
     border: none;
     border-radius: 5px;
@@ -227,9 +228,6 @@ tbody td{
   font-size: 14px;
 }
 .pagination {
-  display: inline-block;
-  float: right;
-  margin-top: 1rem;
   padding-right:12px ;
 }
 .pagination a {
@@ -252,32 +250,61 @@ tbody td{
   background-color: #ddd;
   border-radius: 5px;
 }
-.pagination .input-total_items{
-  width: 64px;
-  margin:4px 32px 0 0;
+.page-number-d-flex{
+  display: flex;
+  align-items:center ;
+  float: right;
+  margin-top:16px
 }
-.pagination .tooltip-container {
+ 
+.tooltip-container {
   position: relative;
   display: inline-block;
+  width: 64px;
+  height: 40px;
+ }
+.tooltip-container button[type='button']{
+  width: 100%;
+  height: 100%;
+  color:#212121;
+  background: #fcfcfc;
+  border: 1px solid #b2b2b2;
 }
-
-.pagination .tooltip-container input:focus + .tooltip {
+ 
+.tooltip-container button[type='button']:focus+ .box-tooltip{
+  visibility: visible;
+  opacity: 1;
+}
+.tooltip-container button[type='button']+ .box-tooltip:hover{
   visibility: visible;
   opacity: 1;
 }
 
-.pagination .tooltip {
+.tooltip-container .box-tooltip {
   visibility: hidden;
   opacity: 0;
-  background-color: black;
-  color: #fff;
   text-align: center;
-  border-radius: 4px;
+  background-color: rgb(241, 241, 241);
+   width: 120px;
+   border-radius: 4px;
   padding: 5px;
   position: absolute;
-  top: 120%;
+  bottom: 44px;
   left: 0;
   z-index: 1;
   transition: opacity 0.3s;
-  white-space: nowrap;
+ }
+ .box-tooltip .btn-page-size{
+  width: 80px;
+  height: 32px;
+  display: block;
+  margin: 8px auto;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background: #ffffff;
+}
+.box-tooltip .btn-page-size:hover{
+  width: 75px;
+  height: 30px;
+  background: #cecece;
 }

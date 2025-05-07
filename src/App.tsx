@@ -7,8 +7,7 @@ import NotFound from "./pages/NotFound";
 import Mission from "./pages/mission";
 import Alarm from "./pages/alarm";
 import { BiHomeAlt, BiError, BiFile } from "react-icons/bi";
-import { TbTruckDelivery } from "react-icons/tb";
-import { PiChartDonutLight, PiBatteryCharging } from "react-icons/pi";
+ import { PiChartDonutLight, PiBatteryCharging,PiFireTruckLight   } from "react-icons/pi";
 
 import { IoIosLogIn } from "react-icons/io";
 import { useEffect, useState } from "react";
@@ -87,8 +86,8 @@ function App() {
               </li>
               <li>
                 <a href="/vehicle" className={linkFocused[2]}>
-                  <TbTruckDelivery size="32" />
-                  รถยนต์
+                  <PiFireTruckLight   size="32" />
+                  รถ
                 </a>
               </li>
               {isAdmin && <>
