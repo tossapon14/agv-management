@@ -27,15 +27,15 @@ export default function Vehicle() {
     const [onlineBar, setOnlineBar] = useState<null | boolean>(null);
     const onlineRef = useRef<boolean | null>(null);
     const [checkNetwork, setCheckNetwork] = useState(true);
-    const [agvDataExtend,setAgvDataExtend] = useState<IPayload|null>(null)
-    
-    const btnChooseAGV=(index:number)=>{
-     setAgvDataExtend(agvAll[index]);
+    const [agvDataExtend, setAgvDataExtend] = useState<IPayload | null>(null)
+
+    const btnChooseAGV = (index: number) => {
+        setAgvDataExtend(agvAll[index]);
     }
-    const closeModal =()=>{
+    const closeModal = () => {
         setAgvDataExtend(null);
     }
-    
+
     useEffect(() => {
         const pairAgvState = function (state: number): string {
             switch (state) {
@@ -87,7 +87,7 @@ export default function Vehicle() {
                 }
                 const agv = res.payload.map((data) => ({
                     ...data, str_state: pairAgvState(data.state),
-                    str_mission: pairMissionStatusHome(data.mission?.status ?? 0, data.mission?.transport_state ?? 0), 
+                    str_mission: pairMissionStatusHome(data.mission?.status ?? 0, data.mission?.transport_state ?? 0),
                     btn_pick_drop_code: `${data.state}${data.mission?.status}${data.mission?.transport_state}`
                 }));
                 setAgvAll(agv);
@@ -134,33 +134,33 @@ export default function Vehicle() {
                     Information about each vehicle</p>
             </div>
             {!checkNetwork ? <NetworkError /> : <div className="velocity-content-box">
-               {agvDataExtend&& <div className='fix-bg-info-vehicle' onClick={closeModal}>
+                {agvDataExtend && <div className='fix-bg-info-vehicle' onClick={closeModal}>
                     <div className='box-vehicle-info'>
                         <h4 className='name-sticky'>{agvDataExtend.name.toUpperCase()}</h4>
-                        <div className='px-3'>
-                            <p>emergency button: <b>{agvDataExtend!.emergency_state?"Press":""}</b></p>
+                        <div className='px-3'> 
+                            <p>state: <b>{agvDataExtend!.str_state}</b></p>
+                            <p>truck system: <b>{agvDataExtend!.mode ? "AUTO" : "MANUAL"}</b></p>
                             <p>coordinate: <b>{agvDataExtend!.coordinate}</b></p>
                             <p>node: <b>{agvDataExtend!.node}</b></p>
-                            <p>state: <b>{agvDataExtend!.str_state}</b></p>
                             <p>battery: <b>{agvDataExtend!.battery}</b></p>
                             <p>velocity: <b>{agvDataExtend!.velocity}</b></p>
-                            <p>truck system: <b>{agvDataExtend!.mode?"AUTO":"MANUAL"}</b></p>
                             <p>home: <b>{agvDataExtend!.home}</b></p>
-                             {agvDataExtend!.mission&&<div className='box-vehicle-info-misstion'>
+                            <p>emergency button: <b>{agvDataExtend!.emergency_state ? "Press" : ""}</b></p>
+                            {agvDataExtend!.mission && <div className='box-vehicle-info-misstion'>
                                 <h5>misstion</h5>
-                                <p>mission id: <b>{agvDataExtend!.mission!.id}</b></p> 
+                                <p>mission id: <b>{agvDataExtend!.mission!.id}</b></p>
                                 <p>timestamp: <b>{agvDataExtend!.mission!.timestamp}</b></p>
                                 <p>requester: <b>{agvDataExtend!.mission!.requester}</b></p>
                                 <p>misstion status: <b>{agvDataExtend!.str_mission}</b></p>
                                 <p>nodes: <b>{agvDataExtend!.mission!.nodes}</b></p>
                                 <p>paths: <b>{agvDataExtend!.mission!.paths}</b></p>
-                               
+
                             </div>}
                         </div>
 
                     </div>
                 </div>}
-                {agvAll.map((agv,index) => <div className='vehicle-card' key={agv.name}>
+                {agvAll.map((agv, index) => <div className='vehicle-card' key={agv.name}>
                     <div className="v-content-top-box">
                         <div className="v-content-image">
                             <div className={`border-of-image ${agv.state == 0 && 'agv-offline'}`}>
@@ -175,7 +175,7 @@ export default function Vehicle() {
                                     </div>
                                     <span className='ms-2 fs-6' style={{ color: '#646464', fontWeight: '500' }}>{agv.ip_address}:{agv.port}</span>
                                 </div>
-                                {agv.emergency_state||agv.state==6&&<div className='EmergencyBtn'><BiSolidError size={20} color='red'/>&nbsp;&nbsp;{agv.emergency_state?'Emergency is pressed':agv.str_state}</div>}
+                                {agv.emergency_state || agv.state == 6 && <div className='EmergencyBtn'><BiSolidError size={20} color='red' />&nbsp;&nbsp;{agv.emergency_state ? 'Emergency is pressed' : agv.str_state}</div>}
                             </div>
                         </div>
                         <div className="v-content-chart">
@@ -228,7 +228,7 @@ export default function Vehicle() {
                                 <p className='ms-2 my-0' style={{ color: 'rgb(194, 194, 194)', fontSize: '12px' }}>mission id</p>
 
                             </div>
-                            <button className='btn-extend' onClick={()=>btnChooseAGV(index)}>เพิ่มเติม</button>
+                            <button className='btn-extend' onClick={() => btnChooseAGV(index)}>เพิ่มเติม</button>
                         </div>
                     </div>
                     <div>

@@ -34,6 +34,7 @@ interface IuserPayload {
 export default function User() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const page_size = searchParams.get('page_size') || '10';
 
     const [checkNetwork, setCheckNetwork] = useState(true);
     const [pagination, setPagination] = useState<React.ReactElement | null>(null);
@@ -47,6 +48,7 @@ export default function User() {
     const searchName = useRef<HTMLInputElement>(null);
     const checkAdmin = useRef<HTMLInputElement>(null);
     const checkNormal = useRef<HTMLInputElement>(null);
+    const deleteModalRef = useRef<HTMLDivElement>(null);
 
     const searchUser = () => {
         const data = {
@@ -54,19 +56,19 @@ export default function User() {
             admin: checkAdmin.current?.checked,
             normal: checkNormal.current?.checked
         };
-    
+
         const userSearch = userRef.current.filter((u: IuserPayload) => {
             // Check position filter
             const matchAdmin = data.admin && u.position === 'admin';
             const matchNormal = data.normal && u.position !== 'admin';
             const matchPosition = data.admin || data.normal ? (matchAdmin || matchNormal) : true;
-    
+
             // Check name filter
             const matchName = data.text ? u.name.toLowerCase().includes(data.text) : true;
-    
+
             return matchPosition && matchName;
         });
-    
+
         setUserList(userSearch);
     };
     const btnForOption = (index: number) => {
@@ -103,10 +105,17 @@ export default function User() {
     const handleOpenInNewTab = () => {
         navigate('/create-User');
     };
-    const reloadMissionByButton = async (data: { p?: number }) => {
+    const reloadPage = async (data: { p?: number, ps?: string }) => {
         try {
-            var params = `?username=ALL&page=${data.p?.toString() ?? "1"}&page_size=10`
-            navigate(params, { replace: true });
+            var params = '';
+            if (data.p) {
+                params = `?username=ALL&page=${data.p?.toString()}&page_size=${page_size}`
+            } else if (data.ps) {
+                params = `?username=ALL&page=1&page_size=${page_size}`
+
+            }
+
+            navigate(params );
             window.location.reload(); // Force reload if needed
         } catch (e: any) {
             console.error(e);
@@ -152,18 +161,19 @@ export default function User() {
 
 
     useEffect(() => {
+
         const _pagination = (ttp: number): React.ReactElement | null => {
             const page: number = Number(searchParams.get("page") || 1); // Default to 1 if not found
-            if (ttp == 1) {
-                return null;
-            } else if (ttp <= 5) {
-                return <div className='pagination'>
+
+            if (ttp <= 5) {
+                return (<div className='pagination'>
+
                     {[...Array(ttp)].map((_, index) => {
                         const pageNumber = index + 1;
                         return (
                             <a
                                 key={pageNumber}
-                                onClick={() => reloadMissionByButton({ p: pageNumber })}
+                                onClick={() => reloadPage({ p: pageNumber })}
                                 className={pageNumber === page ? "active" : ""}
                             >
                                 {pageNumber}
@@ -171,7 +181,7 @@ export default function User() {
                         );
                     })}
 
-                </div>
+                </div>);
             }
             else if (ttp > 5) {
                 let intial: number;
@@ -184,10 +194,10 @@ export default function User() {
                 } else {
                     intial = page
                 }
-                return <div className="pagination">
-                    {/* Previous Button */}
+                return (<div className="pagination">
+
                     <a
-                        onClick={() => reloadMissionByButton({ p: page > 1 ? page - 1 : 1 })}
+                        onClick={() => reloadPage({ p: page > 1 ? page - 1 : 1 })}
                         className={page === 1 ? "disabled" : ""}
                     >
                         &laquo;
@@ -201,7 +211,7 @@ export default function User() {
                             return (
                                 <a
                                     key={pageNumber}
-                                    onClick={() => reloadMissionByButton({ p: pageNumber })}
+                                    onClick={() => reloadPage({ p: pageNumber })}
                                     className={pageNumber === page ? "active" : ""}
                                 >
                                     {pageNumber}
@@ -211,12 +221,12 @@ export default function User() {
 
                     {/* Next Button */}
                     <a
-                        onClick={() => reloadMissionByButton({ p: page + 1 })}
+                        onClick={() => reloadPage({ p: page + 1 })}
                         className={page === ttp ? "disabled" : ""}
                     >
                         &raquo;
                     </a>
-                </div>
+                </div>);
             }
             else return null
         };
@@ -261,6 +271,12 @@ export default function User() {
             }
         };
         checkNetwork();
+        if(deleteModalRef.current){
+            deleteModalRef.current.addEventListener("mouseup",()=> setShowOption({ show: false }))
+        }
+        return ()=>{
+            deleteModalRef.current!.removeEventListener("mouseup",()=>{})
+        }
     }, []);
     return (
         <div className='mission-box-page'>
@@ -277,17 +293,17 @@ export default function User() {
 
                 <div className='px-4'>
                     <ResponseElement response={responseData} />
-                    {showConfirmDelete.show && <div className='fixed-bg-delete' onClick={handleCloseModalDelete}>
+                    <div ref={deleteModalRef} className={`fixed-bg-delete ${showConfirmDelete.show?"":"d-none"}`}>
                         <div className='box-confirm-delete'>
                             <img src={Delete_img} alt="delete icon" width={40} height={40} />
-                            <h3 className='mt-2'>Do you want delete this account?</h3>
-                            <p>username <span className='name-user'>{showConfirmDelete.username}</span></p>
+                            <h4 className='mt-2'>Do you want delete this account?</h4>
+                            <p className='text-center'>un.  <span className='name-user'>{showConfirmDelete.username}</span></p>
                             <div className='box-confirm-delete-btn'>
                                 <button className='btn btn-danger' onClick={handleCloseModalDelete}>close</button>
                                 <button className='btn btn-primary' onClick={() => onConfirmDelete()}>confirm</button>
                             </div>
                         </div>
-                    </div>}
+                    </div>
                     {showOption.show && <div className='display-option-bg' onClick={handleCloseOption}>
                         <div className='display-option' style={{ left: showOption.left, top: showOption.top }}>
                             <div className='btn-mode-option' onClick={() => btnForOption(0)}>
@@ -313,18 +329,18 @@ export default function User() {
                             <div className='box-of-search-content'>
                                 <div className='box-of-search-content-item'>
                                     <label htmlFor="username">Name</label><br></br>
-                                    <input ref = {searchName} type="text" id="username" placeholder='Enter username' onChange={()=>searchUser()} />
+                                    <input ref={searchName} type="text" id="username" placeholder='Enter username' onChange={() => searchUser()} />
                                 </div>
 
                                 <div className='box-of-search-content-item mt-3'>
                                     <h6>Other</h6>
                                     <div className='d-flex align-items-center'>
-                                        <input ref={checkAdmin} type="checkbox" id="admin"  onChange={()=>searchUser()} />
+                                        <input ref={checkAdmin} type="checkbox" id="admin" onChange={() => searchUser()} />
                                         <label htmlFor="admin">admin</label>
                                     </div>
                                     <div className='d-flex align-items-center'>
-                                        <input ref={checkNormal} type="checkbox" id="agv"   onChange={()=>searchUser()}/>
-                                        <label htmlFor="agv">user normal</label>
+                                        <input ref={checkNormal} type="checkbox" id="agv" onChange={() => searchUser()} />
+                                        <label htmlFor="agv">normal user</label>
                                     </div>
                                 </div>
                             </div>
@@ -374,10 +390,21 @@ export default function User() {
                                     </tbody>
                                 </table>
 
-                                {
-                                    pagination
-                                }
 
+
+                            </div>
+                            <div className='page-number-d-flex'>
+
+                                <div className="tooltip-container">
+                                    <button type="button" onClick={() => { }}>{page_size}</button>
+                                    <div className="box-tooltip">
+                                        <button className='btn-page-size' onClick={() => reloadPage({ ps: '10' })}>10</button>
+                                        <button className='btn-page-size' onClick={() => reloadPage({ ps: '50' })}>50</button>
+                                        <button className='btn-page-size' onClick={() => reloadPage({ ps: '100' })}>100</button>
+                                    </div>
+                                </div>
+                                <span className='ms-1 me-3'>user/page</span>
+                                {pagination}
                             </div>
                         </div>
 

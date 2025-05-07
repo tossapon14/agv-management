@@ -318,7 +318,7 @@
   display: flex;
   flex-direction: column;
   justify-content: start;
-  align-items: start;
+  align-items: center;
   width: fit-content;
   height: 100%;
   padding-top: 32px;
@@ -344,9 +344,9 @@
 }
 
 .pickup-time {
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 700;
-  color: #000dff;
+  color: #94c5fe;
 }
 
 .center-line-box {
@@ -487,7 +487,7 @@
 }
 
 .mission-btn {
-  background-color: #000e91;
+  background-color: #0012af;
   width: 130px;
   height: 40px;
   border-radius: 5px;
@@ -504,13 +504,15 @@
 
 }
 .mission-btn:hover{
-  background-color: #3651ff;
-  border: 2px solid #4649ff;
+  background-color: #0022fe;
+ }
+.mission-btn:active {
+   transform: scale(0.95);
 }
 
 .drop-btn {
   flex: 1 0 130px;
-  background-color: #ff4943;
+  background-color: #ff0800;
   border: none;
   width: 130px;
   height: 54px;
@@ -531,17 +533,13 @@
   }
 }
 .drop-btn:hover {
-  background-color: #ff231b;
+  background-color: #c20600;
   border: 2px solid #840000;
 }
 .drop-btn:active {
-  background-color: #ad0701;
-  transform: scale(0.95);
+   transform: scale(0.95);
 }
-.mission-btn:active {
-  background-color: #3651ff;
-  transform: scale(0.95);
-}
+
 
 .pick-circle-icon {
   width: 22px;

@@ -35,12 +35,11 @@ export default function Mission() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [missionTable, setMissionTable] = useState<IMissionTables[]>([]);
-    const page: number = Number(searchParams.get("page") || 1); // Default to 1 if not found
-    const vehicle = searchParams.get("vehicle_name") || "ALL"; // Default to "desc"
+     const vehicle = searchParams.get("vehicle_name") || "ALL"; // Default to "desc"
     const status = searchParams.get("status") || "ALL"; // Default to "asc"
     const start_date = searchParams.get("start_date") || new Date().toISOString().substring(0, 10)
     const end_date = searchParams.get("end_date") || new Date().toISOString().substring(0, 10)
-    const page_size = searchParams.get('page_size') || 10;
+    const page_size = searchParams.get('page_size') || '10';
 
     const [pagination, setPagination] = useState<React.ReactElement | null>(null);
     const [loadSuccess, setLoadSuccess] = useState(false);
@@ -107,6 +106,8 @@ export default function Mission() {
 
     useEffect(() => {
         const _pagination = (ttp: number): React.ReactElement | null => {
+            const page: number = Number(searchParams.get("page") || 1); // Default to 1 if not found
+
             if (ttp <= 5) {
                 return (<div className='pagination'>
 
@@ -357,7 +358,7 @@ export default function Mission() {
                         </div>
 
                     </div>
-                    <span className='ms-1 me-3'>mission/pages</span>
+                    <span className='ms-1 me-3'>mission/page</span>
                     {pagination}
                 </div>
             </div>}

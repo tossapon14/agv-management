@@ -254,8 +254,8 @@
     z-index: 3;
  }
  .box-vehicle-info{
-    width: 500px;
-    height: 350px;
+    width: 450px;
+    height: 400px;
     background-color: #ffffff;
     overflow-y: auto;
     border-radius: 5px;

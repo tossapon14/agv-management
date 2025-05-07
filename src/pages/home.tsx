@@ -50,6 +50,7 @@ export interface IPayload {
   str_mission: string | null;
   processMission: { percents: number, nodesList: string[], numProcess: number } | null;
   havePickup?: string | null;
+  timestamp?:string;
 }
 interface IMission {
   id: number
@@ -495,6 +496,7 @@ export default function Home() {
               str_mission: pairMissionStatusHome(data.mission?.status ?? 0, data.mission?.transport_state ?? 0),
               agv_code_status: `${data.state}${data.mission?.status}${data.mission?.transport_state}`,
               havePickup: (data.mission?.nodes.split(',').length == 1) ? data.mission?.nodes : null,
+              timestamp:data.mission?.dispatch_time?.substring(11, 16),
             }
           } else {
             _agvData = { ...data, str_state: pairAgvState(data.state), };
@@ -695,7 +697,7 @@ export default function Home() {
                 <div className="mission-process-box" >
                   <div className="pickup-box">
                     <div className='pickup-text'>{agv.processMission!.nodesList[0]}</div>
-                    {/* <div className='pickup-time'>09.53</div> */}
+                    <div className='pickup-time'>{agv.timestamp??""}</div>
                   </div>
                   <div className='center-line-box'>
                     <hr className="line4"></hr>

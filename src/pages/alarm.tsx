@@ -47,11 +47,10 @@ export default function Alarm() {
     const [btnAGV, setbtnAGV] = useState<string[]>([])
 
 
-    const page: number = Number(searchParams.get("page") || 1);
-    const vehicle = searchParams.get("vehicle_name") || "ALL"; // Default to "desc"
+     const vehicle = searchParams.get("vehicle_name") || "ALL"; // Default to "desc"
     const start_date = searchParams.get("start_date") || new Date().toISOString().substring(0, 10)
     const end_date = searchParams.get("end_date") || new Date().toISOString().substring(0, 10)
-    const page_size = searchParams.get('page_size') || 10;
+    const page_size = searchParams.get('page_size') || '10';
     const [loadSuccess, setLoadSuccess] = useState(false);
     const [checkNetwork, setCheckNetwork] = useState(true);
 
@@ -116,6 +115,8 @@ export default function Alarm() {
 
     useEffect(() => {
         const _pagination = (ttp: number): React.ReactElement | null => {
+            const page: number = Number(searchParams.get("page") || 1); // Default to 1 if not found
+
             if (ttp <= 5) {
                 return (<div className='pagination'>
 
@@ -184,7 +185,7 @@ export default function Alarm() {
         const getAlarm = async () => {
             try {
                 const res: IAlarm = await axiosGet(
-                    `/alarm/alarms?vehicle_name=${vehicle}&start_date=${start_date}&end_date=${end_date}&page=${page}&page_size=10`
+                    `/alarm/alarms?vehicle_name=${vehicle}&start_date=${start_date}&end_date=${end_date}&page=1&page_size=10`
                     // `/alarm/alarms?vehicle_name=${vehicle}&start_date=${start_date}&end_date=${end_date}&page=${page}&page_size=10`
                 );
                 const alert: IAlarmTable[] = [];
@@ -316,7 +317,7 @@ export default function Alarm() {
                             <button className='btn-page-size' onClick={() => reloadPage({ ps: '100' })}>100</button>
                         </div>
                     </div>
-                    <span className='ms-1 me-3'>mission/pages</span>
+                    <span className='ms-1 me-3'>emergency/page</span>
                     {pagination}
                 </div>
             </div>}
