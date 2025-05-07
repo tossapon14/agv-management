@@ -207,11 +207,11 @@ export default function Mission() {
             }
             else return null
         };
-        const isoDurationToMinSec = (duration: string | undefined): string => {
-            if (duration === undefined) return "";
+        const isoDurationToMinSec = (duration: string | undefined|null): string => {
+            if (!duration) return "";
             else {
                 const regex = /PT(?:(\d+)M)?(?:(\d+)S)?/;
-                const matches = duration.match(regex);
+                const matches = duration!.match(regex);
                 if (matches === null) return "00:00"
                 else {
                     const minutes = parseInt(matches[1]);
@@ -232,6 +232,7 @@ export default function Mission() {
                     `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${start_date}&end_date=${end_date}&page=1&page_size=10`
 
                 );
+                console.log(res);
                 setPagination(_pagination(res.structure?.total_pages));
                 const _mission: IMissionTables[] = []
                 const _btnAGV: string[] = []
@@ -296,10 +297,11 @@ export default function Mission() {
                 <div className='mission-header'>
                     <div className='selected-mission-btn'>
                         <button onClick={() => reloadMission({ s: "ALL" })} className={`${status === "ALL" ? "active" : ""}`}>All</button>
-                        <button onClick={() => reloadMission({ s: "RUNNING" })} className={`${status === "RUNNING" ? "active" : ""}`}>Running</button>
-                        <button onClick={() => reloadMission({ s: "SUCCESS" })} className={`${status === "SUCCESS" ? "active" : ""}`}>Success</button>
-                        <button onClick={() => reloadMission({ s: "FAILED" })} className={`${status === "FAILED" ? "active" : ""}`}>Failed</button>
-                        <button onClick={() => reloadMission({ s: "CANCEL" })} className={`${status === "CANCEL" ? "active" : ""}`}>Cancel</button>
+                        <button onClick={() => reloadMission({ s: "2" })} className={`${status === "2" ? "active" : ""}`}>Running</button>
+                        <button onClick={() => reloadMission({ s: "3" })} className={`${status === "3" ? "active" : ""}`}>Success</button>
+                        <button onClick={() => reloadMission({ s: "6" })} className={`${status === "6" ? "active" : ""}`}>Failed</button>
+                        <button onClick={() => reloadMission({ s: "5" })} className={`${status === "5" ? "active" : ""}`}>Cancel</button>
+                        <button onClick={() => reloadMission({ s: "0" })} className={`${status === "0" ? "active" : ""}`}>Pending</button>
 
                     </div>
                     <div className='input-date-box'>

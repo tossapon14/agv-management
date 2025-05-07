@@ -104,7 +104,7 @@ export default function Login() {
       {load && <div className='loading-background'>
         <div id="loading"></div>
       </div>}
-      <div className="about-version"><IoInformationCircleOutline size={24} /><span> power by BGC v.1.5.6</span>
+      <div className="about-version"><IoInformationCircleOutline size={24} /><span> power by BGC {import.meta.env.VITE_REACT_APP_VERSION}</span>
       </div>
       {user ? <div className='profile'>
         <h1>{text["imfor"]}</h1>
