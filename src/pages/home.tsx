@@ -138,10 +138,11 @@ export default function Home() {
   const modalRef = useRef<HTMLDivElement>(null);
   const confirmModalRef = useRef<HTMLDivElement>(null);
   const selectAgv = useRef<string>('ALL');
+  const firstInit = useRef(false);
+  const loadSave = useRef(false);
   const [btnAGVName, setBtnAGVName] = useState<string[] | null>(null);
   const [waitMode, setWaitMode] = useState<boolean>(false);
-  const initialAgv = useRef<boolean>(false);
-  const [dialogSummary, setDialogSummary] = useState<{ show: boolean, name?: string, id?: number, codePickup?: string, dropName?: string }>({ show: false });
+   const [dialogSummary, setDialogSummary] = useState<{ show: boolean, name?: string, id?: number, codePickup?: string, dropName?: string }>({ show: false });
   const [responseData, setResponseData] = useState<{ error: boolean | null, message?: string }>({ error: null });
 
 
@@ -287,7 +288,7 @@ export default function Home() {
 
     } catch (e) {
       console.error(e);
-    } finally { }
+    }  
   }
   const deleteDrop = (node: string) => {
     const element = document.getElementById(node);
@@ -323,6 +324,7 @@ export default function Home() {
     setSelectedAgv(agvNumber);
     setWaitMode(true);
     setLoadSuccess(false);
+    loadSave.current  =false;
   }
 
   useEffect(() => {
@@ -452,8 +454,10 @@ export default function Home() {
         }
         return e.response?.data || { message: "Unknown error occurred" };
       }finally{
-        if (!loadSuccess) {
+        if (!loadSave.current) {
+          loadSave.current = true;
           setLoadSuccess(true);
+
         }
       }
     };
@@ -471,7 +475,7 @@ export default function Home() {
         const _agv: IPayload[] = [];
         var _paths: number[][] = [];
         var _positionDrop: number[][] = [];
-        const agvName: string[] = []
+        const agvName: string[] = ["ALL"]
         res.payload.forEach((data: IPayload) => {
           agvName.push(data.name)
 
@@ -514,10 +518,10 @@ export default function Home() {
         setMapData(_mapData);
         setAgvPath(_paths);
         setPositionDrop(_positionDrop);
-        if (!initialAgv.current) {
+        if (!firstInit.current) {
+          firstInit.current = true;
           setBtnAGVName(agvName);
-          initialAgv.current = true;
-        }
+         }
 
       } catch (e: any) {
         if (e.message === "Network Error") {
@@ -530,8 +534,10 @@ export default function Home() {
           console.error(e.message)
         }
       } finally {
-        if (!loadSuccess) {
+        if (!loadSave.current) {
+          loadSave.current = true;
           setLoadSuccess(true);
+
         }
       }
 
@@ -631,8 +637,7 @@ export default function Home() {
       </section>
       <section className="col2">
         <div className='box-agv-btn'>
-          <button onClick={() => selectAgvFunction(0)} className={`btn-agv ${selectedAgv === 0 ? 'active' : ''}`}>ทั้งหมด</button>
-          {btnAGVName?.map((name, index) => <button key={name} onClick={() => selectAgvFunction(index + 1)} className={`btn-agv ${selectedAgv === index + 1 ? 'active' : ''}`}>{name}</button>)}
+           {btnAGVName?.map((name, index) => <button key={name} onClick={() => selectAgvFunction(index)} className={`btn-agv ${selectedAgv === index ? 'active' : ''}`}>{name}</button>)}
         </div>
         {agvAll.map((agv, index) => (agv.state === 0) ? <section key={index} className='box-agv-data'
         >

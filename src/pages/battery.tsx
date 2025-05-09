@@ -18,87 +18,90 @@ interface IBattery {
 }
 export interface IDataSeries {
   series: { name: string; data: { x: number, y: number }[] }[]
-}
+} const getBattery = async (url: string | null): Promise<IBattery> => {
+  if (url == null) {
+    const _date = new Date().toISOString().substring(0, 10);
+    url = `/vehicle/battery_level?vehicle_name=ALL&start_date=${_date}&end_date=${_date}`;
+  } const res: IBattery = await axiosGet(url);
+  return res;
+};
+const downloadCSV = async (vehicle: string, status: string, start_date: string, end_date: string) => {
+    const fetchData: string = await axiosGet(
+        `/mission/export_mission_report?vehicle_name=${vehicle}&status=${status}&start_date=${start_date}&end_date=${end_date}`)
+    const blob = new Blob([fetchData], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `battery-${start_date} ${end_date}.csv`;
+    link.click();
+
+    URL.revokeObjectURL(url);
+};
 
 const colorLine = ['#2E93fA', '#66DA26', '#546E7A', '#E91E63', '#FF9800']
 const Battery = () => {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const [loadSuccess, setLoadSuccess] = useState(false);
-  const start_date = searchParams.get("start_date") || new Date().toISOString().substring(0, 10)
-  const end_date = searchParams.get("end_date") || new Date().toISOString().substring(0, 10)
+  const [startDate, setStartDate] = useState<string>(new Date().toISOString().substring(0, 10))
+  const [endDate, setEndDate] = useState<string>(new Date().toISOString().substring(0, 10))
   const [battery, setBattery] = useState<IDataSeries>({ series: [] });
   const [checkNetwork, setCheckNetwork] = useState(true);
 
 
   const reloadDataByDate = async (data: { d?: Date, de?: Date, }) => {
     try {
-      var params = "";
+      var url: string | null = null;
       if (data.d) {
-        if (data.d > new Date(end_date)) {
+        if (data.d > new Date(endDate)) {
           return;
         }
         const bangkokOffsetMs = 7 * 60 * 60 * 1000;
         const localTime = data.d!.getTime() + bangkokOffsetMs;
         const _date: string = new Date(localTime).toISOString().substring(0, 10);
-        params = `?vehicle_name=ALL&start_date=${_date}&end_date=${end_date}`
+        url = `/vehicle/battery_level?vehicle_name=ALL&start_date=${_date}&end_date=${endDate}`;
+        setStartDate(_date);
+
       }
       else if (data.de) {
-        if (data.de < new Date(start_date)) {
+        if (data.de < new Date(startDate)) {
           return;
         }
         const bangkokOffsetMs = 7 * 60 * 60 * 1000;
         const localTime = data.de!.getTime() + bangkokOffsetMs;
         const _date: string = new Date(localTime).toISOString().substring(0, 10);
-        params = `?vehicle_name=ALL&start_date=${start_date}&end_date=${_date}`
+        url = `/vehicle/battery_level?vehicle_name=ALL&start_date=${startDate}&end_date=${_date}`;
+        setEndDate(_date);
 
       }
-      navigate(params, { replace: true });
-      window.location.reload(); // Force reload if needed
+      
+      const res = await getBattery(url);
+      const _series: { name: string; data: { x: number, y: number }[] }[] = [];
+      for (var agv in res) {
+        const dataBattery: { x: number, y: number }[] = [];
+        for (var i = 0; i < res[agv].length; i += 3) {
+          dataBattery.push({ x: res[agv][i][2] * 1000, y: res[agv][i][1] });
+        }
+        _series.push({ name: agv, data: dataBattery });
+      }
+      setBattery({ series: _series });
     } catch (e: any) {
       console.error(e);
     }
   };
   useEffect(() => {
 
-    const getBattery = async () => {
-      try {
-        const res: IBattery = await axiosGet(
-          // `/mission/missions?vehicle_name=ALL&status=ALL&start_date=${getDate}&end_date=${getDate}&page=1&page_size=10`
-          `/vehicle/battery_level?vehicle_name=ALL&start_date=${start_date}&end_date=${end_date}`
-        );
-        const _series: { name: string; data: { x: number, y: number }[] }[] = [];
-        for (var agv in res) {
-          const dataBattery: { x: number, y: number }[] = [];
-          for (var i = 0; i < res[agv].length; i += 3) {
-            dataBattery.push({ x: res[agv][i][2] * 1000, y: res[agv][i][1] });
-          }
-          _series.push({ name: agv, data: dataBattery });
-        }
-        setBattery({ series: _series });
 
-
-      } catch (e: any) {
-        console.error(e);
-      } finally {
-        if (!loadSuccess) {
-          setLoadSuccess(true);
-        }
-      }
-    };
     const checkNetwork = async () => {
       try {
         const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
         if (response.ok) {
-          getBattery();
+          reloadDataByDate({});
         }
       } catch (e: any) {
         console.error(e);
         setCheckNetwork(false);
       } finally {
-        if (!loadSuccess) {
           setLoadSuccess(true);
-        }
       }
     };
     checkNetwork();
@@ -118,16 +121,16 @@ const Battery = () => {
         <div className="form-group">
           <label >From</label>
           <div className='box-of-text-date'>
-            <div className='ps-2'>{start_date}</div>
-            <DatePicker selected={new Date(start_date)} onChange={(e) => reloadDataByDate({ d: e ?? undefined })} />
+            <div className='ps-2'>{startDate}</div>
+            <DatePicker selected={new Date(startDate)} onChange={(e) => reloadDataByDate({ d: e ?? undefined })} />
           </div>
         </div>
 
         <div className="form-group">
           <label >To</label>
           <div className='box-of-text-date'>
-            <div className='ps-2'>{end_date}</div>
-            <DatePicker selected={new Date(end_date)} onChange={(e) => reloadDataByDate({ de: e ?? undefined })} />
+            <div className='ps-2'>{endDate}</div>
+            <DatePicker selected={new Date(endDate)} onChange={(e) => reloadDataByDate({ de: e ?? undefined })} />
           </div>
         </div>
         <button className="export-btn2" onClick={() => { }}><IoMdDownload /> <span>export</span> </button>

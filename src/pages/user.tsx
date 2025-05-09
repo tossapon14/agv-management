@@ -99,9 +99,7 @@ export default function User() {
         saveUserIndex.current = index; // Save the index of the clicked user
         setShowOption({ show: true, left: `${rect.left}px`, top: `${rect.top}px`, indexRow: index });
     }
-    const handleCloseOption = () => {
-        setShowOption({ show: false });
-    }
+
     const handleOpenInNewTab = () => {
         navigate('/create-User');
     };
@@ -115,7 +113,7 @@ export default function User() {
 
             }
 
-            navigate(params );
+            navigate(params);
             window.location.reload(); // Force reload if needed
         } catch (e: any) {
             console.error(e);
@@ -271,12 +269,8 @@ export default function User() {
             }
         };
         checkNetwork();
-        if(deleteModalRef.current){
-            deleteModalRef.current.addEventListener("mouseup",()=> setShowOption({ show: false }))
-        }
-        return ()=>{
-            deleteModalRef.current!.removeEventListener("mouseup",()=>{})
-        }
+
+        
     }, []);
     return (
         <div className='mission-box-page'>
@@ -293,7 +287,7 @@ export default function User() {
 
                 <div className='px-4'>
                     <ResponseElement response={responseData} />
-                    <div ref={deleteModalRef} className={`fixed-bg-delete ${showConfirmDelete.show?"":"d-none"}`}>
+                    <div  className={`fixed-bg-delete ${showConfirmDelete.show ? "" : "d-none"}`}>
                         <div className='box-confirm-delete'>
                             <img src={Delete_img} alt="delete icon" width={40} height={40} />
                             <h4 className='mt-2'>Do you want delete this account?</h4>
@@ -304,7 +298,7 @@ export default function User() {
                             </div>
                         </div>
                     </div>
-                    {showOption.show && <div className='display-option-bg' onClick={handleCloseOption}>
+                    {showOption.show && <div className='display-option-bg' onClick={() => setShowOption({ show: false })}>
                         <div className='display-option' style={{ left: showOption.left, top: showOption.top }}>
                             <div className='btn-mode-option' onClick={() => btnForOption(0)}>
                                 <img src={UserImage} alt="edit" width={20} height={20} />

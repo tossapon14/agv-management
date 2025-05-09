@@ -80,7 +80,7 @@ function MapAnimate({ data, paths, positionDrop }: MapAnimateProps) {
     d={agvPath}
     fill="none"
     stroke="red"           // Line color
-    strokeWidth={8}        // Line thickness
+    strokeWidth={4}        // Line thickness
     strokeLinejoin="round"
     strokeLinecap="round"  // Makes the line edges rounded
   />

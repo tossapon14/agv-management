@@ -1,15 +1,14 @@
-.timer-clock{
+.timer-clock {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: normal;
     color: #fff;
-    width:300px;
-    padding-top:8px ;
-    /* background-color: aqua; */
+
 }
-.headder-nav-bar{
+
+.headder-nav-bar {
     padding: 0 .5rem;
     display: flex;
     justify-content: space-between;
@@ -18,4 +17,30 @@
     height: 60px;
     position: fixed;
     z-index: 2;
+}
+
+.language-box {
+    width: 100px;
+    height: 20px;
+    margin-right: 16px;
+    position: relative;
+}
+
+.btn-language {
+    display: flex;
+    border-radius: 4px;
+    height: 24px;
+    padding-inline: 8px;
+    border: none;
+}
+
+.btn-language+.select-language-box {
+    background-color: rgb(228, 228, 228);
+    width: 120px;
+    border-radius: 4px;
+    padding: 8px;
+    position: absolute;
+    top: 25px;
+    left: 0;
+    z-index: 1;
 }
