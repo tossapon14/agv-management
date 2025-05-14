@@ -59,7 +59,6 @@
     align-items: center;
     background-color: #000000;
     border: none;
-    width:100px;
     padding: 4px 12px;
     border-radius: 5px;
     color:white;
@@ -85,7 +84,8 @@
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 
 }
-.statistics-box h4+p{
-    color:#878787;
-    font-size: 12px;
+.p-subtitle{
+    margin: 0;
+    color:#7c7c7c;
+    font-size: 14px;
 }

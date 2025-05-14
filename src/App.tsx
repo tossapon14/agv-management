@@ -18,6 +18,7 @@ import User from "./pages/user";
 import CreateUser from "./pages/createUser";
 import ChangePassword from "./pages/changePassword";
 import EditUser from "./pages/editUser";
+import { useTranslation } from 'react-i18next';
 
 // Helper function to protect routes
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
@@ -27,9 +28,8 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 function App() {
   const [linkFocused, setLinkFocused] = useState<string[]>(Array(7).fill(""));
   const isAdmin =  (sessionStorage.getItem("user")?.split(",")[2]==="admin");
+  const { t } = useTranslation("drawer"); 
   useEffect(() => {
-
- 
     const path = window.location.pathname;
     var index = 6; // Default to "login"
 
@@ -75,45 +75,45 @@ function App() {
               <li>
                 <a href="/home" className={linkFocused[0]}>
                   <BiHomeAlt size="32" />
-                  หน้าหลัก
+                  {t("home")}
                 </a>
               </li>
               <li>
                 <a href="/mission" className={linkFocused[1]}>
                   <BiFile size="32" />
-                  งานขนส่ง
+                  {t("mission")}
                 </a>
               </li>
               <li>
                 <a href="/vehicle" className={linkFocused[2]}>
                   <PiFireTruckLight   size="32" />
-                  รถ
+                  {t("vehicle")}
                 </a>
               </li>
               {isAdmin && <>
                 <li>
                   <a href="/statistics" className={linkFocused[3]}>
                     <PiChartDonutLight size="32" />
-                    สถิติ
+                    {t("statistics")}
                   </a>
                 </li>
                 <li>
                   <a href="/battery" className={linkFocused[4]}>
                     <PiBatteryCharging size="32" />
-                    แบตเตอรี
+                    {t("battery")}
                   </a>
                 </li>
                 <li>
                   <a href="/alarms" className={linkFocused[5]}>
                     <BiError size="32" />
-                    ขัดข้อง
+                    {t("alarm")}
                   </a>
                 </li>
               </>}
               <li>
                 <a href="/login" className={linkFocused[6]}>
                   <IoIosLogIn size="32" />
-                  เข้าสู่ระบบ
+                  {t("login")}
                 </a>
               </li>
             </ul>

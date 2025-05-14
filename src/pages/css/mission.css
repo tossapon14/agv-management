@@ -119,14 +119,18 @@
 }
 .form-group>.box-of-text-date{
   position: relative;
+  padding: top;
   width: 150px;
-  height: 32px;
+  padding-top:4px ;
+  height: 34px;
   background-color: #ffffff;
 }
+ 
+
 .form-group input[type="text"]{
   width: 150px;
-  height: 34px;
-  top:-45px;
+  height: 36px;
+  top:-48px;
   left:0;
   color:transparent;
   position: absolute;
@@ -136,12 +140,10 @@
 }
 
  
- 
 
  .export-btn{
     width: 110px;
-    padding: 4px 0;
-    font-size: 20px;
+    height: 40px;
     margin-left: 1rem;
     margin-bottom:2px;
     background-color: #0921fb;

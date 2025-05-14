@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
- import './css/statistics.css';
+import './css/statistics.css';
 import { FcComboChart } from "react-icons/fc";
 import { IoMdDownload } from "react-icons/io";
 import { AiFillSetting } from "react-icons/ai";
@@ -10,6 +10,7 @@ import BGBarChart from './chart/barChart2';
 import DatePicker from "react-datepicker";
 import NetworkError from './networkError';
 import _default from 'react-bootstrap/esm/Alert';
+import { useTranslation } from 'react-i18next';
 
 
 
@@ -28,7 +29,7 @@ export type IStatisticsData = {
 }
 type ISeries = { name: string, data: number[] }[]
 
-const getData = async (url: string|null): Promise<IStatistics> => {
+const getData = async (url: string | null): Promise<IStatistics> => {
   if (url == null) {
     const _date = new Date().toISOString().substring(0, 10)
     url = `/statistics/report?start_date=${_date}&end_date=${_date}`;
@@ -37,18 +38,18 @@ const getData = async (url: string|null): Promise<IStatistics> => {
   const res: IStatistics = await axiosGet(url);
   return res;
 };
-const downloadCSV = async (vehicle: string, status: string, start_date: string, end_date: string) => {
-    const fetchData: string = await axiosGet(
-        `/mission/export_mission_report?vehicle_name=${vehicle}&status=${status}&start_date=${start_date}&end_date=${end_date}`)
-    const blob = new Blob([fetchData], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
+const downloadCSV = async (start_date: string, end_date: string) => {
+  const fetchData: string = await axiosGet(
+    `/mission/export_mission_report?vehicle_name=ALL&status=ALL&start_date=${start_date}&end_date=${end_date}`)
+  const blob = new Blob([fetchData], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
 
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `statistics-${start_date} ${end_date}.csv`;
-    link.click();
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `statistics-${start_date} ${end_date}.csv`;
+  link.click();
 
-    URL.revokeObjectURL(url);
+  URL.revokeObjectURL(url);
 };
 export default function Statistics() {
 
@@ -60,7 +61,7 @@ export default function Statistics() {
   const [dataMission, setDataMission] = useState<IStatisticsData>();
   const [totalMission, setTotalMission] = useState<{ mission: number, complete: number, cancel: number, other: number }>();
   const [checkNetwork, setCheckNetwork] = useState(true);
-
+  const { t } = useTranslation("mission");
 
   const reloadDataByDate = async (data: { d?: Date, de?: Date, }) => {
     try {
@@ -179,13 +180,13 @@ export default function Statistics() {
       </div>}
       <div className='d-flex align-items-center justify-content-between'>
         <div className='mb-4'>
-          <h1>Statistics Page</h1>
-          <p><FcComboChart size={32} />  <span className='ms-3'>This is the statistics page.</span></p>
+          <h1>{t("st_title")}</h1>
+          <p><FcComboChart size={32} />  <span className='ms-3'>{t("st_subtitle")}</span></p>
         </div>
 
         {checkNetwork && <div className='input-date-box ms-5'>
           <div className="form-group">
-            <label >From</label>
+            <label >{t("form")}</label>
             <div className='box-of-text-date'>
               <div className='ps-2'>{startDate}</div>
               <DatePicker selected={new Date(startDate)} onChange={(e) => reloadDataByDate({ d: e ?? undefined })} />
@@ -193,13 +194,13 @@ export default function Statistics() {
           </div>
 
           <div className="form-group">
-            <label >To</label>
+            <label >{t("to")}</label>
             <div className='box-of-text-date'>
               <div className='ps-2'>{endDate}</div>
               <DatePicker selected={new Date(endDate)} onChange={(e) => reloadDataByDate({ de: e ?? undefined })} />
             </div>
           </div>
-          <button className="export-btn2" onClick={() => { }}><IoMdDownload /> <span>export</span> </button>
+          <button className="export-btn2" onClick={() => downloadCSV(startDate, endDate)}><IoMdDownload /> <span>{t("downloadBtn")}</span> </button>
         </div>}
       </div>
       {!checkNetwork ? <NetworkError /> : <>
@@ -209,7 +210,7 @@ export default function Statistics() {
               <div className='box-icon' style={{ backgroundColor: "#cacaff" }}>
                 <AiFillSetting color="#5600ff" size={24} />
               </div>
-              <p>งานทั้งหมด</p>
+              <p>{t("st_all")}</p>
             </div>
             <div className='stat-number'>{totalMission?.mission ?? 0}</div>
           </div>
@@ -218,7 +219,7 @@ export default function Statistics() {
               <div className='box-icon' style={{ backgroundColor: "#e4ffd8" }}>
                 <IoCheckmarkCircle color="#4fff00" size={24} />
               </div>
-              <p>สำเร็จ</p>
+              <p>{t("success")}</p>
             </div>
             <div className='stat-number'>{totalMission?.complete ?? 0}</div>
           </div>
@@ -227,7 +228,7 @@ export default function Statistics() {
               <div className='box-icon' style={{ backgroundColor: "#ffdcdc" }}>
                 <MdCancel color="#ff6d6d" size={24} />
               </div>
-              <p>ยกเลิก</p>
+              <p>{t("cancel")}</p>
             </div>
             <div className='stat-number'>{totalMission?.cancel ?? 0}</div>
           </div>
@@ -236,7 +237,7 @@ export default function Statistics() {
               <div className='box-icon' style={{ backgroundColor: "#e8e8e8" }}>
                 <IoCheckmarkCircle color="#999999" size={24} />
               </div>
-              <p>อื่นๆ</p>
+              <p>{t("other")}</p>
             </div>
             <div className='stat-number'>{totalMission?.other ?? 0}</div>
           </div>
@@ -245,23 +246,23 @@ export default function Statistics() {
         <div className='stat-chart-pickup'>
           <div className='col-8'>
             <div className='pickup-chart'>
-              <h4>Pickup</h4>
-              <p>แสดงข้อมูลการ pickup ของ AGV ในช่วงเวลาที่เลือก</p>
+              <h4>{t("tb_pickup")}</h4>
+              <p className='p-subtitle'>{t("st_title_pick")}</p>
               <BGBarChart data={dataPickup} />
             </div>
           </div>
           <div className='col-4'>
             <div className='chart-donus-box'>
-              <h4>Mission</h4>
-              <p>แสดงข้อมูลผลลัพท์ของ การขนส่ง</p>
+              <h4>{t("st_all")}</h4>
+              <p className='p-subtitle'>{t("st_title_miss")}</p>
               <BGBarChart data={dataMission} />
             </div>
           </div>
 
         </div>
         <div className='stat-chart-drop'>
-          <h4>Drop point</h4>
-          <p>แสดงข้อมูลการ Drop ของ AGV ในช่วงเวลาที่เลือก</p>
+          <h4>{t("tb_drop")}</h4>
+          <p className='p-subtitle'>{t("st_title_drop")}</p>
           <BGBarChart data={dataDrop} />
         </div>
       </>}

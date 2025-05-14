@@ -1,0 +1,15 @@
+{
+    "signin": "SIGN IN",
+    "login": "LOGIN",
+    "logout": "LOGOUT",
+    "imfor": "IMFORMATION",
+    "employee_no": "User ID :",
+    "name": "Name :",
+    "username": "Username:",
+    "position": "Job title :",
+    "status": "Status :",
+    "on": "Online",
+    "des": "EDIT THE ACCOUNT",
+    "singup": "singup",
+    "lang": "en"
+}
