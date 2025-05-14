@@ -2,7 +2,7 @@
 
 ## setup project
 
-- go to file .env and edit [VITE_REACT_APP_API_URL = 'https://your_server:your_port']
+- go to file .env and edit [ VITE_REACT_APP_API_URL = https://your_server:your_port ]
 
 ## build and run web application
 - npm run build  
