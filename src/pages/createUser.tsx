@@ -8,6 +8,7 @@ import CreateUserImg from '../assets/images/creat-user.jpg';
 import NetworkError from './networkError';
 import { axiosGet, axiosPost } from "../api/axiosFetch";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import { useTranslation } from 'react-i18next';
 
 export interface IVehicles {
     message: string
@@ -50,6 +51,7 @@ export default function CreateUser() {
     const [response, setResponse] = useState<{ show: boolean, error: boolean | null, message: string }>({ show: false, error: false, message: '' });
     const [load, setLoad] = useState(false);
     const [showPassword, setShowPassword] = useState<boolean>(false);
+    const { t } = useTranslation("user");
 
 
 
@@ -130,20 +132,20 @@ export default function CreateUser() {
                     <div className="card-user">
                         <h4>
                             <img src={AddUserImage} alt="edit" width={32} height={32} />
-                            <span className='text-primary fw-bold mx-2'>BGC</span>create user</h4>
+                            <span className='text-primary fw-bold mx-2'>BGC</span>{t("create")}</h4>
 
                         {response.show ? <h5 className={`text-response ${response.error ? 'bg-error' : 'bg-ok'}`}>{response.message}</h5>
                             : <form onSubmit={submitUserForm}>
-                                <label><b>Employee no.</b></label>
+                                <label><b>{t("empl")}</b></label>
                                 <input type="text" name='employee_no' className='input-user' required />
                                 <br></br>
-                                <label><b>Username</b></label>
+                                <label><b>{t("user")}</b></label>
                                 <input type="text" name='username' className='input-user' autoComplete="off" />
                                 <br></br>
-                                <label><b>Name</b><span> (ชื่อจริง)</span></label>
+                                <label><b>{t("name2")}</b></label>
                                 <input type="text" name='name' className='input-user' required />
                                 <br></br>
-                                <label><b>Passwords</b></label>
+                                <label><b>{t("pass")}</b></label>
                                 <div className="create-user-password-box">
                                     <input type={showPassword?"text":"password"} name='password' className='input-user' autoComplete="new-password" required />
                                     <button onClick={() => setShowPassword(prev => !prev)}>
@@ -151,22 +153,22 @@ export default function CreateUser() {
                                 </div>
 
                                 <br></br>
-                                <label><b>Confirm Password</b></label>
+                                <label><b>{t("confirm")}</b></label>
                                 <input type="password" name='confirm' className='input-user' onClick={() => setErrorMessage(false)} required />
-                                {errorMessage && <div style={{ color: "red", height: '16px' }}>Password not match</div>}
+                                {errorMessage && <div style={{ color: "red", height: '16px' }}>{t("err_pass")}</div>}
                                 <br></br>
-                                <label><b>Position</b></label>
+                                <label><b>{t("position")}</b></label>
                                 <select className="form-select mt-3" name='position' defaultValue='0' onChange={() => setErrorPosition(false)} aria-label="Default select example" >
-                                    <option value='0'>Click this select Position</option>
+                                    <option value='0'>{t("option")}</option>
                                     <option value="admin">Admin</option>
                                     {position.map((item) => (
                                         <option key={item} value={item}>{item}</option>
                                     ))}
                                 </select>
-                                {errorPosition && <div style={{ color: "red", height: '16px' }}>Select your position</div>}
+                                {errorPosition && <div style={{ color: "red", height: '16px' }}>{t("err_posi")}Select your position</div>}
                                 <br></br>
                                 <button type="submit"
-                                ><FaCircleUser size={24} /><span className='ms-2 '>Add</span></button>
+                                ><FaCircleUser size={24} /><span className='ms-2 '>{t("add")}Add</span></button>
                             </form>}
 
                     </div>

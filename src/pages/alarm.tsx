@@ -2,11 +2,11 @@ import { BiError } from "react-icons/bi";
 import { IoMdSettings } from "react-icons/io";
 import { useEffect, useState } from 'react';
 import { axiosGet } from "../api/axiosFetch";
-import { useSearchParams, useNavigate } from "react-router-dom";
 import { BsConeStriped } from "react-icons/bs";
 import { colorAgv } from '../utils/centerFunction';
 import NetworkError from './networkError';
 import DatePicker from "react-datepicker";
+import { useTranslation } from 'react-i18next';
 
 interface IAlarm {
     message: string
@@ -78,6 +78,7 @@ export default function Alarm() {
     const [pageSize, setPageSize] = useState('10');
     const [loadSuccess, setLoadSuccess] = useState(false);
     const [checkNetwork, setCheckNetwork] = useState(true);
+    const { t } = useTranslation("mission");
 
 
     const reloadPage = async (data: { v?: string, s?: string, d?: Date, de?: Date, p?: number, ps?: string }) => {
@@ -238,24 +239,24 @@ export default function Alarm() {
         </div>}
         <section className='mission-box-page'>
             <div className='mission-title-box mb-3'>
-                <h1>SHOW ERROR</h1>
+                <h1>{t("al_title")}</h1>
                 <div className='box-title'>
                     <p className="title1">
                         <BsConeStriped size={36} color={"#ff6900"} />
-                        <span>error of vehicle on running</span></p>
+                        <span className="ms-3">{t("al_subtitle")}</span></p>
                 </div>
 
             </div>
             {!checkNetwork ? <NetworkError /> : <div className='container-card'>
                 <div className='mission-header'>
                     <div className='selected-mission-btn'>
-                        <button onClick={() => reloadPage({ v: "ALL" })} className={`${vehicle === "ALL" ? "active" : ""}`}>All</button>
+                        <button onClick={() => reloadPage({ v: "ALL" })} className={`${vehicle === "ALL" ? "active" : ""}`}>{t('all')}</button>
                         {btnAGV.map((name) => <button onClick={() => reloadPage({ v: name })} className={`${vehicle === name ? "active" : ""}`}>{name}</button>)}
 
                     </div>
                     <div className='input-date-box'>
                         <div className="form-group">
-                            <label >From</label>
+                            <label >{t("from")}</label>
                             <div className='box-of-text-date'>
                                 <div className='ps-2'>{startDate}</div>
                                 <DatePicker selected={new Date(startDate)} onChange={(e) => reloadPage({ d: e ?? undefined })} />
@@ -263,13 +264,13 @@ export default function Alarm() {
                         </div>
 
                         <div className="form-group">
-                            <label >To</label>
+                            <label >{t("to")}</label>
                             <div className='box-of-text-date'>
                                 <div className='ps-2'>{endDate}</div>
                                 <DatePicker selected={new Date(endDate)} onChange={(e) => reloadPage({ de: e ?? undefined })} />
                             </div>
                         </div>
-                        <button className="export-btn" onClick={() => downloadCSV(vehicle, startDate, endDate)}>export</button>
+                        <button className="export-btn" onClick={() => downloadCSV(vehicle, startDate, endDate)}>{t("downloadBtn")}</button>
                     </div>
                 </div>
                 <div className='table-container overflow-auto'>
@@ -277,21 +278,21 @@ export default function Alarm() {
                         <thead className='text-center'>
                             <tr>
                                 <th scope="col" style={{ width: "100px" }}>#</th>
-                                <th scope="col" style={{ width: "150px" }}>รถ</th>
+                                <th scope="col" style={{ width: "150px" }}>{t("tb_car")}</th>
                                 <th scope="col"><div className="head-table-flex">
                                     <div className='mission-circle-icon' style={{ background: "#ffe6e6" }}>
                                         <IoMdSettings color='red' />
                                     </div>
-                                    code</div>
+                                    {t("al_code")}</div>
                                 </th>
                                 <th scope="col"><div className="head-table-flex">
                                     <div className='mission-circle-icon'>
                                         <BiError color='#E9762B' size={16} />
                                     </div>
-                                    status</div>
+                                    {t("al_status")}</div>
                                 </th>
-                                <th scope="col" style={{ width: "150px" }}>วัน</th>
-                                <th scope="col" style={{ width: "150px" }}>เวลา</th>
+                                <th scope="col" style={{ width: "150px" }}>{t("tb_date")}</th>
+                                <th scope="col" style={{ width: "150px" }}>{t("al_time")}</th>
 
                             </tr>
                         </thead>
@@ -319,7 +320,7 @@ export default function Alarm() {
                             <button className='btn-page-size' onClick={() => reloadPage({ ps: '100' })}>100</button>
                         </div>
                     </div>
-                    <span className='ms-1 me-3'>emergency/page</span>
+                    <span className='ms-1 me-3'>{t("alarm")}</span>
                     {pagination}
                 </div>
             </div>}

@@ -44,5 +44,12 @@
     "bt_sub2": "Display battery information",
     "bt_sub3": "Battery level",
     "md_cancel": "Cancel mission of",
-    "md_confirm_cancel": "Press Cancel to send command"
+    "md_confirm_cancel": "Press Cancel to send command",
+    "al_title": "SHOW ERROR",
+    "al_subtitle": "error of vehicle on running",
+    "al_all": "All",
+     "al_code": "Code",
+    "al_status": "Status",
+    "al_time":"time",
+    "alarm": "errors/page"
 }

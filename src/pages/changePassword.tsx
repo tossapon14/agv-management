@@ -4,18 +4,21 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import './css/changepassword.css';
 import { axiosPut } from "../api/axiosFetch";
 import Lock_img from '../assets/images/lock.png';
-
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import { useTranslation } from 'react-i18next';
 
 export default function ChangePassword() {
     const [errorMessage, setErrorMessage] = useState(false);
     const [checkNetwork, setCheckNetwork] = useState(true);
     const [load, setLoad] = useState(false);
-
+    const [passBind, setPassBind] = useState(false);
+    const [passBind2, setPassBind2] = useState(false);
+    const { t } = useTranslation("user");
 
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const [response, setResponse] = useState<{ show: boolean, error: boolean | null, message: string }>({ show: false, error: false, message: '' });
-   
+
     const submitChangePasswordForm = async (e: React.FormEvent) => {
         e.preventDefault(); // Prevent the default form submission behavior
         setErrorMessage(false); // Reset error message
@@ -49,7 +52,7 @@ export default function ChangePassword() {
                 } else {
                     setResponse({ show: true, error: true, message: e.message });
                 }
-            }finally{
+            } finally {
                 setLoad(false);
 
             }
@@ -82,25 +85,39 @@ export default function ChangePassword() {
                         <div className="card-change-password">
                             <img src={Lock_img} alt="lock" width={54} height={54} />
                             <br />
-                            <h1>Reset your Password</h1>
-                            <p>Enter the new password and confirm password</p>
-                            <p>{ searchParams.get("username") || ""}</p>
+                            <h1>{t("reset_title")}</h1>
+                            <p>{t("reset_subtitle")}</p>
+                            <p>{searchParams.get("username") || ""}</p>
                             {response.show ? <h5 className={`text-response mt-0 ${response.error ? 'bg-error' : 'bg-ok'}`}>{response.message}</h5> :
                                 <form onSubmit={submitChangePasswordForm}>
-                                    {errorMessage && <p className="box-text-error">Password not match</p>}
-                                    <div className="mb-2">
+                                    {errorMessage && <p className="box-text-error">{t("err_pass")}</p>}
+                                    <div className="mb-2" style={{ height: "90px" }}>
                                         <label htmlFor="password">
-                                            <b>New Password</b>
-                                        </label><br />
-                                        <input type="password" name="password" id="password" required className='input-user' />
+                                            <b>{t("new_pass")}</b>
+                                        </label>
+                                        <div className="position-relative">
+                                            <input type={passBind ? "text" : "password"} name="password" id="password" required className='input-user position-absolute' />
+                                            <button onClick={(e) => {
+                                                e.preventDefault(); // Prevent the default form submission behavior
+                                                setPassBind(prev => !prev);
+                                            }} className='btn-eye'>
+                                                {passBind ? <FaRegEyeSlash ></FaRegEyeSlash> : <FaRegEye></FaRegEye>}</button>
+                                        </div>
                                     </div>
-                                    <div className="mb-2">
-                                        <label htmlFor="confirm" className="block text-gray-700 text-sm font-bold mb-2">
-                                            <b>Confirm Password</b>
-                                        </label><br />
-                                        <input type="password" name="confirm" id="confirm" onChange={() => setErrorMessage(false)} required className='input-user' />
+                                    <div className="mb-2" style={{ height: "90px" }}>
+                                        <label htmlFor="confirm">
+                                            <b>{t("comfirm")}</b>
+                                        </label>
+                                        <div className="position-relative">
+                                            <input type={passBind2 ? "text" : "password"} name="confirm" id="confirm" onChange={() => setErrorMessage(false)} required className='input-user position-absolute' />
+                                            <button onClick={(e) => {
+                                                e.preventDefault(); // Prevent the default form submission behavior
+                                                setPassBind2(prev => !prev);
+                                            }} className='btn-eye'>
+                                                {passBind2 ? <FaRegEyeSlash ></FaRegEyeSlash> : <FaRegEye></FaRegEye>}</button>
+                                        </div>
                                     </div>
-                                    <button type="submit" className="btn-change-password">Change Password</button>
+                                    <button type="submit" className="btn-change-password">{t("btn_change")}</button>
                                 </form>}
                         </div>
 

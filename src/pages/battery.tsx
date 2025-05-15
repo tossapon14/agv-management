@@ -23,19 +23,19 @@ export interface IDataSeries {
   } const res: IBattery = await axiosGet(url);
   return res;
 };
-const downloadCSV = async (vehicle: string, status: string, start_date: string, end_date: string) => {
-  const fetchData: string = await axiosGet(
-    `/mission/export_mission_report?vehicle_name=${vehicle}&status=${status}&start_date=${start_date}&end_date=${end_date}`)
-  const blob = new Blob([fetchData], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
+// const downloadCSV = async (vehicle: string, status: string, start_date: string, end_date: string) => {
+//   const fetchData: string = await axiosGet(
+//     `/mission/export_mission_report?vehicle_name=${vehicle}&status=${status}&start_date=${start_date}&end_date=${end_date}`)
+//   const blob = new Blob([fetchData], { type: "text/csv" });
+//   const url = URL.createObjectURL(blob);
 
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `battery-${start_date} ${end_date}.csv`;
-  link.click();
+//   const link = document.createElement("a");
+//   link.href = url;
+//   link.download = `battery-${start_date} ${end_date}.csv`;
+//   link.click();
 
-  URL.revokeObjectURL(url);
-};
+//   URL.revokeObjectURL(url);
+// };
 
 const colorLine = ['#2E93fA', '#66DA26', '#546E7A', '#E91E63', '#FF9800']
 const Battery = () => {
@@ -132,7 +132,7 @@ const Battery = () => {
             <DatePicker selected={new Date(endDate)} onChange={(e) => reloadDataByDate({ de: e ?? undefined })} />
           </div>
         </div>
-        <button className="export-btn2" onClick={() => { }}><IoMdDownload /> <span>{t("downloadBtn")}</span> </button>
+        <button className="export-btn2" onClick={() => {}}><IoMdDownload /> <span>{t("downloadBtn")}</span> </button>
       </div>}
     </div>
     {!checkNetwork ? <NetworkError /> : <>

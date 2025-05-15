@@ -8,6 +8,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import Lock_img from '../assets/images/lock.png';
 import Delete_img from '../assets/images/bin.png';
 import ResponseElement from './responseElement';
+import { useTranslation } from 'react-i18next';
 
 interface IUser {
     message: string
@@ -48,7 +49,7 @@ export default function User() {
     const searchName = useRef<HTMLInputElement>(null);
     const checkAdmin = useRef<HTMLInputElement>(null);
     const checkNormal = useRef<HTMLInputElement>(null);
-    const deleteModalRef = useRef<HTMLDivElement>(null);
+    const { t } = useTranslation("user");
 
     const searchUser = () => {
         const data = {
@@ -270,7 +271,7 @@ export default function User() {
         };
         checkNetwork();
 
-        
+
     }, []);
     return (
         <div className='mission-box-page'>
@@ -278,16 +279,16 @@ export default function User() {
                 <div id="loading"></div>
             </div>}
             <div className='mission-title-box'>
-                <h1>User Page</h1>
+                <h1>{t("us_title")}</h1>
                 <p className="title1">
                     <img src={UserImage} alt="Logo user" className="me-3" width="24" height="24" />
-                    <span>view and manage all user</span></p>
+                    <span>{t("us_subtitle")}</span></p>
             </div>
             {!checkNetwork ? <NetworkError /> :
 
                 <div className='px-4'>
                     <ResponseElement response={responseData} />
-                    <div  className={`fixed-bg-delete ${showConfirmDelete.show ? "" : "d-none"}`}>
+                    <div className={`fixed-bg-delete ${showConfirmDelete.show ? "" : "d-none"}`}>
                         <div className='box-confirm-delete'>
                             <img src={Delete_img} alt="delete icon" width={40} height={40} />
                             <h4 className='mt-2'>Do you want delete this account?</h4>
@@ -302,57 +303,57 @@ export default function User() {
                         <div className='display-option' style={{ left: showOption.left, top: showOption.top }}>
                             <div className='btn-mode-option' onClick={() => btnForOption(0)}>
                                 <img src={UserImage} alt="edit" width={20} height={20} />
-                                <p>Edit user</p>
+                                <p>{t("edit_us")}</p>
                             </div>
                             <div className='btn-mode-option' onClick={() => btnForOption(1)}>
                                 <img src={Lock_img} alt="lock" width={20} height={20} />
 
-                                <p>Edit password</p>
+                                <p>{t("edit_pass")}</p>
                             </div>
                             <div className='btn-mode-option' onClick={() => { btnForOption(2) }}>
                                 <img src={Delete_img} alt="delete icon" width={20} height={20} />
 
-                                <p>Delete </p>
+                                <p>{t("del")}</p>
                             </div>
                         </div>
 
                     </div>}
                     <div className='user-card d-flex '>
                         <div className='box-of-search'>
-                            <h5>Search user</h5>
+                            <h5>{t("search")}</h5>
                             <div className='box-of-search-content'>
                                 <div className='box-of-search-content-item'>
-                                    <label htmlFor="username">Name</label><br></br>
-                                    <input ref={searchName} type="text" id="username" placeholder='Enter username' onChange={() => searchUser()} />
+                                    <label htmlFor="username">{t("name")}</label><br></br>
+                                    <input ref={searchName} type="text" id="username" placeholder={t("inp_name")} onChange={() => searchUser()} />
                                 </div>
 
                                 <div className='box-of-search-content-item mt-3'>
-                                    <h6>Other</h6>
+                                    <h6>{t("other")}</h6>
                                     <div className='d-flex align-items-center'>
                                         <input ref={checkAdmin} type="checkbox" id="admin" onChange={() => searchUser()} />
-                                        <label htmlFor="admin">admin</label>
+                                        <label htmlFor="admin">{t("admin")}</label>
                                     </div>
                                     <div className='d-flex align-items-center'>
-                                        <input ref={checkNormal} type="checkbox" id="agv" onChange={() => searchUser()} />
-                                        <label htmlFor="agv">normal user</label>
+                                        <input ref={checkNormal} type="checkbox" id="user" onChange={() => searchUser()} />
+                                        <label htmlFor="user">{t("nor_us")}</label>
                                     </div>
                                 </div>
                             </div>
 
                         </div>
                         <div className='col-10'>
-                            <button className='btn btn-outline-primary mt-2' onClick={handleOpenInNewTab}>Create user</button>
-                            <button className='btn btn-outline-dark mt-2 ms-2' onClick={() => window.location.reload()}>reload</button>
+                            <button className='btn btn-outline-primary mt-2' onClick={handleOpenInNewTab}>{t("create")}</button>
+                            <button className='btn btn-outline-dark mt-2 ms-2' onClick={() => window.location.reload()}>{t("reload")}</button>
                             <div className='table-user'>
                                 <table className="table table-hover mt-2 ">
                                     <thead className='bg-light'>
                                         <tr>
-                                            <th scope="col" >id</th>
-                                            <th scope="col" >name</th>
-                                            <th scope="col">username</th>
-                                            <th scope="col">number</th>
-                                            <th scope="col">position</th>
-                                            <th scope="col">status</th>
+                                            <th scope="col">{t("tb_id")}</th>
+                                            <th scope="col">{t("name")}</th>
+                                            <th scope="col">{t("tb_user")}</th>
+                                            <th scope="col">{t("tb_empl")}</th>
+                                            <th scope="col">{t("tb_position")}</th>
+                                            <th scope="col">{t("tb_status")}</th>
                                             <th scope="col" ></th>
 
                                         </tr>
@@ -397,7 +398,7 @@ export default function User() {
                                         <button className='btn-page-size' onClick={() => reloadPage({ ps: '100' })}>100</button>
                                     </div>
                                 </div>
-                                <span className='ms-1 me-3'>user/page</span>
+                                <span className='ms-1 me-3'>{t("user/page")}</span>
                                 {pagination}
                             </div>
                         </div>

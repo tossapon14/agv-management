@@ -7,7 +7,7 @@ import Pin from '../assets/images/pin2.png';
 
 import Location from "../assets/images/location.png";
 import Switch from './switch';
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import './css/map.css';
 
 interface MapAnimateProps {

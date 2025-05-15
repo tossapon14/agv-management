@@ -63,11 +63,11 @@
 
 .display-option {
     position: fixed;
-    width: 140px;
-    height: 128px;
+    width: fit-content;
+    min-width: 140px;
     background-color: #ffffff;
     border-radius: 6px;
-    padding: 1rem 0;
+    padding: 0.5rem .3rem;
     border: 1px solid #d7d7d7;
     box-shadow: rgba(153, 153, 153, 0.24) 0px 3px 8px;
 
