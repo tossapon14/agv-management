@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import './css/statistics.css';
 import { FcComboChart } from "react-icons/fc";
 import { IoMdDownload } from "react-icons/io";
@@ -29,12 +29,8 @@ export type IStatisticsData = {
 }
 type ISeries = { name: string, data: number[] }[]
 
-const getData = async (url: string | null): Promise<IStatistics> => {
-  if (url == null) {
-    const _date = new Date().toISOString().substring(0, 10)
-    url = `/statistics/report?start_date=${_date}&end_date=${_date}`;
-
-  }
+const getData = async (url: string): Promise<IStatistics> => {
+   
   const res: IStatistics = await axiosGet(url);
   return res;
 };
@@ -61,32 +57,43 @@ export default function Statistics() {
   const [dataMission, setDataMission] = useState<IStatisticsData>();
   const [totalMission, setTotalMission] = useState<{ mission: number, complete: number, cancel: number, other: number }>();
   const [checkNetwork, setCheckNetwork] = useState(true);
+  const saveUrl = useRef<string>("");
+
   const { t } = useTranslation("mission");
 
   const reloadDataByDate = async (data: { d?: Date, de?: Date, }) => {
-    try {
-      var url: string | null = null;
-      if (data.d) {
-        if (data.d > new Date(endDate)) {
-          return;
-        }
-        const bangkokOffsetMs = 7 * 60 * 60 * 1000;
-        const localTime = data.d!.getTime() + bangkokOffsetMs;
-        const _date: string = new Date(localTime).toISOString().substring(0, 10);
-        url = `/statistics/report?start_date=${_date}&end_date=${endDate}`
-        setStartDate(_date);
+    var url: string | null = null;
+    if (data.d) {
+      if (data.d > new Date(endDate)) {
+        return;
       }
-      else if (data.de) {
-        if (data.de < new Date(startDate)) {
-          return;
-        }
-        const bangkokOffsetMs = 7 * 60 * 60 * 1000;
-        const localTime = data.de!.getTime() + bangkokOffsetMs;
-        const _date: string = new Date(localTime).toISOString().substring(0, 10);
-        url = `/statistics/report?start_date=${startDate}&end_date=${_date}`
-        setEndDate(_date);
+      const bangkokOffsetMs = 7 * 60 * 60 * 1000;
+      const localTime = data.d!.getTime() + bangkokOffsetMs;
+      const _date: string = new Date(localTime).toISOString().substring(0, 10);
+      url = `/statistics/report?start_date=${_date}&end_date=${endDate}`
+      saveUrl.current = url;
+      setStartDate(_date);
+      statisticsSetPage(url);
+    }
+    else if (data.de) {
+      if (data.de < new Date(startDate)) {
+        return;
+      }
+      const bangkokOffsetMs = 7 * 60 * 60 * 1000;
+      const localTime = data.de!.getTime() + bangkokOffsetMs;
+      const _date: string = new Date(localTime).toISOString().substring(0, 10);
+      url = `/statistics/report?start_date=${startDate}&end_date=${_date}`
+      saveUrl.current = url;
+      setEndDate(_date);
+      statisticsSetPage(url);
 
-      }
+    }
+
+  };
+  const statisticsSetPage = useCallback(async (url: string) => {
+    try {
+
+      const res = await getData(url);
       const _drop: IStatisticsData = {};
       const _pickup: IStatisticsData = {};
       const _miss: IStatisticsData = {};
@@ -95,7 +102,6 @@ export default function Statistics() {
       const _dataSeriesPick: ISeries = [];
       const _barNameDrop: string[] = [];
       const _barNamePick: string[] = [];
-      const res = await getData(url);
       for (var k in res) {
         if (k.includes('AGV')) {   // AGV
           for (var d in res[k]) {
@@ -150,19 +156,25 @@ export default function Statistics() {
         cancel: res["ALL"]?.total_mission_cancel ?? 0,
         other: res["ALL"]?.total_mission_other ?? 0
       });
-
-    } catch (e: any) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
     }
-  };
+  }, []);
 
 
   useEffect(() => {
+    var timer: NodeJS.Timeout | null = null;
+
     const checkNetwork = async () => {
       try {
         const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
         if (response.ok) {
-          reloadDataByDate({});
+          const _date = new Date().toISOString().substring(0, 10)
+          saveUrl.current = `/statistics/report?start_date=${_date}&end_date=${_date}`;
+          statisticsSetPage(saveUrl.current);
+          timer = setInterval(() => {
+            statisticsSetPage(saveUrl.current);
+          }, 30000);
         }
       } catch (e: any) {
         console.error(e);
@@ -172,6 +184,12 @@ export default function Statistics() {
       }
     };
     checkNetwork();
+    return () => {
+      if (timer != null) {
+        clearInterval(timer);
+      }
+
+    }
   }, []);
   return (
     <div className="statistics-box">
@@ -186,7 +204,7 @@ export default function Statistics() {
 
         {checkNetwork && <div className='input-date-box ms-5'>
           <div className="form-group">
-            <label >{t("form")}</label>
+            <label >{t("from")}</label>
             <div className='box-of-text-date'>
               <div className='ps-2'>{startDate}</div>
               <DatePicker selected={new Date(startDate)} onChange={(e) => reloadDataByDate({ d: e ?? undefined })} />
@@ -205,16 +223,16 @@ export default function Statistics() {
       </div>
       {!checkNetwork ? <NetworkError /> : <>
         <div className='stat-card-box'>
-          <div className='stat-card' style={{ boxShadow: "rgba(179, 179, 179, 0.65) 0px 7px 16px 0px" }}>
+          <div className='stat-card'>
             <div className='d-flex align-items-center'>
-              <div className='box-icon' style={{ backgroundColor: "#cacaff" }}>
-                <AiFillSetting color="#5600ff" size={24} />
+              <div className='box-icon' style={{ backgroundColor: "rgb(210, 246, 255)" }}>
+                <AiFillSetting color="rgb(0, 153, 255)" size={24} />
               </div>
               <p>{t("st_all")}</p>
             </div>
             <div className='stat-number'>{totalMission?.mission ?? 0}</div>
           </div>
-          <div className='stat-card' style={{ boxShadow: "rgba(179, 179, 179, 0.65) 0px 7px 16px 0px" }}>
+          <div className='stat-card'>
             <div className='d-flex align-items-center'>
               <div className='box-icon' style={{ backgroundColor: "#e4ffd8" }}>
                 <IoCheckmarkCircle color="#4fff00" size={24} />
@@ -223,7 +241,7 @@ export default function Statistics() {
             </div>
             <div className='stat-number'>{totalMission?.complete ?? 0}</div>
           </div>
-          <div className='stat-card' style={{ boxShadow: "rgba(179, 179, 179, 0.65) 0px 7px 16px 0px" }}>
+          <div className='stat-card'>
             <div className='d-flex align-items-center'>
               <div className='box-icon' style={{ backgroundColor: "#ffdcdc" }}>
                 <MdCancel color="#ff6d6d" size={24} />
@@ -232,7 +250,7 @@ export default function Statistics() {
             </div>
             <div className='stat-number'>{totalMission?.cancel ?? 0}</div>
           </div>
-          <div className='stat-card' style={{ boxShadow: "rgba(179, 179, 179, 0.65) 0px 7px 16px 0px" }}>
+          <div className='stat-card'>
             <div className='d-flex align-items-center'>
               <div className='box-icon' style={{ backgroundColor: "#e8e8e8" }}>
                 <IoCheckmarkCircle color="#999999" size={24} />
@@ -246,14 +264,14 @@ export default function Statistics() {
         <div className='stat-chart-pickup'>
           <div className='col-8'>
             <div className='pickup-chart'>
-              <h4>{t("tb_pickup")}</h4>
+              <h5>{t("tb_pickup")}</h5>
               <p className='p-subtitle'>{t("st_title_pick")}</p>
               <BGBarChart data={dataPickup} />
             </div>
           </div>
           <div className='col-4'>
             <div className='chart-donus-box'>
-              <h4>{t("st_all")}</h4>
+              <h5>{t("st_all")}</h5>
               <p className='p-subtitle'>{t("st_title_miss")}</p>
               <BGBarChart data={dataMission} />
             </div>
@@ -261,7 +279,7 @@ export default function Statistics() {
 
         </div>
         <div className='stat-chart-drop'>
-          <h4>{t("tb_drop")}</h4>
+          <h5>{t("tb_drop")}</h5>
           <p className='p-subtitle'>{t("st_title_drop")}</p>
           <BGBarChart data={dataDrop} />
         </div>

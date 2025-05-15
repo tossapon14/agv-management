@@ -17,7 +17,7 @@ import { useState, useRef, useEffect, Fragment, useCallback } from 'react';
 import { BiSolidError } from "react-icons/bi";
 import StatusOnline from './statusOnline';
 import { pairMissionStatus, colorAgv } from '../utils/centerFunction';
-import ResponseElement from './responseElement';
+import ResponseAPI from './responseAPI.tsx';
 
 
 
@@ -706,7 +706,7 @@ export default function Home() {
           </div>
         </section>)}
       </section>
-      <ResponseElement response={responseData} />
+      <ResponseAPI response={responseData} />
       <div ref={confirmModalRef} className={`modal-summaryCommand ${!dialogSummary.show && 'd-none'}`}>
         <div className='card-summaryCommand'>
           {dialogSummary.agvCode === "001" ? <>

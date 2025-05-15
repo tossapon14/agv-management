@@ -1,6 +1,6 @@
 import { axiosGet } from "../api/axiosFetch";
-import { useEffect, useState } from 'react';
- import { FcChargeBattery } from "react-icons/fc";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { FcChargeBattery } from "react-icons/fc";
 import BatteryAreaChart from "./chart/BatteryAreaChart";
 import { IoMdDownload } from "react-icons/io";
 import { RiBatteryChargeLine } from "react-icons/ri";
@@ -10,17 +10,14 @@ import NetworkError from './networkError';
 import DatePicker from "react-datepicker";
 import { useTranslation } from 'react-i18next';
 import './css/battery.css';
- 
+
 interface IBattery {
   [key: string]: number[][]
 }
 export interface IDataSeries {
   series: { name: string; data: { x: number, y: number }[] }[]
-} const getBattery = async (url: string | null): Promise<IBattery> => {
-  if (url == null) {
-    const _date = new Date().toISOString().substring(0, 10);
-    url = `/vehicle/battery_level?vehicle_name=ALL&start_date=${_date}&end_date=${_date}`;
-  } const res: IBattery = await axiosGet(url);
+} const getBattery = async (url: string): Promise<IBattery> => {
+  const res: IBattery = await axiosGet(url);
   return res;
 };
 // const downloadCSV = async (vehicle: string, status: string, start_date: string, end_date: string) => {
@@ -44,35 +41,41 @@ const Battery = () => {
   const [endDate, setEndDate] = useState<string>(new Date().toISOString().substring(0, 10))
   const [battery, setBattery] = useState<IDataSeries>({ series: [] });
   const [checkNetwork, setCheckNetwork] = useState(true);
+  const saveUrl = useRef<string>("");
   const { t } = useTranslation("mission");
 
 
-  const reloadDataByDate = async (data: { d?: Date, de?: Date, }) => {
+  const reloadDataByDate = useCallback(async (data: { d?: Date, de?: Date, }) => {
+    var url: string | null = null;
+    if (data.d) {
+      if (data.d > new Date(endDate)) {
+        return;
+      }
+      const bangkokOffsetMs = 7 * 60 * 60 * 1000;
+      const localTime = data.d!.getTime() + bangkokOffsetMs;
+      const _date: string = new Date(localTime).toISOString().substring(0, 10);
+      url = `/vehicle/battery_level?vehicle_name=ALL&start_date=${_date}&end_date=${endDate}`;
+      saveUrl.current = url;
+      setStartDate(_date);
+      batterySetPage(url);
+    }
+    else if (data.de) {
+      if (data.de < new Date(startDate)) {
+        return;
+      }
+      const bangkokOffsetMs = 7 * 60 * 60 * 1000;
+      const localTime = data.de!.getTime() + bangkokOffsetMs;
+      const _date: string = new Date(localTime).toISOString().substring(0, 10);
+      url = `/vehicle/battery_level?vehicle_name=ALL&start_date=${startDate}&end_date=${_date}`;
+      saveUrl.current = url;
+      setEndDate(_date);
+      batterySetPage(url);
+
+    }
+  }, [startDate, endDate]);
+
+  const batterySetPage = useCallback(async (url: string) => {
     try {
-      var url: string | null = null;
-      if (data.d) {
-        if (data.d > new Date(endDate)) {
-          return;
-        }
-        const bangkokOffsetMs = 7 * 60 * 60 * 1000;
-        const localTime = data.d!.getTime() + bangkokOffsetMs;
-        const _date: string = new Date(localTime).toISOString().substring(0, 10);
-        url = `/vehicle/battery_level?vehicle_name=ALL&start_date=${_date}&end_date=${endDate}`;
-        setStartDate(_date);
-
-      }
-      else if (data.de) {
-        if (data.de < new Date(startDate)) {
-          return;
-        }
-        const bangkokOffsetMs = 7 * 60 * 60 * 1000;
-        const localTime = data.de!.getTime() + bangkokOffsetMs;
-        const _date: string = new Date(localTime).toISOString().substring(0, 10);
-        url = `/vehicle/battery_level?vehicle_name=ALL&start_date=${startDate}&end_date=${_date}`;
-        setEndDate(_date);
-
-      }
-
       const res = await getBattery(url);
       const _series: { name: string; data: { x: number, y: number }[] }[] = [];
       for (var agv in res) {
@@ -83,18 +86,24 @@ const Battery = () => {
         _series.push({ name: agv, data: dataBattery });
       }
       setBattery({ series: _series });
-    } catch (e: any) {
-      console.error(e);
+    } catch (error: any) {
+      console.error(error);
     }
-  };
+  }, []);
   useEffect(() => {
 
+    var timer: NodeJS.Timeout | null = null;
 
     const checkNetwork = async () => {
       try {
         const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
         if (response.ok) {
-          reloadDataByDate({});
+          const _date = new Date().toISOString().substring(0, 10)
+          saveUrl.current = `/vehicle/battery_level?vehicle_name=ALL&start_date=${_date}&end_date=${_date}`;
+          batterySetPage(saveUrl.current);
+          timer = setInterval(() => {
+            batterySetPage(saveUrl.current);
+          }, 10000);
         }
       } catch (e: any) {
         console.error(e);
@@ -104,6 +113,11 @@ const Battery = () => {
       }
     };
     checkNetwork();
+    return () => {
+      if (timer != null) {
+        clearInterval(timer! as NodeJS.Timeout);
+      }
+    }
   }, []);
   return <div className="statistics-box">
     {!loadSuccess && <div className='loading-background'>
@@ -132,7 +146,7 @@ const Battery = () => {
             <DatePicker selected={new Date(endDate)} onChange={(e) => reloadDataByDate({ de: e ?? undefined })} />
           </div>
         </div>
-        <button className="export-btn2" onClick={() => {}}><IoMdDownload /> <span>{t("downloadBtn")}</span> </button>
+        <button className="export-btn2" onClick={() => { }}><IoMdDownload /> <span>{t("downloadBtn")}</span> </button>
       </div>}
     </div>
     {!checkNetwork ? <NetworkError /> : <>

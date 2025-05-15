@@ -93,7 +93,7 @@ export default function ChangePassword() {
                                     {errorMessage && <p className="box-text-error">{t("err_pass")}</p>}
                                     <div className="mb-2" style={{ height: "90px" }}>
                                         <label htmlFor="password">
-                                            <b>{t("new_pass")}</b>
+                                            {t("new_pass")}
                                         </label>
                                         <div className="position-relative">
                                             <input type={passBind ? "text" : "password"} name="password" id="password" required className='input-user position-absolute' />
@@ -106,7 +106,7 @@ export default function ChangePassword() {
                                     </div>
                                     <div className="mb-2" style={{ height: "90px" }}>
                                         <label htmlFor="confirm">
-                                            <b>{t("comfirm")}</b>
+                                            {t("comfirm")}
                                         </label>
                                         <div className="position-relative">
                                             <input type={passBind2 ? "text" : "password"} name="confirm" id="confirm" onChange={() => setErrorMessage(false)} required className='input-user position-absolute' />

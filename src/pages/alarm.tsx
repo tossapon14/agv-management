@@ -1,6 +1,6 @@
 import { BiError } from "react-icons/bi";
 import { IoMdSettings } from "react-icons/io";
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { axiosGet } from "../api/axiosFetch";
 import { BsConeStriped } from "react-icons/bs";
 import { colorAgv } from '../utils/centerFunction';
@@ -54,11 +54,7 @@ const downloadCSV = async (vehicle: string, start_date: string, end_date: string
     URL.revokeObjectURL(url);
 };
 
-const getAlarm = async (url: string | null): Promise<IAlarm> => {
-    if (!url) {
-        const _date = new Date().toISOString().substring(0, 10)
-        url = `/alarm/alarms?vehicle_name=ALL&start_date=${_date}&end_date=${_date}&page=1&page_size=10`
-    }
+const getAPI = async (url: string): Promise<IAlarm> => {
     const res: IAlarm = await axiosGet(url);
     return res;
 };
@@ -69,7 +65,8 @@ export default function Alarm() {
 
     const [alarmTable, setalarmTable] = useState<IAlarmTable[]>([]);
     const [pagination, setPagination] = useState<React.ReactElement | null>(null);
-    const [btnAGV, setbtnAGV] = useState<string[]>([])
+    const [btnAGV, setbtnAGV] = useState<string[]>([]);
+    const btnAGVSet = useRef(false);
 
 
     const [vehicle, setVehicle] = useState<string>("ALL"); // Default to "desc"
@@ -78,50 +75,62 @@ export default function Alarm() {
     const [pageSize, setPageSize] = useState('10');
     const [loadSuccess, setLoadSuccess] = useState(false);
     const [checkNetwork, setCheckNetwork] = useState(true);
+    const saveUrl = useRef<string>("");
+    const savePage = useRef<number>(1);
+
     const { t } = useTranslation("mission");
 
 
-    const reloadPage = async (data: { v?: string, s?: string, d?: Date, de?: Date, p?: number, ps?: string }) => {
+    const reloadPage = useCallback(async (data: { v?: string, s?: string, d?: Date, de?: Date, p?: number, ps?: string }) => {
+        var url: string | null = null;
+        if (data.v) {
+            url = `/alarm/alarms?vehicle_name=${data.v}&start_date=${startDate}&end_date=${endDate}&page=1&page_size=${pageSize}`
+            setVehicle(data.v);
+        }
+        else if (data.d) {
+            if (data.d > new Date(endDate)) {
+                return;
+            }
+            const bangkokOffsetMs = 7 * 60 * 60 * 1000;
+            const localTime = data.d!.getTime() + bangkokOffsetMs;
+            const _date: string = new Date(localTime).toISOString().substring(0, 10);
+            url = `/alarm/alarms?vehicle_name=${vehicle}&start_date=${_date}&end_date=${endDate}&page=1&page_size=${pageSize}`
+            setStartDate(_date);
 
+        }
+        else if (data.de) {
+            if (new Date(data.de) < new Date(startDate)) {
+                return;
+            }
+            const bangkokOffsetMs = 7 * 60 * 60 * 1000;
+            const localTime = data.de!.getTime() + bangkokOffsetMs;
+            const _date: string = new Date(localTime).toISOString().substring(0, 10);
+            url = `/alarm/alarms?vehicle_name=${vehicle}&start_date=${startDate}&end_date=${_date}&page=1&page_size=${pageSize}`;
+            setEndDate(_date);
+
+        }
+        else if (data.p) {
+            url = `/alarm/alarms?vehicle_name=${vehicle}&start_date=2025-03-01&end_date=${endDate}&page=${data.p}&page_size=${pageSize}`;
+            savePage.current = data.p;
+        }
+        else if (data.ps) {
+            url = `/alarm/alarms?vehicle_name=${vehicle}&start_date=${startDate}&end_date=${endDate}&page=1&page_size=${data.ps}`;
+            setPageSize(data.ps);
+        }
+        if (url != null) {
+            saveUrl.current = url;
+            alarmSetPage(url);
+        }
+    }, [vehicle, startDate, endDate, pageSize]);
+
+
+
+    const alarmSetPage = useCallback(async (url: string) => {
         try {
-            var url: string | null = null;
-            if (data.v) {
-                url = `/alarm/alarms?vehicle_name=${data.v}&start_date=${startDate}&end_date=${endDate}&page=1&page_size=${pageSize}`
-                setVehicle(data.v);
-            }
-            else if (data.d) {
-                if (data.d > new Date(endDate)) {
-                    return;
-                }
-                const bangkokOffsetMs = 7 * 60 * 60 * 1000;
-                const localTime = data.d!.getTime() + bangkokOffsetMs;
-                const _date: string = new Date(localTime).toISOString().substring(0, 10);
-                url = `/alarm/alarms?vehicle_name=${vehicle}&start_date=${_date}&end_date=${endDate}&page=1&page_size=${pageSize}`
-                setStartDate(_date);
-
-            }
-            else if (data.de) {
-                if (new Date(data.de) < new Date(startDate)) {
-                    return;
-                }
-                const bangkokOffsetMs = 7 * 60 * 60 * 1000;
-                const localTime = data.de!.getTime() + bangkokOffsetMs;
-                const _date: string = new Date(localTime).toISOString().substring(0, 10);
-                url = `/alarm/alarms?vehicle_name=${vehicle}&start_date=${startDate}&end_date=${_date}&page=1&page_size=${pageSize}`
-                setEndDate(_date);
-
-            }
-            else if (data.p) {
-                url = `/alarm/alarms?vehicle_name=${vehicle}&start_date=2025-03-01&end_date=${endDate}&page=${data.p}&page_size=${pageSize}`
-            }
-            else if (data.ps) {
-                url = `/alarm/alarms?vehicle_name=${vehicle}&start_date=${startDate}&end_date=${endDate}&page=1&page_size=${data.ps}`
-                setPageSize(data.ps);
-            }
-            const res = await getAlarm(url);
+            const res = await getAPI(url);
             const alert: IAlarmTable[] = [];
-            const _btnAGV: string[] = [];
-            for (let i = 0; i < res.payload.length; i++) {
+            const _btnAGV: string[] = ["ALL"];
+            for (let i = 0; i < res.payload?.length; i++) {
                 const descript = res.payload[i].description.split("|");
                 const _date = res.payload[i].timestamp?.substring(0, 10);
                 const _time = res.payload[i].timestamp?.substring(11, 19);
@@ -131,23 +140,20 @@ export default function Alarm() {
                     _btnAGV.push(res.payload[i].vehicle_name);
                 }
             }
-            setPagination(_pagination(res.structure?.total_pages, data.p));
+            setPagination(_pagination(res.structure?.total_pages, savePage.current));
             setalarmTable(alert);
-            setbtnAGV(_btnAGV);
+            if (!btnAGVSet.current) {
+                setbtnAGV(_btnAGV);  // for button AGV
+                btnAGVSet.current = true;
+            }
 
         } catch (e) {
             console.log(e);
-        } finally {
-            if (!loadSuccess) {
-                setLoadSuccess(true);
-            }
         }
+    }, []);
 
-    }
 
-
-    const _pagination = (ttp: number, p: number | undefined): React.ReactElement | null => {
-        const page = p ?? 1;
+    const _pagination = useCallback((ttp: number, page: number): React.ReactElement | null => {
         if (ttp <= 5) {
             return (<div className='pagination'>
 
@@ -212,16 +218,19 @@ export default function Alarm() {
             </div>);
         }
         else return null
-    };
+    }, []);
 
 
     useEffect(() => {
-
+        var timer: NodeJS.Timeout | null = null;
         const checkNetwork = async () => {
             try {
                 const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
                 if (response.ok) {
-                    reloadPage({});
+                    const _date = new Date().toISOString().substring(0, 10)
+                    saveUrl.current = `/alarm/alarms?vehicle_name=ALL&start_date=${_date}&end_date=${_date}&page=1&page_size=10`
+                    alarmSetPage(saveUrl.current);
+                    timer = setInterval(() => alarmSetPage(saveUrl.current), 10000);
                 }
             } catch (e: any) {
                 console.error(e);
@@ -231,7 +240,11 @@ export default function Alarm() {
             }
         };
         checkNetwork();
-
+        return () => {
+            if (timer != null) {
+                clearInterval(timer! as NodeJS.Timeout);
+            }
+        }
     }, []);
     return <>
         {!loadSuccess && <div className='loading-background'>
@@ -250,9 +263,7 @@ export default function Alarm() {
             {!checkNetwork ? <NetworkError /> : <div className='container-card'>
                 <div className='mission-header'>
                     <div className='selected-mission-btn'>
-                        <button onClick={() => reloadPage({ v: "ALL" })} className={`${vehicle === "ALL" ? "active" : ""}`}>{t('all')}</button>
                         {btnAGV.map((name) => <button onClick={() => reloadPage({ v: name })} className={`${vehicle === name ? "active" : ""}`}>{name}</button>)}
-
                     </div>
                     <div className='input-date-box'>
                         <div className="form-group">

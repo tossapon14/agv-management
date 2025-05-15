@@ -136,16 +136,16 @@ export default function CreateUser() {
 
                         {response.show ? <h5 className={`text-response ${response.error ? 'bg-error' : 'bg-ok'}`}>{response.message}</h5>
                             : <form onSubmit={submitUserForm}>
-                                <label><b>{t("empl")}</b></label>
+                                <label>{t("empl")}</label>
                                 <input type="text" name='employee_no' className='input-user' required />
                                 <br></br>
-                                <label><b>{t("user")}</b></label>
+                                <label>{t("user")}</label>
                                 <input type="text" name='username' className='input-user' autoComplete="off" />
                                 <br></br>
-                                <label><b>{t("name2")}</b></label>
+                                <label>{t("name2")}</label>
                                 <input type="text" name='name' className='input-user' required />
                                 <br></br>
-                                <label><b>{t("pass")}</b></label>
+                                <label>{t("pass")}</label>
                                 <div className="create-user-password-box">
                                     <input type={showPassword?"text":"password"} name='password' className='input-user' autoComplete="new-password" required />
                                     <button onClick={() => setShowPassword(prev => !prev)}>
@@ -153,13 +153,13 @@ export default function CreateUser() {
                                 </div>
 
                                 <br></br>
-                                <label><b>{t("confirm")}</b></label>
+                                <label>{t("confirm")}</label>
                                 <input type="password" name='confirm' className='input-user' onClick={() => setErrorMessage(false)} required />
                                 {errorMessage && <div style={{ color: "red", height: '16px' }}>{t("err_pass")}</div>}
                                 <br></br>
-                                <label><b>{t("position")}</b></label>
+                                <label>{t("position")}</label>
                                 <select className="form-select mt-3" name='position' defaultValue='0' onChange={() => setErrorPosition(false)} aria-label="Default select example" >
-                                    <option value='0'>{t("option")}</option>
+                                    <option value='0'>{t("option0")}</option>
                                     <option value="admin">Admin</option>
                                     {position.map((item) => (
                                         <option key={item} value={item}>{item}</option>

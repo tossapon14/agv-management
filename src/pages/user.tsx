@@ -7,7 +7,7 @@ import './css/user_style.css';
 import { BsThreeDotsVertical } from "react-icons/bs";
 import Lock_img from '../assets/images/lock.png';
 import Delete_img from '../assets/images/bin.png';
-import ResponseElement from './responseElement';
+import ResponseAPI from './responseAPI';
 import { useTranslation } from 'react-i18next';
 
 interface IUser {
@@ -287,7 +287,7 @@ export default function User() {
             {!checkNetwork ? <NetworkError /> :
 
                 <div className='px-4'>
-                    <ResponseElement response={responseData} />
+                    <ResponseAPI response={responseData} />
                     <div className={`fixed-bg-delete ${showConfirmDelete.show ? "" : "d-none"}`}>
                         <div className='box-confirm-delete'>
                             <img src={Delete_img} alt="delete icon" width={40} height={40} />

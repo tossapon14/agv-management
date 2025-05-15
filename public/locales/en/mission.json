@@ -29,7 +29,7 @@
     "m_status_4": "Rejected",
     "m_status_5": "Canceled",
     "m_status_6": "Failed",
-    "miss/page": "missions/page",
+    "miss/page": "missions/1 page",
     "st_title": "Statistics Page",
     "st_subtitle": "This is the statistics page.",
     "st_all": "All mission",
@@ -51,5 +51,5 @@
      "al_code": "Code",
     "al_status": "Status",
     "al_time":"time",
-    "alarm": "errors/page"
+    "alarm": "errors/1 page"
 }

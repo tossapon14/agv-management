@@ -9,7 +9,7 @@ i18n
   .init({
     fallbackLng: 'en',
     debug: false,
-    ns: [ 'login','home',"vehicle","mission","drawer" ],  // multiple namespaces
+    ns: [ 'login','home',"vehicle","mission","drawer","user" ],  // multiple namespaces
     defaultNS: 'login',
     backend: {
       loadPath: './locales/{{lng}}/{{ns}}.json', // e.g., /locales/en/home.json

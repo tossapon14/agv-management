@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { BiSolidError } from "react-icons/bi";
 import { FaRegCircleCheck } from "react-icons/fa6";
-interface ResponseElementProps {
+interface ResponseAPIProps {
     response: {
         error: boolean|null,message?: string
     }
 }
-export default function ResponseElement({ response }: ResponseElementProps) {
+export default function ResponseAPI({ response }: ResponseAPIProps) {
     const [showResponse, setShowResponse] = useState(false);
     useEffect(() => {
        

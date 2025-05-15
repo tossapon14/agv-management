@@ -9,7 +9,7 @@ import { pairMissionStatus, colorAgv } from '../utils/centerFunction';
 import NetworkError from './networkError';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import ResponseElement from './responseElement';
+import ResponseAPI from './responseAPI';
 import { TbCancel } from "react-icons/tb";
 
 import { useTranslation } from 'react-i18next';
@@ -46,13 +46,8 @@ const downloadCSV = async (vehicle: string, status: string, start_date: string, 
 
     URL.revokeObjectURL(url);
 };
-const getMissions = async (url: string | null): Promise<IMissionData> => {
-    if (url == null) {
-        const _vehicle = sessionStorage.getItem('user')?.split(",")[2] == "admin" ? 'ALL' : sessionStorage.getItem('user')?.split(",")[2];
-        const _date = new Date().toISOString().substring(0, 10)
+const getMissions = async (url: string): Promise<IMissionData> => {
 
-        url = `/mission/missions?vehicle_name=${_vehicle}&status=ALL&start_date=${_date}&end_date=${_date}&page=1&page_size=10`
-    }
     const res: IMissionData = await axiosGet(url);
     return res;
 };
@@ -87,16 +82,20 @@ export default function Mission() {
 
     const [pagination, setPagination] = useState<React.ReactElement | null>(null);
     const [loadSuccess, setLoadSuccess] = useState(false);
-    const [btnAGV, setbtnAGV] = useState<string[]>([])
+    const [btnAGV, setbtnAGV] = useState<string[]>([]);
+    const btnAGVSet = useRef(false);
+
     const [checkNetwork, setCheckNetwork] = useState(true);
     const [responseData, setResponseData] = useState<{ error: boolean | null, message?: string }>({ error: null });
     const cancelModalRef = useRef<HTMLDivElement>(null);
     const [dialogCancel, setDialogCancel] = useState<{ show: boolean, name?: string, id?: number }>({ show: false });
+    const saveUrl = useRef<string>("");
+    const savePage = useRef<number>(1);
 
     const { t } = useTranslation("mission");
 
-    const btnCancelMission = useCallback(async (id: number|undefined, name: string|undefined) => {
-        if(!id||!name) return;
+    const btnCancelMission = useCallback(async (id: number | undefined, name: string | undefined) => {
+        if (!id || !name) return;
         setDialogCancel({ show: false });
         setResponseData({ error: null, message: "loading" });
         try {
@@ -108,46 +107,54 @@ export default function Mission() {
         }
 
     }, []);
-    const reloadMission = async (data: { v?: string, s?: string, d?: Date, de?: Date, p?: number, ps?: string }) => {
-        try {
-            var url: string | null = null;
-            if (data.v) {
-                url = `/mission/missions?vehicle_name=${data.v}&status=${status}&start_date=${startDate}&end_date=${endDate}&page=1&page_size=${pageSize}`;
-                setVehicle(data.v);
-            }
-            else if (data.s) {
-                url = `/mission/missions?vehicle_name=${vehicle}&status=${data.s}&start_date=${startDate}&end_date=${endDate}&page=1&page_size=${pageSize}`;
-                setStatus(data.s);
-            }
-            else if (data.d) {
-                if (data.d > new Date(endDate)) {
-                    return;
-                }
-                const bangkokOffsetMs = 7 * 60 * 60 * 1000;
-                const localTime = data.d!.getTime() + bangkokOffsetMs;
-                const _date: string = new Date(localTime).toISOString().substring(0, 10);
-                url = `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${_date}&end_date=${endDate}&page=1&page_size=${pageSize}`
-                setStartDate(_date);
-            }
-            else if (data.de) {
-                if (data.de < new Date(startDate)) {
-                    return;
-                }
-                const bangkokOffsetMs = 7 * 60 * 60 * 1000;
-                const localTime = data.de!.getTime() + bangkokOffsetMs;
-                const _date: string = new Date(localTime).toISOString().substring(0, 10);
-                url = `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${startDate}&end_date=${_date}&page=1&page_size=${pageSize}`
-                setEndDate(_date);
 
+    const reloadMission = useCallback(async (data: { v?: string, s?: string, d?: Date, de?: Date, p?: number, ps?: string }) => {
+        var url: string | null = null;
+        if (data.v) {
+            url = `/mission/missions?vehicle_name=${data.v}&status=${status}&start_date=${startDate}&end_date=${endDate}&page=1&page_size=${pageSize}`;
+            setVehicle(data.v);
+        }
+        else if (data.s) {
+            url = `/mission/missions?vehicle_name=${vehicle}&status=${data.s}&start_date=${startDate}&end_date=${endDate}&page=1&page_size=${pageSize}`;
+            setStatus(data.s);
+        }
+        else if (data.d) {
+            if (data.d > new Date(endDate)) {
+                return;
             }
-            else if (data.p) {
-                url = `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${startDate}&end_date=${endDate}&page=${data.p}&page_size=${pageSize}`
-            } else if (data.ps) {
-                url = `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${startDate}&end_date=${endDate}&page=1&page_size=${data.ps}`
-                setPageSize(data.ps);
+            const bangkokOffsetMs = 7 * 60 * 60 * 1000;
+            const localTime = data.d!.getTime() + bangkokOffsetMs;
+            const _date: string = new Date(localTime).toISOString().substring(0, 10);
+            url = `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${_date}&end_date=${endDate}&page=1&page_size=${pageSize}`
+            setStartDate(_date);
+        }
+        else if (data.de) {
+            if (data.de < new Date(startDate)) {
+                return;
             }
+            const bangkokOffsetMs = 7 * 60 * 60 * 1000;
+            const localTime = data.de!.getTime() + bangkokOffsetMs;
+            const _date: string = new Date(localTime).toISOString().substring(0, 10);
+            url = `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${startDate}&end_date=${_date}&page=1&page_size=${pageSize}`
+            setEndDate(_date);
+
+        }
+        else if (data.p) {
+            url = `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${startDate}&end_date=${endDate}&page=${data.p}&page_size=${pageSize}`
+            savePage.current = data.p;
+        } else if (data.ps) {
+            url = `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${startDate}&end_date=${endDate}&page=1&page_size=${data.ps}`
+            setPageSize(data.ps);
+        }
+        if (url != null) {
+            saveUrl.current = url;
+            missionSetPage(url);
+        }
+    },[vehicle,status,startDate,endDate,pageSize]);
+
+    const missionSetPage = useCallback(async (url: string) => {
+        try {
             const res = await getMissions(url);
-            setPagination(_pagination(res.structure?.total_pages, data.p));
             const _mission: IMissionTables[] = []
             const _btnAGV: string[] = ['ALL']
             res.payload.forEach((ele) => {
@@ -165,18 +172,21 @@ export default function Mission() {
                     _btnAGV.push(ele.vehicle_name);
                 }
             });
-            if (btnAGV.length == 0) {
-                setbtnAGV(_btnAGV);  // for button AGV
-            }
+
+            setPagination(_pagination(res.structure?.total_pages, savePage.current));
             setMissionTable(_mission);
+            if (!btnAGVSet.current) {
+                setbtnAGV(_btnAGV);  // for button AGV
+                btnAGVSet.current = true;
+            }
         } catch (e: any) {
             console.error(e);
+
         }
-    }
+    }, []);
 
+    const _pagination = useCallback((ttp: number, page: number): React.ReactElement | null => {
 
-    const _pagination = useCallback((ttp: number, p: number | undefined): React.ReactElement | null => {
-        const page = p ?? 1;
         if (ttp <= 5) {
             return (<div className='pagination'>
 
@@ -244,11 +254,18 @@ export default function Mission() {
     }, []);
 
     useEffect(() => {
+        var timer: NodeJS.Timeout | null = null;
         const checkNetwork = async () => {
             try {
                 const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
                 if (response.ok) {
-                    reloadMission({});
+                    const _vehicle = sessionStorage.getItem('user')?.split(",")[2] == "admin" ? 'ALL' : sessionStorage.getItem('user')?.split(",")[2];
+                    const _date = new Date().toISOString().substring(0, 10)
+                    saveUrl.current = `/mission/missions?vehicle_name=${_vehicle}&status=ALL&start_date=${_date}&end_date=${_date}&page=1&page_size=10`
+                    missionSetPage(saveUrl.current);
+                    timer = setInterval(() => {
+                        missionSetPage(saveUrl.current);
+                    }, 30000);
                 }
             } catch (e: any) {
                 console.error(e);
@@ -270,6 +287,9 @@ export default function Mission() {
 
         return () => {
             cancelModalRef.current!.removeEventListener("mouseup", handleClickOutsideCancel);
+            if (timer != null) {
+                clearInterval(timer);
+            }
 
         }
     }, []);
@@ -368,7 +388,7 @@ export default function Mission() {
                                 <td>{miss.tend}</td>
                                 <td>{miss.duration}</td>
 
-                                <td>{miss.status == 0 && <button className='btn-cancel' onClick={() => setDialogCancel({ show: true,id:miss.id ,name:miss.vehicle_name })}>cancel</button>}</td>
+                                <td>{miss.status == 0 && <button className='btn-cancel' onClick={() => setDialogCancel({ show: true, id: miss.id, name: miss.vehicle_name })}>cancel</button>}</td>
                             </tr>)}
 
                         </tbody>
@@ -391,7 +411,7 @@ export default function Mission() {
                     <span className='ms-1 me-3'>{t("miss/page")}</span>
                     {pagination}
                 </div>
-                <ResponseElement response={responseData} />
+                <ResponseAPI response={responseData} />
                 <div ref={cancelModalRef} className={`modal-summaryCommand ${!dialogCancel.show && 'd-none'}`}>
                     <div className='card-summaryCommand'>
                         <div className='card-summaryCommand-header'>
