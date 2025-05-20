@@ -84,8 +84,9 @@ export default function Alarm() {
     const reloadPage = useCallback(async (data: { v?: string, s?: string, d?: Date, de?: Date, p?: number, ps?: string }) => {
         var url: string | null = null;
         if (data.v) {
-            url = `/alarm/alarms?vehicle_name=${data.v}&start_date=${startDate}&end_date=${endDate}&page=1&page_size=${pageSize}`
-            setVehicle(data.v);
+             url = `/alarm/alarms?vehicle_name=${data.v}&start_date=${startDate}&end_date=${endDate}&page=1&page_size=${pageSize}`;
+             savePage.current = 1;
+             setVehicle(data.v);
         }
         else if (data.d) {
             if (data.d > new Date(endDate)) {
@@ -94,7 +95,8 @@ export default function Alarm() {
             const bangkokOffsetMs = 7 * 60 * 60 * 1000;
             const localTime = data.d!.getTime() + bangkokOffsetMs;
             const _date: string = new Date(localTime).toISOString().substring(0, 10);
-            url = `/alarm/alarms?vehicle_name=${vehicle}&start_date=${_date}&end_date=${endDate}&page=1&page_size=${pageSize}`
+            url = `/alarm/alarms?vehicle_name=${vehicle}&start_date=${_date}&end_date=${endDate}&page=1&page_size=${pageSize}`;
+            savePage.current = 1;
             setStartDate(_date);
 
         }
@@ -106,6 +108,7 @@ export default function Alarm() {
             const localTime = data.de!.getTime() + bangkokOffsetMs;
             const _date: string = new Date(localTime).toISOString().substring(0, 10);
             url = `/alarm/alarms?vehicle_name=${vehicle}&start_date=${startDate}&end_date=${_date}&page=1&page_size=${pageSize}`;
+            savePage.current = 1;
             setEndDate(_date);
 
         }
@@ -115,6 +118,7 @@ export default function Alarm() {
         }
         else if (data.ps) {
             url = `/alarm/alarms?vehicle_name=${vehicle}&start_date=${startDate}&end_date=${endDate}&page=1&page_size=${data.ps}`;
+            savePage.current = 1;
             setPageSize(data.ps);
         }
         if (url != null) {
@@ -126,7 +130,7 @@ export default function Alarm() {
 
 
     const alarmSetPage = useCallback(async (url: string) => {
-        try {
+         try {
             const res = await getAPI(url);
             const alert: IAlarmTable[] = [];
             const _btnAGV: string[] = ["ALL"];
@@ -309,7 +313,7 @@ export default function Alarm() {
                         </thead>
                         <tbody className='text-center'>
                             {alarmTable.map((data, i) => <tr key={i}>
-                                <td scope="row">#{i + 1}</td>
+                                <td scope="row">#{data.id}</td>
                                 <td><div className='td-vehicle-name'><div className='circle-vehicle-icon' style={{ background: `${colorAgv[data.vehicle_name]}` }}></div><span>{data.vehicle_name}</span></div></td>
                                 <td><div className='box-status' style={{ background: "#f5f5f5", color: "#444444", }}>{data.code}</div></td>
                                 <td>{data["th"]}</td>

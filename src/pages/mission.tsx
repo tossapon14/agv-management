@@ -83,7 +83,7 @@ export default function Mission() {
     const [pagination, setPagination] = useState<React.ReactElement | null>(null);
     const [loadSuccess, setLoadSuccess] = useState(false);
     const [btnAGV, setbtnAGV] = useState<string[]>([]);
-    const btnAGVSet = useRef(false);
+    // const btnAGVSet = useRef(false);
 
     const [checkNetwork, setCheckNetwork] = useState(true);
     const [responseData, setResponseData] = useState<{ error: boolean | null, message?: string }>({ error: null });
@@ -91,6 +91,9 @@ export default function Mission() {
     const [dialogCancel, setDialogCancel] = useState<{ show: boolean, name?: string, id?: number }>({ show: false });
     const saveUrl = useRef<string>("");
     const savePage = useRef<number>(1);
+    const saveDateStart = useRef<string>("");
+    const saveDateEnd = useRef<string>("");
+
 
     const { t } = useTranslation("mission");
 
@@ -108,24 +111,29 @@ export default function Mission() {
 
     }, []);
 
-    const reloadMission = useCallback(async (data: { v?: string, s?: string, d?: Date, de?: Date, p?: number, ps?: string }) => {
+    const reloadMission = useCallback(async (data: { v?: string, s?: string, d?: Date | undefined, de?: Date | undefined, p?: number, ps?: string }) => {
         var url: string | null = null;
         if (data.v) {
-            url = `/mission/missions?vehicle_name=${data.v}&status=${status}&start_date=${startDate}&end_date=${endDate}&page=1&page_size=${pageSize}`;
+            savePage.current = 1;
+            url = `/mission/missions?vehicle_name=${data.v}&status=${status}&start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}&page=1&page_size=${pageSize}`;
             setVehicle(data.v);
         }
         else if (data.s) {
-            url = `/mission/missions?vehicle_name=${vehicle}&status=${data.s}&start_date=${startDate}&end_date=${endDate}&page=1&page_size=${pageSize}`;
+            savePage.current = 1;
+            url = `/mission/missions?vehicle_name=${vehicle}&status=${data.s}&start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}&page=1&page_size=${pageSize}`;
             setStatus(data.s);
         }
         else if (data.d) {
+
             if (data.d > new Date(endDate)) {
                 return;
             }
             const bangkokOffsetMs = 7 * 60 * 60 * 1000;
             const localTime = data.d!.getTime() + bangkokOffsetMs;
             const _date: string = new Date(localTime).toISOString().substring(0, 10);
-            url = `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${_date}&end_date=${endDate}&page=1&page_size=${pageSize}`
+            saveDateStart.current = _date;
+            url = `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${_date}&end_date=${saveDateEnd.current}&page=1&page_size=${pageSize}`;
+            savePage.current = 1;
             setStartDate(_date);
         }
         else if (data.de) {
@@ -135,22 +143,27 @@ export default function Mission() {
             const bangkokOffsetMs = 7 * 60 * 60 * 1000;
             const localTime = data.de!.getTime() + bangkokOffsetMs;
             const _date: string = new Date(localTime).toISOString().substring(0, 10);
-            url = `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${startDate}&end_date=${_date}&page=1&page_size=${pageSize}`
+            saveDateEnd.current = _date;
+            url = `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${saveDateStart.current}&end_date=${_date}&page=1&page_size=${pageSize}`;
+            savePage.current = 1;
             setEndDate(_date);
 
         }
         else if (data.p) {
-            url = `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${startDate}&end_date=${endDate}&page=${data.p}&page_size=${pageSize}`
+            console.log(saveDateStart.current, saveDateEnd.current);
+            url = `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}&page=${data.p}&page_size=${pageSize}`
             savePage.current = data.p;
         } else if (data.ps) {
-            url = `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${startDate}&end_date=${endDate}&page=1&page_size=${data.ps}`
+            url = `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}&page=1&page_size=${data.ps}`
+            savePage.current = 1;
             setPageSize(data.ps);
         }
         if (url != null) {
             saveUrl.current = url;
             missionSetPage(url);
         }
-    },[vehicle,status,startDate,endDate,pageSize]);
+    }, [vehicle, status, pageSize]);
+
 
     const missionSetPage = useCallback(async (url: string) => {
         try {
@@ -175,10 +188,8 @@ export default function Mission() {
 
             setPagination(_pagination(res.structure?.total_pages, savePage.current));
             setMissionTable(_mission);
-            if (!btnAGVSet.current) {
-                setbtnAGV(_btnAGV);  // for button AGV
-                btnAGVSet.current = true;
-            }
+            setbtnAGV(_btnAGV);  // for button AGV
+
         } catch (e: any) {
             console.error(e);
 
@@ -262,6 +273,8 @@ export default function Mission() {
                     const _vehicle = sessionStorage.getItem('user')?.split(",")[2] == "admin" ? 'ALL' : sessionStorage.getItem('user')?.split(",")[2];
                     const _date = new Date().toISOString().substring(0, 10)
                     saveUrl.current = `/mission/missions?vehicle_name=${_vehicle}&status=ALL&start_date=${_date}&end_date=${_date}&page=1&page_size=10`
+                    saveDateStart.current = _date;
+                    saveDateEnd.current = _date;
                     missionSetPage(saveUrl.current);
                     timer = setInterval(() => {
                         missionSetPage(saveUrl.current);

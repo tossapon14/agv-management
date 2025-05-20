@@ -20,41 +20,51 @@ export interface IDataSeries {
   const res: IBattery = await axiosGet(url);
   return res;
 };
-// const downloadCSV = async (vehicle: string, status: string, start_date: string, end_date: string) => {
-//   const fetchData: string = await axiosGet(
-//     `/mission/export_mission_report?vehicle_name=${vehicle}&status=${status}&start_date=${start_date}&end_date=${end_date}`)
-//   const blob = new Blob([fetchData], { type: "text/csv" });
-//   const url = URL.createObjectURL(blob);
+const downloadCSV = async (start_date: string, end_date: string) => {
+  const fetchData: string = await axiosGet(
+    `/vehicle/export_battery_report?vehicle_name=ALL&start_date=${start_date}&end_date=${end_date}`);
+  const blob = new Blob([fetchData], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
 
-//   const link = document.createElement("a");
-//   link.href = url;
-//   link.download = `battery-${start_date} ${end_date}.csv`;
-//   link.click();
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `battery-${start_date} ${end_date}.csv`;
+  link.click();
 
-//   URL.revokeObjectURL(url);
-// };
+  URL.revokeObjectURL(url);
+};
 
 const colorLine = ['#2E93fA', '#66DA26', '#546E7A', '#E91E63', '#FF9800']
 const Battery = () => {
   const [loadSuccess, setLoadSuccess] = useState(false);
+  const [vehicle, setVehicle] = useState<string>("ALL"); // Default to "desc"
   const [startDate, setStartDate] = useState<string>(new Date().toISOString().substring(0, 10))
   const [endDate, setEndDate] = useState<string>(new Date().toISOString().substring(0, 10))
   const [battery, setBattery] = useState<IDataSeries>({ series: [] });
   const [checkNetwork, setCheckNetwork] = useState(true);
   const saveUrl = useRef<string>("");
+  const [btnAGV, setbtnAGV] = useState<string[]>([]);
+  const btnAGVSet = useRef(false);
   const { t } = useTranslation("mission");
 
 
-  const reloadDataByDate = useCallback(async (data: { d?: Date, de?: Date, }) => {
+  const reloadDataByDate = useCallback(async (data: { v?: string, d?: Date, de?: Date, }) => {
     var url: string | null = null;
-    if (data.d) {
+    console.log(data);
+    if (data.v) {
+      url = `/vehicle/battery_level?vehicle_name=${data.v}&start_date=${startDate}&end_date=${endDate}`;
+      saveUrl.current = url;
+      setVehicle(data.v);
+      batterySetPage(url);
+    }
+    else if (data.d) {
       if (data.d > new Date(endDate)) {
         return;
       }
       const bangkokOffsetMs = 7 * 60 * 60 * 1000;
       const localTime = data.d!.getTime() + bangkokOffsetMs;
       const _date: string = new Date(localTime).toISOString().substring(0, 10);
-      url = `/vehicle/battery_level?vehicle_name=ALL&start_date=${_date}&end_date=${endDate}`;
+      url = `/vehicle/battery_level?vehicle_name=${vehicle}&start_date=${_date}&end_date=${endDate}`;
       saveUrl.current = url;
       setStartDate(_date);
       batterySetPage(url);
@@ -66,24 +76,30 @@ const Battery = () => {
       const bangkokOffsetMs = 7 * 60 * 60 * 1000;
       const localTime = data.de!.getTime() + bangkokOffsetMs;
       const _date: string = new Date(localTime).toISOString().substring(0, 10);
-      url = `/vehicle/battery_level?vehicle_name=ALL&start_date=${startDate}&end_date=${_date}`;
+      url = `/vehicle/battery_level?vehicle_name=${vehicle}&start_date=${startDate}&end_date=${_date}`;
       saveUrl.current = url;
       setEndDate(_date);
       batterySetPage(url);
 
     }
-  }, [startDate, endDate]);
+  }, [vehicle, startDate, endDate]);
 
   const batterySetPage = useCallback(async (url: string) => {
     try {
-      const res = await getBattery(url);
+       const res = await getBattery(url);
       const _series: { name: string; data: { x: number, y: number }[] }[] = [];
+      const _btnAGV = ['ALL'];
       for (var agv in res) {
         const dataBattery: { x: number, y: number }[] = [];
         for (var i = 0; i < res[agv].length; i += 3) {
           dataBattery.push({ x: res[agv][i][2] * 1000, y: res[agv][i][1] });
         }
         _series.push({ name: agv, data: dataBattery });
+        _btnAGV.push(agv);
+      }
+      if (!btnAGVSet.current) {
+        setbtnAGV(_btnAGV);  // for button AGV
+        btnAGVSet.current = true;
       }
       setBattery({ series: _series });
     } catch (error: any) {
@@ -127,7 +143,8 @@ const Battery = () => {
       <div>
         <h1>{t("bt_title")}</h1>
         <p> <FcChargeBattery size={32} style={{ transform: ' rotate(45deg)' }} />
-          <span className='ms-3'>{t("bt_subtitle")}</span></p>
+          <span className='ms-3'>{t("bt_subtitle")}</span>
+        </p>
       </div>
 
       {checkNetwork && <div className='input-date-box ms-5'>
@@ -146,11 +163,15 @@ const Battery = () => {
             <DatePicker selected={new Date(endDate)} onChange={(e) => reloadDataByDate({ de: e ?? undefined })} />
           </div>
         </div>
-        <button className="export-btn2" onClick={() => { }}><IoMdDownload /> <span>{t("downloadBtn")}</span> </button>
+        <button className="export-btn2" onClick={() => downloadCSV(startDate, endDate)}><IoMdDownload /> <span>{t("downloadBtn")}</span> </button>
       </div>}
     </div>
     {!checkNetwork ? <NetworkError /> : <>
+      <div className="selected-agv-box mt-2">
+        {btnAGV.map((name) => <button key={name} onClick={() => reloadDataByDate({ v: name })} className={`${vehicle === name ? "active" : ""}`}>{name}</button>)}
+      </div>
       <div className='chart-all-agv'>
+
         <h5>{t("bt_all_agv")}</h5>
         <p className='p-subtitle'>{t("bt_sub1")}</p>
         <div className='chart'>

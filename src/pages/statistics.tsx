@@ -30,13 +30,13 @@ export type IStatisticsData = {
 type ISeries = { name: string, data: number[] }[]
 
 const getData = async (url: string): Promise<IStatistics> => {
-   
+
   const res: IStatistics = await axiosGet(url);
   return res;
 };
 const downloadCSV = async (start_date: string, end_date: string) => {
   const fetchData: string = await axiosGet(
-    `/mission/export_mission_report?vehicle_name=ALL&status=ALL&start_date=${start_date}&end_date=${end_date}`)
+    `/statistics/export_mission_report?start_date=${start_date}&end_date=${end_date}`);
   const blob = new Blob([fetchData], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
 
@@ -61,7 +61,7 @@ export default function Statistics() {
 
   const { t } = useTranslation("mission");
 
-  const reloadDataByDate = async (data: { d?: Date, de?: Date, }) => {
+  const reloadDataByDate = useCallback(async (data: { d?: Date, de?: Date, }) => {
     var url: string | null = null;
     if (data.d) {
       if (data.d > new Date(endDate)) {
@@ -89,10 +89,9 @@ export default function Statistics() {
 
     }
 
-  };
+  },[startDate,endDate]);
   const statisticsSetPage = useCallback(async (url: string) => {
     try {
-
       const res = await getData(url);
       const _drop: IStatisticsData = {};
       const _pickup: IStatisticsData = {};
