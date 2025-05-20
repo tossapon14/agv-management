@@ -695,7 +695,9 @@ export default function Home() {
               <div className='circle-2'></div>
             </div>}
           <div className='mission-container'>
-            <div className={`${agv.agv_code_status === "724" || agv.agv_code_status === "721" ? 'd-none' : 'mission-status'}`}>{(agv.mission?.status != 2) ? t(`m_status_${agv.mission?.status}`) : t(`t_state_${agv.mission?.transport_state}`)}</div>
+            {agv.mission&&<div className={`${agv.agv_code_status === "724" || agv.agv_code_status === "721" ? 'd-none' : 'mission-status'}`}>
+              {(agv.mission.status != 2) ? t(`m_status_${agv.mission.status}`) : t(`t_state_${agv.mission.transport_state}`)}
+            </div>}
             {agv.agv_code_status === "724" ? <button className='drop-btn' onClick={() => btnDrop(agv.name, agv.node)}>{t("btn_drop")}</button> :
               agv.agv_code_status === "721" ? <button className='mission-btn miss-animate' onClick={() => btnCallModal({ agv: agv.name, agvCode: "721", id: agv.mission?.id, state: agv.state, mode: agv.mode })}>
                 {t("btn_pick")}
