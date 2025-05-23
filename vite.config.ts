@@ -46,6 +46,7 @@ export default defineConfig({
             './src/pages/switch.tsx',
             './src/pages/user.tsx',
             './src/pages/vehicle.tsx',
+           './src/pages/not_authenticated.tsx'
           ],
         },
       },

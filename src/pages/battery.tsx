@@ -10,6 +10,8 @@ import NetworkError from './networkError';
 import DatePicker from "react-datepicker";
 import { useTranslation } from 'react-i18next';
 import './css/battery.css';
+import NotAuthenticated from "./not_authenticated.tsx";
+import StatusOnline from "./statusOnline.tsx";
 
 interface IBattery {
   [key: string]: number[][]
@@ -45,48 +47,52 @@ const Battery = () => {
   const saveUrl = useRef<string>("");
   const [btnAGV, setbtnAGV] = useState<string[]>([]);
   const btnAGVSet = useRef(false);
+  const saveVehicle = useRef<string>("ALL");
+  const saveDateStart = useRef<string>("");
+  const saveDateEnd = useRef<string>("");
+  const timerInterval = useRef<NodeJS.Timeout>(null);
+  const [notauthenticated, setNotAuthenticated] = useState(false);
+  const [onlineBar, setOnlineBar] = useState<null | boolean>(null);
+  const onlineRef = useRef<boolean | null>(null);
   const { t } = useTranslation("mission");
 
 
   const reloadDataByDate = useCallback(async (data: { v?: string, d?: Date, de?: Date, }) => {
-    var url: string | null = null;
-    console.log(data);
     if (data.v) {
-      url = `/vehicle/battery_level?vehicle_name=${data.v}&start_date=${startDate}&end_date=${endDate}`;
-      saveUrl.current = url;
+      saveVehicle.current = data.v;
       setVehicle(data.v);
-      batterySetPage(url);
     }
     else if (data.d) {
-      if (data.d > new Date(endDate)) {
+      if (data.d > new Date(saveDateEnd.current)) {
         return;
       }
       const bangkokOffsetMs = 7 * 60 * 60 * 1000;
       const localTime = data.d!.getTime() + bangkokOffsetMs;
       const _date: string = new Date(localTime).toISOString().substring(0, 10);
-      url = `/vehicle/battery_level?vehicle_name=${vehicle}&start_date=${_date}&end_date=${endDate}`;
-      saveUrl.current = url;
+      saveDateStart.current = _date;
       setStartDate(_date);
-      batterySetPage(url);
     }
     else if (data.de) {
-      if (data.de < new Date(startDate)) {
+      if (data.de < new Date(saveDateStart.current)) {
         return;
       }
       const bangkokOffsetMs = 7 * 60 * 60 * 1000;
       const localTime = data.de!.getTime() + bangkokOffsetMs;
       const _date: string = new Date(localTime).toISOString().substring(0, 10);
-      url = `/vehicle/battery_level?vehicle_name=${vehicle}&start_date=${startDate}&end_date=${_date}`;
-      saveUrl.current = url;
+      saveDateEnd.current = _date
       setEndDate(_date);
-      batterySetPage(url);
-
     }
-  }, [vehicle, startDate, endDate]);
+    saveUrl.current = `/vehicle/battery_level?vehicle_name=${saveVehicle.current}&start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}`;
+    batterySetPage(saveUrl.current);
+  }, []);
 
   const batterySetPage = useCallback(async (url: string) => {
     try {
-       const res = await getBattery(url);
+      const res = await getBattery(url);
+      if (onlineRef.current == false) {
+        setOnlineBar(true);
+        onlineRef.current = true;
+      }
       const _series: { name: string; data: { x: number, y: number }[] }[] = [];
       const _btnAGV = ['ALL'];
       for (var agv in res) {
@@ -102,13 +108,22 @@ const Battery = () => {
         btnAGVSet.current = true;
       }
       setBattery({ series: _series });
-    } catch (error: any) {
-      console.error(error);
+    } catch (e: any) {
+      console.error(e);
+      if (e.message === "Network Error") {
+        setOnlineBar(false);
+        onlineRef.current = false;
+      }
+      else if (e.response?.status === 401 || e.response?.data?.detail === "Invalid token or Token has expired.") {
+        setNotAuthenticated(true)
+        if (timerInterval.current) {
+          clearInterval(timerInterval.current as NodeJS.Timeout);
+        }
+      }
     }
   }, []);
   useEffect(() => {
 
-    var timer: NodeJS.Timeout | null = null;
 
     const checkNetwork = async () => {
       try {
@@ -116,8 +131,10 @@ const Battery = () => {
         if (response.ok) {
           const _date = new Date().toISOString().substring(0, 10)
           saveUrl.current = `/vehicle/battery_level?vehicle_name=ALL&start_date=${_date}&end_date=${_date}`;
+          saveDateStart.current = _date;
+          saveDateEnd.current = _date;
           batterySetPage(saveUrl.current);
-          timer = setInterval(() => {
+          timerInterval.current = setInterval(() => {
             batterySetPage(saveUrl.current);
           }, 10000);
         }
@@ -130,8 +147,8 @@ const Battery = () => {
     };
     checkNetwork();
     return () => {
-      if (timer != null) {
-        clearInterval(timer! as NodeJS.Timeout);
+      if (timerInterval.current != null) {
+        clearInterval(timerInterval.current! as NodeJS.Timeout);
       }
     }
   }, []);
@@ -139,6 +156,8 @@ const Battery = () => {
     {!loadSuccess && <div className='loading-background'>
       <div id="loading"></div>
     </div>}
+    {onlineBar !== null && <StatusOnline online={onlineBar}></StatusOnline>}
+    {notauthenticated && <NotAuthenticated />}
     <div className='d-flex align-items-center justify-content-between mb-3'>
       <div>
         <h1>{t("bt_title")}</h1>

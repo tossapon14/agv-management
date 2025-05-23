@@ -7,6 +7,8 @@ import { colorAgv } from '../utils/centerFunction';
 import NetworkError from './networkError';
 import DatePicker from "react-datepicker";
 import { useTranslation } from 'react-i18next';
+import NotAuthenticated from "./not_authenticated";
+import StatusOnline from "./statusOnline";
 
 interface IAlarm {
     message: string
@@ -75,63 +77,71 @@ export default function Alarm() {
     const [pageSize, setPageSize] = useState('10');
     const [loadSuccess, setLoadSuccess] = useState(false);
     const [checkNetwork, setCheckNetwork] = useState(true);
+    const [notauthenticated, setNotAuthenticated] = useState(false);
+    const timerInterval = useRef<NodeJS.Timeout>(null);
     const saveUrl = useRef<string>("");
     const savePage = useRef<number>(1);
-
+    const savePageSize = useRef<string>('10');
+    const saveDateStart = useRef<string>("");
+    const saveDateEnd = useRef<string>("");
+    const saveVehicle = useRef<string>("ALL");
+    const [onlineBar, setOnlineBar] = useState<null | boolean>(null);
+    const onlineRef = useRef<boolean | null>(null);
     const { t } = useTranslation("mission");
 
 
     const reloadPage = useCallback(async (data: { v?: string, s?: string, d?: Date, de?: Date, p?: number, ps?: string }) => {
-        var url: string | null = null;
         if (data.v) {
-             url = `/alarm/alarms?vehicle_name=${data.v}&start_date=${startDate}&end_date=${endDate}&page=1&page_size=${pageSize}`;
-             savePage.current = 1;
-             setVehicle(data.v);
+            saveVehicle.current = data.v;
+            savePage.current = 1;
+            setVehicle(data.v);
         }
         else if (data.d) {
-            if (data.d > new Date(endDate)) {
+            if (data.d > new Date(saveDateEnd.current)) {
                 return;
             }
             const bangkokOffsetMs = 7 * 60 * 60 * 1000;
             const localTime = data.d!.getTime() + bangkokOffsetMs;
             const _date: string = new Date(localTime).toISOString().substring(0, 10);
-            url = `/alarm/alarms?vehicle_name=${vehicle}&start_date=${_date}&end_date=${endDate}&page=1&page_size=${pageSize}`;
+            saveDateStart.current = _date;
             savePage.current = 1;
             setStartDate(_date);
 
         }
         else if (data.de) {
-            if (new Date(data.de) < new Date(startDate)) {
+            if (new Date(data.de) < new Date(saveDateStart.current)) {
                 return;
             }
             const bangkokOffsetMs = 7 * 60 * 60 * 1000;
             const localTime = data.de!.getTime() + bangkokOffsetMs;
             const _date: string = new Date(localTime).toISOString().substring(0, 10);
-            url = `/alarm/alarms?vehicle_name=${vehicle}&start_date=${startDate}&end_date=${_date}&page=1&page_size=${pageSize}`;
+            saveDateEnd.current = _date;
             savePage.current = 1;
             setEndDate(_date);
 
         }
         else if (data.p) {
-            url = `/alarm/alarms?vehicle_name=${vehicle}&start_date=2025-03-01&end_date=${endDate}&page=${data.p}&page_size=${pageSize}`;
             savePage.current = data.p;
         }
         else if (data.ps) {
-            url = `/alarm/alarms?vehicle_name=${vehicle}&start_date=${startDate}&end_date=${endDate}&page=1&page_size=${data.ps}`;
+            savePageSize.current = data.ps;
             savePage.current = 1;
             setPageSize(data.ps);
         }
-        if (url != null) {
-            saveUrl.current = url;
-            alarmSetPage(url);
-        }
-    }, [vehicle, startDate, endDate, pageSize]);
+
+        saveUrl.current = `/alarm/alarms?vehicle_name=${saveVehicle.current}&start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}&page=${savePage.current}&page_size=${savePageSize.current}`;;
+        alarmSetPage(saveUrl.current);
+    }, []);
 
 
 
     const alarmSetPage = useCallback(async (url: string) => {
-         try {
+        try {
             const res = await getAPI(url);
+            if (onlineRef.current == false) {
+                setOnlineBar(true);
+                onlineRef.current = true;
+            }
             const alert: IAlarmTable[] = [];
             const _btnAGV: string[] = ["ALL"];
             for (let i = 0; i < res.payload?.length; i++) {
@@ -151,8 +161,18 @@ export default function Alarm() {
                 btnAGVSet.current = true;
             }
 
-        } catch (e) {
-            console.log(e);
+        } catch (e: any) {
+            console.error(e);
+            if (e.message === "Network Error") {
+                setOnlineBar(false);
+                onlineRef.current = false;
+            }
+            else if (e.response?.status === 401 || e.response?.data?.detail === "Invalid token or Token has expired.") {
+                setNotAuthenticated(true)
+                if (timerInterval.current) {
+                    clearInterval(timerInterval.current as NodeJS.Timeout);
+                }
+            }
         }
     }, []);
 
@@ -226,7 +246,6 @@ export default function Alarm() {
 
 
     useEffect(() => {
-        var timer: NodeJS.Timeout | null = null;
         const checkNetwork = async () => {
             try {
                 const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
@@ -234,7 +253,7 @@ export default function Alarm() {
                     const _date = new Date().toISOString().substring(0, 10)
                     saveUrl.current = `/alarm/alarms?vehicle_name=ALL&start_date=${_date}&end_date=${_date}&page=1&page_size=10`
                     alarmSetPage(saveUrl.current);
-                    timer = setInterval(() => alarmSetPage(saveUrl.current), 10000);
+                    timerInterval.current = setInterval(() => alarmSetPage(saveUrl.current), 10000);
                 }
             } catch (e: any) {
                 console.error(e);
@@ -245,8 +264,8 @@ export default function Alarm() {
         };
         checkNetwork();
         return () => {
-            if (timer != null) {
-                clearInterval(timer! as NodeJS.Timeout);
+            if (timerInterval.current != null) {
+                clearInterval(timerInterval.current as NodeJS.Timeout);
             }
         }
     }, []);
@@ -254,6 +273,8 @@ export default function Alarm() {
         {!loadSuccess && <div className='loading-background'>
             <div id="loading"></div>
         </div>}
+        {onlineBar !== null && <StatusOnline online={onlineBar}></StatusOnline>}
+        {notauthenticated && <NotAuthenticated />}
         <section className='mission-box-page'>
             <div className='mission-title-box mb-3'>
                 <h1>{t("al_title")}</h1>
@@ -325,6 +346,7 @@ export default function Alarm() {
                     </table>
 
                 </div>
+
                 <div className='page-number-d-flex'>
 
                     <div className="tooltip-container">

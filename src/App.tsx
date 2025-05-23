@@ -10,7 +10,7 @@ import { BiHomeAlt, BiError, BiFile } from "react-icons/bi";
  import { PiChartDonutLight, PiBatteryCharging,PiFireTruckLight   } from "react-icons/pi";
 
 import { IoIosLogIn } from "react-icons/io";
-import { useEffect, useState } from "react";
+import { useEffect, useState,useRef } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, } from "react-router-dom";
 import Statistics from "./pages/statistics";
 import Battery from "./pages/battery";
@@ -27,13 +27,13 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 
 function App() {
   const [linkFocused, setLinkFocused] = useState<string[]>(Array(7).fill(""));
-  const isAdmin =  (sessionStorage.getItem("user")?.split(",")[2]==="admin");
+  const isAdmin =  useRef<boolean>(false);
   const { t } = useTranslation("drawer"); 
-  useEffect(() => {
+   useEffect(() => {
     const path = window.location.pathname;
     var index = 6; // Default to "login"
-
-    switch (path) {
+   isAdmin.current = sessionStorage.getItem("user")?.split(",")[2]==="admin";
+     switch (path) {
       case "/home":
         index = 0;
         break;
@@ -90,7 +90,7 @@ function App() {
                   {t("vehicle")}
                 </a>
               </li>
-              {isAdmin && <>
+              {isAdmin.current && <>
                 <li>
                   <a href="/statistics" className={linkFocused[3]}>
                     <PiChartDonutLight size="32" />

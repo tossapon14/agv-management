@@ -11,6 +11,8 @@ import DatePicker from "react-datepicker";
 import NetworkError from './networkError';
 import _default from 'react-bootstrap/esm/Alert';
 import { useTranslation } from 'react-i18next';
+import NotAuthenticated from './not_authenticated';
+import StatusOnline from './statusOnline';
 
 
 
@@ -58,41 +60,48 @@ export default function Statistics() {
   const [totalMission, setTotalMission] = useState<{ mission: number, complete: number, cancel: number, other: number }>();
   const [checkNetwork, setCheckNetwork] = useState(true);
   const saveUrl = useRef<string>("");
+  const saveDateStart = useRef<string>("");
+  const saveDateEnd = useRef<string>("");
+  const timerInterval = useRef<NodeJS.Timeout>(null);
+  const [notauthenticated, setNotAuthenticated] = useState(false);
+  const [onlineBar, setOnlineBar] = useState<null | boolean>(null);
+  const onlineRef = useRef<boolean | null>(null);
 
   const { t } = useTranslation("mission");
 
   const reloadDataByDate = useCallback(async (data: { d?: Date, de?: Date, }) => {
-    var url: string | null = null;
     if (data.d) {
-      if (data.d > new Date(endDate)) {
+      if (data.d > new Date(saveDateEnd.current)) {
         return;
       }
       const bangkokOffsetMs = 7 * 60 * 60 * 1000;
       const localTime = data.d!.getTime() + bangkokOffsetMs;
       const _date: string = new Date(localTime).toISOString().substring(0, 10);
-      url = `/statistics/report?start_date=${_date}&end_date=${endDate}`
-      saveUrl.current = url;
+      saveDateStart.current = _date;
       setStartDate(_date);
-      statisticsSetPage(url);
     }
     else if (data.de) {
-      if (data.de < new Date(startDate)) {
+      if (data.de < new Date(saveDateStart.current)) {
         return;
       }
       const bangkokOffsetMs = 7 * 60 * 60 * 1000;
       const localTime = data.de!.getTime() + bangkokOffsetMs;
       const _date: string = new Date(localTime).toISOString().substring(0, 10);
-      url = `/statistics/report?start_date=${startDate}&end_date=${_date}`
-      saveUrl.current = url;
+      saveDateEnd.current = _date;
       setEndDate(_date);
-      statisticsSetPage(url);
 
     }
+    saveUrl.current = `/statistics/report?start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}`
+    statisticsSetPage(saveUrl.current);
+  }, []);
 
-  },[startDate,endDate]);
   const statisticsSetPage = useCallback(async (url: string) => {
     try {
       const res = await getData(url);
+      if (onlineRef.current == false) {
+        setOnlineBar(true);
+        onlineRef.current = true;
+      }
       const _drop: IStatisticsData = {};
       const _pickup: IStatisticsData = {};
       const _miss: IStatisticsData = {};
@@ -155,14 +164,23 @@ export default function Statistics() {
         cancel: res["ALL"]?.total_mission_cancel ?? 0,
         other: res["ALL"]?.total_mission_other ?? 0
       });
-    } catch (error) {
-      console.error(error);
+    } catch (e: any) {
+      console.error(e);
+      if (e.message === "Network Error") {
+        setOnlineBar(false);
+        onlineRef.current = false;
+      }
+      else if (e.response?.status === 401 || e.response?.data?.detail === "Invalid token or Token has expired.") {
+        setNotAuthenticated(true)
+        if (timerInterval.current) {
+          clearInterval(timerInterval.current as NodeJS.Timeout);
+        }
+      }
     }
   }, []);
 
 
   useEffect(() => {
-    var timer: NodeJS.Timeout | null = null;
 
     const checkNetwork = async () => {
       try {
@@ -170,10 +188,12 @@ export default function Statistics() {
         if (response.ok) {
           const _date = new Date().toISOString().substring(0, 10)
           saveUrl.current = `/statistics/report?start_date=${_date}&end_date=${_date}`;
+          saveDateStart.current = _date;
+          saveDateEnd.current = _date;
           statisticsSetPage(saveUrl.current);
-          timer = setInterval(() => {
+          timerInterval.current = setInterval(() => {
             statisticsSetPage(saveUrl.current);
-          }, 30000);
+          }, 20000);
         }
       } catch (e: any) {
         console.error(e);
@@ -184,8 +204,8 @@ export default function Statistics() {
     };
     checkNetwork();
     return () => {
-      if (timer != null) {
-        clearInterval(timer);
+      if (timerInterval.current != null) {
+        clearInterval(timerInterval.current);
       }
 
     }
@@ -195,6 +215,8 @@ export default function Statistics() {
       {!loadSuccess && <div className='loading-background'>
         <div id="loading"></div>
       </div>}
+      {onlineBar !== null && <StatusOnline online={onlineBar}></StatusOnline>}
+      {notauthenticated && <NotAuthenticated />}
       <div className='d-flex align-items-center justify-content-between'>
         <div className='mb-4'>
           <h1>{t("st_title")}</h1>

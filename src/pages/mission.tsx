@@ -13,6 +13,8 @@ import ResponseAPI from './responseAPI';
 import { TbCancel } from "react-icons/tb";
 
 import { useTranslation } from 'react-i18next';
+import NotAuthenticated from './not_authenticated';
+import StatusOnline from './statusOnline';
 
 interface IMissionTables {
     arriving_time: string
@@ -91,10 +93,15 @@ export default function Mission() {
     const [dialogCancel, setDialogCancel] = useState<{ show: boolean, name?: string, id?: number }>({ show: false });
     const saveUrl = useRef<string>("");
     const savePage = useRef<number>(1);
+    const savePageSize = useRef<string>('10');
     const saveDateStart = useRef<string>("");
     const saveDateEnd = useRef<string>("");
-
-
+    const saveVehicle = useRef<string>("");
+    const saveStatus = useRef<string>("ALL")
+    const [notauthenticated, setNotAuthenticated] = useState(false);
+    const timerInterval = useRef<NodeJS.Timeout>(null);
+    const [onlineBar, setOnlineBar] = useState<null | boolean>(null);
+    const onlineRef = useRef<boolean | null>(null);
     const { t } = useTranslation("mission");
 
     const btnCancelMission = useCallback(async (id: number | undefined, name: string | undefined) => {
@@ -104,6 +111,7 @@ export default function Mission() {
         try {
             await axiosPut(`/mission/update/status?mission_id=${id}&vehicle_name=${name}&command=cancel`);
             setResponseData({ error: false, message: "Cancel success" })
+            missionSetPage(saveUrl.current);
         } catch (e: any) {
             console.error(e);
             setResponseData({ error: true, message: e?.message })
@@ -112,62 +120,59 @@ export default function Mission() {
     }, []);
 
     const reloadMission = useCallback(async (data: { v?: string, s?: string, d?: Date | undefined, de?: Date | undefined, p?: number, ps?: string }) => {
-        var url: string | null = null;
         if (data.v) {
             savePage.current = 1;
-            url = `/mission/missions?vehicle_name=${data.v}&status=${status}&start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}&page=1&page_size=${pageSize}`;
+            saveVehicle.current = data.v;
             setVehicle(data.v);
         }
         else if (data.s) {
             savePage.current = 1;
-            url = `/mission/missions?vehicle_name=${vehicle}&status=${data.s}&start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}&page=1&page_size=${pageSize}`;
+            saveStatus.current = data.s;
             setStatus(data.s);
         }
         else if (data.d) {
 
-            if (data.d > new Date(endDate)) {
+            if (data.d > new Date(saveDateEnd.current)) {
                 return;
             }
             const bangkokOffsetMs = 7 * 60 * 60 * 1000;
             const localTime = data.d!.getTime() + bangkokOffsetMs;
             const _date: string = new Date(localTime).toISOString().substring(0, 10);
             saveDateStart.current = _date;
-            url = `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${_date}&end_date=${saveDateEnd.current}&page=1&page_size=${pageSize}`;
             savePage.current = 1;
             setStartDate(_date);
         }
         else if (data.de) {
-            if (data.de < new Date(startDate)) {
+            if (data.de < new Date(saveDateStart.current)) {
                 return;
             }
             const bangkokOffsetMs = 7 * 60 * 60 * 1000;
             const localTime = data.de!.getTime() + bangkokOffsetMs;
             const _date: string = new Date(localTime).toISOString().substring(0, 10);
             saveDateEnd.current = _date;
-            url = `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${saveDateStart.current}&end_date=${_date}&page=1&page_size=${pageSize}`;
             savePage.current = 1;
             setEndDate(_date);
 
         }
         else if (data.p) {
-            console.log(saveDateStart.current, saveDateEnd.current);
-            url = `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}&page=${data.p}&page_size=${pageSize}`
             savePage.current = data.p;
         } else if (data.ps) {
-            url = `/mission/missions?vehicle_name=${vehicle}&status=${status}&start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}&page=1&page_size=${data.ps}`
+            savePageSize.current = data.ps;
             savePage.current = 1;
             setPageSize(data.ps);
         }
-        if (url != null) {
-            saveUrl.current = url;
-            missionSetPage(url);
-        }
-    }, [vehicle, status, pageSize]);
+        saveUrl.current = `/mission/missions?vehicle_name=${saveVehicle.current}&status=${status}&start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}&page=${savePage.current}&page_size=${savePageSize.current}`;
+        missionSetPage(saveUrl.current);
+    }, []);
 
 
     const missionSetPage = useCallback(async (url: string) => {
         try {
             const res = await getMissions(url);
+            if (onlineRef.current == false) {
+                setOnlineBar(true);
+                onlineRef.current = true;
+            }
             const _mission: IMissionTables[] = []
             const _btnAGV: string[] = ['ALL']
             res.payload.forEach((ele) => {
@@ -192,6 +197,16 @@ export default function Mission() {
 
         } catch (e: any) {
             console.error(e);
+            if (e.message === "Network Error") {
+                setOnlineBar(false);
+                onlineRef.current = false;
+            }
+           else if (e.response?.status === 401 || e.response?.data?.detail === "Invalid token or Token has expired.") {
+                setNotAuthenticated(true)
+                if (timerInterval.current) {
+                    clearInterval(timerInterval.current as NodeJS.Timeout);
+                }
+            }
 
         }
     }, []);
@@ -265,20 +280,20 @@ export default function Mission() {
     }, []);
 
     useEffect(() => {
-        var timer: NodeJS.Timeout | null = null;
         const checkNetwork = async () => {
             try {
                 const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
                 if (response.ok) {
-                    const _vehicle = sessionStorage.getItem('user')?.split(",")[2] == "admin" ? 'ALL' : sessionStorage.getItem('user')?.split(",")[2];
+                    const _vehicle = sessionStorage.getItem('user')?.split(",")[2] == "admin" ? 'ALL' : sessionStorage.getItem('user')?.split(",")[2] ?? "";
                     const _date = new Date().toISOString().substring(0, 10)
                     saveUrl.current = `/mission/missions?vehicle_name=${_vehicle}&status=ALL&start_date=${_date}&end_date=${_date}&page=1&page_size=10`
                     saveDateStart.current = _date;
                     saveDateEnd.current = _date;
+                    saveVehicle.current = _vehicle;
                     missionSetPage(saveUrl.current);
-                    timer = setInterval(() => {
+                    timerInterval.current = setInterval(() => {
                         missionSetPage(saveUrl.current);
-                    }, 30000);
+                    }, 20000);
                 }
             } catch (e: any) {
                 console.error(e);
@@ -300,152 +315,151 @@ export default function Mission() {
 
         return () => {
             cancelModalRef.current!.removeEventListener("mouseup", handleClickOutsideCancel);
-            if (timer != null) {
-                clearInterval(timer);
+            if (timerInterval.current != null) {
+                clearInterval(timerInterval.current);
             }
 
         }
     }, []);
-    return <>
-        <section className='mission-box-page'>
-            {!loadSuccess && <div className='loading-background'>
-                <div id="loading"></div>
-            </div>}
-            <div className='mission-title-box'>
-                <h1>{t("m_title")}</h1>
-                <div className='box-title'>
-                    <p className="title1">
-                        <img src={MissionImage} alt="Logo with a yellow circle and blue border" className="me-3" width="32" height="32" />
-                        <span>{t("m_subtitle")}</span></p>
-                    <div className="selected-agv-box">
-                        {btnAGV.map((name) => <button key={name} onClick={() => reloadMission({ v: name })} className={`${vehicle === name ? "active" : ""}`}>{name}</button>)}
-                    </div>
+    return <section className='mission-box-page'>
+        {!loadSuccess && <div className='loading-background'>
+            <div id="loading"></div>
+        </div>}
+        {onlineBar !== null && <StatusOnline online={onlineBar}></StatusOnline>}
+        {notauthenticated && <NotAuthenticated />}
+        <div className='mission-title-box'>
+            <h1>{t("m_title")}</h1>
+            <div className='box-title'>
+                <p className="title1">
+                    <img src={MissionImage} alt="Logo with a yellow circle and blue border" className="me-3" width="32" height="32" />
+                    <span>{t("m_subtitle")}</span></p>
+                <div className="selected-agv-box">
+                    {btnAGV.map((name) => <button key={name} onClick={() => reloadMission({ v: name })} className={`${vehicle === name ? "active" : ""}`}>{name}</button>)}
                 </div>
+            </div>
+
+        </div>
+        {!checkNetwork ? <NetworkError /> : <div className='container-card'>
+            <div className='mission-header'>
+                <div className='selected-mission-btn'>
+                    <button onClick={() => reloadMission({ s: "ALL" })} className={`${status === "ALL" ? "active" : ""}`}>{t("all")}</button>
+                    <button onClick={() => reloadMission({ s: "2" })} className={`${status === "2" ? "active" : ""}`}>{t("run")}</button>
+                    <button onClick={() => reloadMission({ s: "3" })} className={`${status === "3" ? "active" : ""}`}>{t("success")}</button>
+                    <button onClick={() => reloadMission({ s: "6" })} className={`${status === "6" ? "active" : ""}`}>{t("fail")}</button>
+                    <button onClick={() => reloadMission({ s: "5" })} className={`${status === "5" ? "active" : ""}`}>{t("cancel")}</button>
+                    <button onClick={() => reloadMission({ s: "0" })} className={`${status === "0" ? "active" : ""}`}>{t("panding")}</button>
+
+                </div>
+                <div className='input-date-box'>
+                    <div className="form-group">
+                        <label >{t("from")}</label>
+                        <div className='box-of-text-date'>
+                            <div className='ps-2'>{startDate}</div>
+                            <DatePicker selected={new Date(startDate)} onChange={(e) => reloadMission({ d: e ?? undefined })} />
+                        </div>
+                    </div>
+
+                    <div className="form-group">
+                        <label >{t("to")}</label>
+                        <div className='box-of-text-date'>
+                            <div className='ps-2'>{endDate}</div>
+                            <DatePicker selected={new Date(endDate)} onChange={(e) => reloadMission({ de: e ?? undefined })} />
+                        </div>
+                    </div>
+                    <button className="export-btn" onClick={() => downloadCSV(vehicle, status, startDate, endDate)}>{t("downloadBtn")}</button>
+                </div>
+            </div>
+            <div className='table-container overflow-auto'>
+                <table className="table table-hover">
+                    <thead className='text-center'>
+                        <tr>
+                            <th scope="col">{t("tb_jobid")}</th>
+                            <th scope="col" >{t("tb_car")}</th>
+                            <th scope="col">{t("tb_req")}</th>
+                            <th scope="col"><div className='head-table-flex'>
+                                <div className='pick-circle-icon'>
+                                </div>{t("tb_pickup")}
+                            </div>
+                            </th>
+                            <th scope="col">
+                                <div className="head-table-flex">
+                                    <div className='mission-circle-icon color-blue'>
+                                        <FaMapMarkerAlt color='#003092' />
+                                    </div>
+                                    {t("tb_drop")}</div>
+                            </th>
+                            <th scope="col"><div className="head-table-flex">
+                                <div className='mission-circle-icon'>
+                                    <IoMdSettings color='#E9762B' />
+                                </div>
+                                {t("tb_status")}</div>
+                            </th>
+
+                            <th scope="col">{t("tb_date")}</th>
+                            <th scope="col">{t("tb_reserve")}</th>
+                            <th scope="col">{t("tb_start")}</th>
+                            <th scope="col">{t("tb_finish")}</th>
+                            <th scope="col">{t("tb_duration")}</th>
+                            <th scope="col" style={{ width: "120px" }}>{t("tb_cancel")}</th>
+                        </tr>
+                    </thead>
+                    <tbody className='text-center'>
+                        {missionTable.map((miss, i) => <tr key={i}>
+                            <td scope="row">#{miss.id}</td>
+                            <td><div className='td-vehicle-name'><div className='circle-vehicle-icon' style={{ background: `${colorAgv[miss.vehicle_name]}` }}></div><span>{miss.vehicle_name}</span></div></td>
+                            <td>{miss.requester}</td>
+                            <td>{miss.pick}</td>
+                            <td>{miss.drop}</td>
+                            <td><div className='box-status' style={{ background: miss.str_status.bgcolor, color: miss.str_status.color }}>{t(`m_status_${miss.status}`)}</div></td>
+                            <td>{miss.timestamp}</td>
+                            <td>{miss.tpick}</td>
+                            <td>{miss.tstart}</td>
+                            <td>{miss.tend}</td>
+                            <td>{miss.duration}</td>
+
+                            <td>{miss.status == 0 && <button className='btn-cancel' onClick={() => setDialogCancel({ show: true, id: miss.id, name: miss.vehicle_name })}>cancel</button>}</td>
+                        </tr>)}
+
+                    </tbody>
+                </table>
+
 
             </div>
-            {!checkNetwork ? <NetworkError /> : <div className='container-card'>
-                <div className='mission-header'>
-                    <div className='selected-mission-btn'>
-                        <button onClick={() => reloadMission({ s: "ALL" })} className={`${status === "ALL" ? "active" : ""}`}>{t("all")}</button>
-                        <button onClick={() => reloadMission({ s: "2" })} className={`${status === "2" ? "active" : ""}`}>{t("run")}</button>
-                        <button onClick={() => reloadMission({ s: "3" })} className={`${status === "3" ? "active" : ""}`}>{t("success")}</button>
-                        <button onClick={() => reloadMission({ s: "6" })} className={`${status === "6" ? "active" : ""}`}>{t("fail")}</button>
-                        <button onClick={() => reloadMission({ s: "5" })} className={`${status === "5" ? "active" : ""}`}>{t("cancel")}</button>
-                        <button onClick={() => reloadMission({ s: "0" })} className={`${status === "0" ? "active" : ""}`}>{t("panding")}</button>
+            <div className='page-number-d-flex'>
 
+                <div className="tooltip-container">
+                    <button type="button" >{pageSize}</button>
+                    <div className="box-tooltip">
+
+                        <button className='btn-page-size' onClick={() => reloadMission({ ps: '10' })}>10</button>
+                        <button className='btn-page-size' onClick={() => reloadMission({ ps: '50' })}>50</button>
+                        <button className='btn-page-size' onClick={() => reloadMission({ ps: '100' })}>100</button>
                     </div>
-                    <div className='input-date-box'>
-                        <div className="form-group">
-                            <label >{t("from")}</label>
-                            <div className='box-of-text-date'>
-                                <div className='ps-2'>{startDate}</div>
-                                <DatePicker selected={new Date(startDate)} onChange={(e) => reloadMission({ d: e ?? undefined })} />
+
+                </div>
+                <span className='ms-1 me-3'>{t("miss/page")}</span>
+                {pagination}
+            </div>
+            <ResponseAPI response={responseData} />
+            <div ref={cancelModalRef} className={`modal-summaryCommand ${!dialogCancel.show && 'd-none'}`}>
+                <div className='card-summaryCommand'>
+                    <div className='card-summaryCommand-header'>
+                        <div className="icon-name-agv">
+                            <div className='bg-img' style={{ background: 'rgb(255, 244, 244)' }}>
+                                <TbCancel size={32} color={'rgb(254, 0, 0)'} />
                             </div>
+                            <h5>{t("md_cancel")} {dialogCancel.name}</h5>
                         </div>
-
-                        <div className="form-group">
-                            <label >{t("to")}</label>
-                            <div className='box-of-text-date'>
-                                <div className='ps-2'>{endDate}</div>
-                                <DatePicker selected={new Date(endDate)} onChange={(e) => reloadMission({ de: e ?? undefined })} />
-                            </div>
-                        </div>
-                        <button className="export-btn" onClick={() => downloadCSV(vehicle, status, startDate, endDate)}>{t("downloadBtn")}</button>
+                        <button className='btn-close-summary' onClick={() => setDialogCancel({ show: false })}><IoMdClose size={16} /></button>
                     </div>
-                </div>
-                <div className='table-container overflow-auto'>
-                    <table className="table table-hover">
-                        <thead className='text-center'>
-                            <tr>
-                                <th scope="col">{t("tb_jobid")}</th>
-                                <th scope="col" >{t("tb_car")}</th>
-                                <th scope="col">{t("tb_req")}</th>
-                                <th scope="col"><div className='head-table-flex'>
-                                    <div className='pick-circle-icon'>
-                                    </div>{t("tb_pickup")}
-                                </div>
-                                </th>
-                                <th scope="col">
-                                    <div className="head-table-flex">
-                                        <div className='mission-circle-icon color-blue'>
-                                            <FaMapMarkerAlt color='#003092' />
-                                        </div>
-                                        {t("tb_drop")}</div>
-                                </th>
-                                <th scope="col"><div className="head-table-flex">
-                                    <div className='mission-circle-icon'>
-                                        <IoMdSettings color='#E9762B' />
-                                    </div>
-                                    {t("tb_status")}</div>
-                                </th>
-
-                                <th scope="col">{t("tb_date")}</th>
-                                <th scope="col">{t("tb_reserve")}</th>
-                                <th scope="col">{t("tb_start")}</th>
-                                <th scope="col">{t("tb_finish")}</th>
-                                <th scope="col">{t("tb_duration")}</th>
-                                <th scope="col" style={{ width: "120px" }}>{t("tb_cancel")}</th>
-                            </tr>
-                        </thead>
-                        <tbody className='text-center'>
-                            {missionTable.map((miss, i) => <tr key={i}>
-                                <td scope="row">#{miss.id}</td>
-                                <td><div className='td-vehicle-name'><div className='circle-vehicle-icon' style={{ background: `${colorAgv[miss.vehicle_name]}` }}></div><span>{miss.vehicle_name}</span></div></td>
-                                <td>{miss.requester}</td>
-                                <td>{miss.pick}</td>
-                                <td>{miss.drop}</td>
-                                <td><div className='box-status' style={{ background: miss.str_status.bgcolor, color: miss.str_status.color }}>{t(`m_status_${miss.status}`)}</div></td>
-                                <td>{miss.timestamp}</td>
-                                <td>{miss.tpick}</td>
-                                <td>{miss.tstart}</td>
-                                <td>{miss.tend}</td>
-                                <td>{miss.duration}</td>
-
-                                <td>{miss.status == 0 && <button className='btn-cancel' onClick={() => setDialogCancel({ show: true, id: miss.id, name: miss.vehicle_name })}>cancel</button>}</td>
-                            </tr>)}
-
-                        </tbody>
-                    </table>
-
-
-                </div>
-                <div className='page-number-d-flex'>
-
-                    <div className="tooltip-container">
-                        <button type="button" >{pageSize}</button>
-                        <div className="box-tooltip">
-
-                            <button className='btn-page-size' onClick={() => reloadMission({ ps: '10' })}>10</button>
-                            <button className='btn-page-size' onClick={() => reloadMission({ ps: '50' })}>50</button>
-                            <button className='btn-page-size' onClick={() => reloadMission({ ps: '100' })}>100</button>
-                        </div>
-
+                    <div className='summary-command-pickup'>
+                        <div className='h1 px-1' style={{ borderBottom: '4px solid red' }}>{dialogCancel.id}</div>
                     </div>
-                    <span className='ms-1 me-3'>{t("miss/page")}</span>
-                    {pagination}
+                    <p>job id</p>
+                    <p style={{ color: '#ccc' }}>{t("md_confirm_cancel")}</p>
+                    <button className='btn w-100 mt-3 py-3 btn-danger' onClick={() => btnCancelMission(dialogCancel.id!, dialogCancel.name!)}>{t("tb_cancel")}</button>
                 </div>
-                <ResponseAPI response={responseData} />
-                <div ref={cancelModalRef} className={`modal-summaryCommand ${!dialogCancel.show && 'd-none'}`}>
-                    <div className='card-summaryCommand'>
-                        <div className='card-summaryCommand-header'>
-                            <div className="icon-name-agv">
-                                <div className='bg-img' style={{ background: 'rgb(255, 244, 244)' }}>
-                                    <TbCancel size={32} color={'rgb(254, 0, 0)'} />
-                                </div>
-                                <h5>{t("md_cancel")} {dialogCancel.name}</h5>
-                            </div>
-                            <button className='btn-close-summary' onClick={() => setDialogCancel({ show: false })}><IoMdClose size={16} /></button>
-                        </div>
-                        <div className='summary-command-pickup'>
-                            <div className='h1 px-1' style={{ borderBottom: '4px solid red' }}>{dialogCancel.id}</div>
-                        </div>
-                        <p>job id</p>
-                        <p style={{ color: '#ccc' }}>{t("md_confirm_cancel")}</p>
-                        <button className='btn w-100 mt-3 py-3 btn-danger' onClick={() => btnCancelMission(dialogCancel.id!, dialogCancel.name!)}>{t("tb_cancel")}</button>
-                    </div>
-                </div>
-            </div>}
-        </section>
-
-    </>;
+            </div>
+        </div>}
+    </section>;
 }

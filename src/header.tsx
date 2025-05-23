@@ -20,9 +20,7 @@ export default function Headers() {
         setLang(lng);
     };
     useEffect(() => {
-        // const interval = setInterval(() => {
-        //     setTime(new Date());
-        // // }, 1000);
+       
         const handle = (e: any) => {
             if (!languageBlockRef.current?.contains(e.target)) {
                 setOpen(false);
@@ -63,7 +61,7 @@ export default function Headers() {
                 <div className='timer-clock'>
                     <div className="d-flex align-items-center" >
                         {user && <div className="rounded-circle d-flex  align-items-center justify-content-center me-2" style={{ fontWeight: 'bold', width: "32px", height: "32px", backgroundColor: "rgb(89, 238, 255)", color: 'white' }}>{user[0].toUpperCase()}</div>}
-                        {user} @ BGC อยุธยากล๊าส
+                        <span className='h5 m-0 pe-1'>{user} </span> <span>@ BGC อยุธยากล๊าส</span>
                     </div>
                 </div>
                 <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">

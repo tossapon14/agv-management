@@ -18,6 +18,7 @@ import StatusOnline from './statusOnline';
 import NetworkError from './networkError';
 import { BiSolidError } from "react-icons/bi";
 import { useTranslation } from 'react-i18next';
+import NotAuthenticated from './not_authenticated.tsx';
 
 
 export default function Vehicle() {
@@ -29,6 +30,8 @@ export default function Vehicle() {
     const onlineRef = useRef<boolean | null>(null);
     const [checkNetwork, setCheckNetwork] = useState(true);
     const [agvDataExtend, setAgvDataExtend] = useState<IPayload | null>(null)
+    const [notauthenticated, setNotAuthenticated] = useState(false);
+
     const { t } = useTranslation("vehicle");
 
     const btnChooseAGV = (index: number) => {
@@ -39,11 +42,12 @@ export default function Vehicle() {
     }
 
     useEffect(() => {
-        
+        const myUser = sessionStorage.getItem("user")?.split(",")[2] ?? "";
+        const vehicle = myUser === "admin" ? "ALL" : myUser;
         const getAgv = async () => {
             try {
                 const res: IVehicles = await axiosGet(
-                    "/vehicle/vehicles?vehicle_name=ALL&state=ALL",
+                    `/vehicle/vehicles?vehicle_name=${vehicle}&state=ALL`,
                 );
                 if (onlineRef.current == false) {
                     setOnlineBar(true);
@@ -51,10 +55,18 @@ export default function Vehicle() {
                 }
                 const agv = res.payload;
                 setAgvAll(agv);
-            } catch (e) {
+            } catch (e: any) {
                 console.log(e);
-                setOnlineBar(false);
-                onlineRef.current = false;
+                if (e.message === "Network Error") {
+                    setOnlineBar(false);
+                    onlineRef.current = false;
+                }
+                else if (e.response?.status === 401 || e.response?.data?.detail === "Invalid token or Token has expired.") {
+                    setNotAuthenticated(true)
+                    if (timerInterval.current) {
+                        clearInterval(timerInterval.current as NodeJS.Timeout);
+                    }
+                }
             }
 
         }
@@ -87,6 +99,8 @@ export default function Vehicle() {
                 <div id="loading"></div>
             </div>}
             {onlineBar !== null && <StatusOnline online={onlineBar}></StatusOnline>}
+            {notauthenticated && <NotAuthenticated />}
+
             <div className="velocity-title-box">
                 <h1>{t("title")}</h1>
                 <p className="title1">
@@ -98,7 +112,7 @@ export default function Vehicle() {
                     <div className='box-vehicle-info'>
                         <h4 className='name-sticky'>{agvDataExtend.name.toUpperCase()}</h4>
                         <div className='px-3'>
-                            <p>{t('state')}: <b>{t(`state_${agvDataExtend!.state}`)}</b></p>
+                            <p>{t('state')}: <b>{t(`state_${agvDataExtend!.state}`)} {agvDataExtend!.state}</b></p>
                             <p>{t('trucksys')}: <b>{agvDataExtend!.mode ? "AUTO" : "MANUAL"}</b></p>
                             <p>{t('coordi')}: <b>{agvDataExtend!.coordinate}</b></p>
                             <p>{t('node')}: <b>{agvDataExtend!.node}</b></p>
@@ -111,8 +125,8 @@ export default function Vehicle() {
                                 <p>mission id: <b>{agvDataExtend!.mission!.id}</b></p>
                                 <p>{t('timestamp')}: <b>{agvDataExtend!.mission!.timestamp}</b></p>
                                 <p>{t("req")}: <b>{agvDataExtend!.mission!.requester}</b></p>
-                                <p>{t('status')}: <b>{t(`m_status_${agvDataExtend!.mission.status}`)}</b></p>
-                                <p>{t('trans')}: <b>{t(`t_state_${agvDataExtend!.mission.transport_state}`)}</b></p>
+                                <p>{t('status')}: <b>{t(`m_status_${agvDataExtend!.mission.status}`)} {agvDataExtend!.mission.status}</b></p>
+                                <p>{t('trans')}: <b>{t(`t_state_${agvDataExtend!.mission.transport_state}`)} {agvDataExtend!.mission.transport_state}</b></p>
                                 <p>{t('node')}: <b>{agvDataExtend!.mission!.nodes}</b></p>
                                 <p>{t("paths")}: <b>{agvDataExtend!.mission!.paths}</b></p>
 
