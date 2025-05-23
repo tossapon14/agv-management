@@ -9,6 +9,7 @@ import Lock_img from '../assets/images/lock.png';
 import Delete_img from '../assets/images/bin.png';
 import ResponseAPI from './responseAPI';
 import { useTranslation } from 'react-i18next';
+import NotAuthenticated from './not_authenticated';
 
 interface IUser {
     message: string
@@ -49,6 +50,8 @@ export default function User() {
     const searchName = useRef<HTMLInputElement>(null);
     const checkAdmin = useRef<HTMLInputElement>(null);
     const checkNormal = useRef<HTMLInputElement>(null);
+    const [notauthenticated, setNotAuthenticated] = useState(false);
+
     const { t } = useTranslation("user");
 
     const searchUser = () => {
@@ -248,9 +251,11 @@ export default function User() {
                 setPagination(_pagination(res.structure?.total_pages));
                 setUserList(userList);
                 userRef.current = userList;
-            } catch (a: any) {
-                console.error(a?.message);
-
+            } catch (e: any) {
+                console.error(e?.message);
+                if (e.response?.status === 401 || e.response?.data?.detail === "Invalid token or Token has expired.") {
+                    setNotAuthenticated(true)
+                }
             }
         }
 
@@ -278,6 +283,7 @@ export default function User() {
             {!loadSuccess && <div className='loading-background'>
                 <div id="loading"></div>
             </div>}
+            {notauthenticated && <NotAuthenticated />}
             <div className='mission-title-box'>
                 <h1>{t("us_title")}</h1>
                 <p className="title1">
