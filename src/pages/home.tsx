@@ -512,12 +512,12 @@ export default function Home() {
     timerInterval.current = setInterval(() => {
       missionLoop.current++;
       getAgv();
-      if (missionLoop.current === 4 || trigger.current) {
+      if (missionLoop.current === 5 || trigger.current) {
         missionLoop.current = 0;
         trigger.current = false;
         getMission();
       }
-    }, 4000);
+    }, 3000);
 
     const handleClickOutside = (event: any) => {
       if (modalRef.current === event.target) {

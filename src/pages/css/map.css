@@ -29,7 +29,7 @@
     aspect-ratio: 200/101;
     transform-origin: 20% 50%;
     -webkit-transform-origin:20% 50%;
-    transition: left 4s linear, bottom 4s linear, transform 4s linear;
+    transition: left 3s linear, bottom 3s linear, transform 3s linear;
     will-change: transform, left, bottom;
 }
 #map .switch-map-pick{
