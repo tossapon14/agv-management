@@ -37,14 +37,16 @@
 
 .boxonline {
     display: flex;
-    color: #ffffff;
-    width: 64px;
-    height: 24px;
+    color: #00d953;
+    width: fit-content;
+    height: 28px;
+    padding-inline:8px ;
     border-radius: 2px;
     justify-content: center;
     align-items: center;
     font-size: 12px;
-    background-color: rgb(147, 255, 170);
+    font-weight: 600;
+    background-color: rgb(234, 255, 222);
 }
 
 .btn-bg-none {

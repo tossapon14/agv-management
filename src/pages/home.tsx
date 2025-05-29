@@ -150,8 +150,7 @@ export default function Home() {
   const modalRef = useRef<HTMLDivElement>(null);
   const confirmModalRef = useRef<HTMLDivElement>(null);
   const selectAgv = useRef<string>('');
-  const firstInit = useRef(false);
-  const loadSave = useRef(false);
+   const loadSave = useRef(false);
   const [btnAGVName, setBtnAGVName] = useState<string[] | null>(null);
   const [waitMode, setWaitMode] = useState<boolean>(false);
   const [dialogSummary, setDialogSummary] = useState<IdialogConfirm>({ show: false });
@@ -348,9 +347,6 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    myUser.current = sessionStorage.getItem("user")?.split(",")[2] ?? "";
-    selectAgv.current = myUser.current === "admin" ? "ALL" : myUser.current;
-    if (selectAgv.current === "") return;
     const calProcessMission = (agvCurrent_index: number | null, missionNodes_index: string | undefined, nodes: string): { percents?: number, dropList: string[], numProcess?: number, dropNumber?: number } | null => {
       if (missionNodes_index == undefined || missionNodes_index == "") {
         return null;
@@ -433,12 +429,7 @@ export default function Home() {
         }
         const _agvPosition: string[][] = [];
         const _agv: IPayload[] = [];
-        const agvName: string[] = [];
-        if (myUser.current === "admin") {
-          agvName.push("ALL");
-        }
-        res.payload.forEach((data: IPayload) => {
-          agvName.push(data.name)
+         res.payload.forEach((data: IPayload) => {
 
           var _agvData: IPayload;
           if (data.state > 0) {
@@ -475,10 +466,7 @@ export default function Home() {
           _agv.push(_agvData);
         });
 
-        if (!firstInit.current) {
-          firstInit.current = true;
-          setBtnAGVName(agvName);
-        }
+  
         setSelectedAgv(selectAgv.current);
         setAgvPosition(_agvPosition);
         setAgvAll(_agv);
@@ -486,7 +474,7 @@ export default function Home() {
         if (e.message === "Network Error") {
           setOnlineBar(false);
           onlineRef.current = false;
-        } else  if (e.response.status === 401||e.response?.data?.detail==="Invalid token or Token has expired.") {
+        } else if (e.response.status === 401 || e.response?.data?.detail === "Invalid token or Token has expired.") {
           setNotAuthenticated(true)
           if (timerInterval.current) {
             clearInterval(timerInterval.current as NodeJS.Timeout);
@@ -507,6 +495,21 @@ export default function Home() {
       }
 
     }
+    const handleClickOutside = (event: any) => {
+      if (modalRef.current === event.target) {
+        setShowModal("hidden-modal");
+      }
+    };
+    const handleClickOutsideConfirm = (event: any) => {
+      if (confirmModalRef.current === event.target) {
+        setDialogSummary({ show: false })
+      }
+    };
+    
+    myUser.current = sessionStorage.getItem("user")?.split(",")[2] ?? "";
+    selectAgv.current = myUser.current === "admin" ? "ALL" : myUser.current;
+    if (selectAgv.current === "") return;
+    setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle")!) as string[]);
     getAgv();
     getMission();
     timerInterval.current = setInterval(() => {
@@ -519,16 +522,7 @@ export default function Home() {
       }
     }, 3000);
 
-    const handleClickOutside = (event: any) => {
-      if (modalRef.current === event.target) {
-        setShowModal("hidden-modal");
-      }
-    };
-    const handleClickOutsideConfirm = (event: any) => {
-      if (confirmModalRef.current === event.target) {
-        setDialogSummary({ show: false })
-      }
-    };
+
     if (modalRef.current) {
       modalRef.current.addEventListener("mouseup", handleClickOutside);
     }
@@ -551,170 +545,174 @@ export default function Home() {
       {notauthenticated && <NotAuthenticated />}
       <section className="col1">
         <MapAnimate data={agvPosition} paths={agvPath}  ></MapAnimate>
-        <div className="mt-4 px-0">
-          <div className="card mb-3">
-            <div className="card-body">
-              <div className="d-flex align-items-center mb-4">
-                <img src={MissionImage} alt="Logo with a yellow circle and blue border" className="me-3" width="32" height="32" />
-                <h1 className="h4 mb-0">mission</h1>
-              </div>
-              <div className="table-responsive">
-                <table className="table">
-                  <thead className="thead-light text-center">
-                    <tr className='home-table-head'>
-                      <th>{t("tb_jobid")}</th>
-                      <th>{t("tb_car")}</th>
-                      <th><div className='head-table-flex'>
-                        <div className='pick-circle-icon'>
-                        </div>{t("tb_pickup")}
-                      </div></th>
-                      <th><div className="head-table-flex">
-                        <div className='mission-circle-icon color-blue'>
-                          <FaMapMarkerAlt color='#003092' />
-                        </div>
-                        {t("tb_drop")}</div></th>
-                      <th><div className="head-table-flex">
-                        <div className='mission-circle-icon'>
-                          <IoMdSettings color='#E9762B' />
-                        </div>
-                        {t("tb_status")}</div></th>
-                      <th>{t("tb_date")}</th>
-                      <th>{t("tb_time")}</th>
-                      <th>{t("tb_cancel")}</th>
-                    </tr>
-                  </thead>
-                  <tbody className='text-center'>
-                    {missionTable.map((data, i) => <tr key={i} className={`${currentMission === data.id ? "row-misstion-background" : ""}`}>
-                      <td>#{data.id}</td>
-                      <td><div className='td-vehicle-name'><div className='circle-vehicle-icon' style={{ background: `${colorAgv[data.vehicle_name]}` }}></div><span className="dot dot-blue"></span>{data.vehicle_name}</div></td>
-                      <td>{data.pick}</td>
-                      <td>{data.drop}</td>
-                      <td><div className='box-status' style={{ background: data.str_status.bgcolor, color: data.str_status.color }}>{t(`m_status_${data.status}`)}</div></td>
-                      <td>{data.timestamp.substring(0, 10)}</td>
-                      <td>{data.timestamp.substring(11, 19)}</td>
-                      <td>{data.status == 0 && <button className="btn-cancel" onClick={() => setDialogSummary({ show: true, name: data.vehicle_name, id: data.id, agvCode: "001" })}>cancel</button>}</td>
-                    </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+      </section>
+      <section className="mt-3 px-0 home-table">
+        <div className="card mb-3">
+          <div className="card-body">
+            <div className="d-flex align-items-center mb-4">
+              <img src={MissionImage} alt="Logo with a yellow circle and blue border" className="me-3" width="32" height="32" />
+              <h4>mission</h4>
+            </div>
+            <div className="table-responsive">
+              <table className="table" style={{ minWidth: "665px" }}>
+                <thead className="thead-light text-center">
+                  <tr className='home-table-head'>
+                    <th>{t("tb_jobid")}</th>
+                    <th>{t("tb_car")}</th>
+                    <th><div className='head-table-flex'>
+                      <div className='pick-circle-icon'>
+                      </div>{t("tb_pickup")}
+                    </div></th>
+                    <th><div className="head-table-flex">
+                      <div className='mission-circle-icon color-blue'>
+                        <FaMapMarkerAlt color='#003092' />
+                      </div>
+                      {t("tb_drop")}</div></th>
+                    <th><div className="head-table-flex">
+                      <div className='mission-circle-icon'>
+                        <IoMdSettings color='#E9762B' />
+                      </div>
+                      {t("tb_status")}</div></th>
+                    <th>{t("tb_date")}</th>
+                    <th>{t("tb_time")}</th>
+                    <th>{t("tb_cancel")}</th>
+                  </tr>
+                </thead>
+                <tbody className='text-center'>
+                  {missionTable.map((data, i) => <tr key={i} className={`${currentMission === data.id ? "row-misstion-background" : ""}`}>
+                    <td>#{data.id}</td>
+                    <td><div className='td-vehicle-name'><div className='circle-vehicle-icon' style={{ background: `${colorAgv[data.vehicle_name]}` }}></div><span className="dot dot-blue"></span>{data.vehicle_name}</div></td>
+                    <td>{data.pick}</td>
+                    <td>{data.drop}</td>
+                    <td><div className='box-status' style={{ background: data.str_status.bgcolor, color: data.str_status.color }}>{t(`m_status_${data.status}`)}</div></td>
+                    <td>{data.timestamp.substring(0, 10)}</td>
+                    <td>{data.timestamp.substring(11, 19)}</td>
+                    <td>{data.status == 0 && <button className="btn-cancel" onClick={() => setDialogSummary({ show: true, name: data.vehicle_name, id: data.id, agvCode: "001" })}>cancel</button>}</td>
+                  </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </section>
-      <section className="col2">
+
+      <section className="col2-vehicle">
         <div className='box-agv-btn'>
           {btnAGVName?.map((name) => <button key={name} onClick={() => selectAgvFunction(name)} className={`btn-agv ${selectedAgv === name ? 'active' : ''}`}>{name}</button>)}
         </div>
-        {agvAll.map((agv, index) => (agv.state === 0) ? <section key={index} className='box-agv-data'
-        >
-          <div className='top-box-data'>
-            <img className='image-agv' src={AgvImg}></img>
-            <div className='box-name-agv'>
-              <div className='box-name-battery'>
-                <div className='agv-name-text' style={{ backgroundColor: "#ccc" }}>{agv.name}</div>
-                <div className='agv-battery'><CiBatteryFull size={36} /><span>{93}%</span></div>
-              </div>
-              <div className='agv-state-offline'>{t("state_0")}</div>
-            </div>
-            <div className='velocity'>
-              <h1 className='velocity-number'>0.0</h1>
-              <p className="km-h">km/h</p>
-              <button className='button-agv' >{t("stop")}</button>
-            </div>
-          </div>
-          <div className="box-no-mossion">
-            <div className='circle-1'></div>
-            <div className='circle-2'></div>
-          </div>
-          <div className='mission-container'>
-            <div className='mission-status'></div>
-            <button className='mission-btn'>
-              {t("btn_create")}
-            </button>
-
-          </div>
-        </section> : <section key={index} className='box-agv-data'>
-          <div className='top-box-data'>
-            <img className='image-agv' src={AgvImg}></img>
-            <div className='box-name-agv'>
-              <div className='box-name-battery'>
-                <div className='agv-name-text' style={{ backgroundColor: colorAgv[agv.name] }}>{agv.name}</div>
-                <div className='agv-battery'><CiBatteryFull size={36} /><span>{(agv as IPayload).battery}%</span></div>
-              </div>
-
-              <div className={`auto-manual ${(agv as IPayload).mode}`}>{(agv as IPayload).mode}</div>
-              {((agv as IPayload).emergency_state || (agv as IPayload).state == 6) ? <div className='EmergencyBtn'><BiSolidError size={20} color='red' />&nbsp;&nbsp;{(agv as IPayload).emergency_state ? t("emer") : t("state_6")}</div>
-                : <div className='agv-state'>{t(`state_${agv.state}`)}</div>}
-            </div>
-            <div className='velocity'>
-              <h1 className='velocity-number'>{(agv as IPayload).velocity.toFixed(1)}</h1>
-              <p className="km-h">km/h</p>
-              {(agv as IPayload).state == 4 ? <button className='button-agv' onClick={() => sendCommand((agv as IPayload).name, 'continue')}>{t("continue")}</button>
-                : <button className='button-agv' onClick={() => sendCommand((agv as IPayload).name, 'pause')}>{t("stop")}</button>}
-            </div>
-          </div>
-
-          {(agv as IPayload).processMission ?
-            <div className='box-dotted-mission'>
-              <div className='circle-1'></div>
-              <div className='circle-2'></div>
-              <div className='circle-3'></div>
-              <div className='circle-4'></div>
-              <div className="mission-text-box">
-                <img src={MissionImage} alt="logo rocket" className="me-1" width="24" height="24" />
-                <p className="fs-6 mb-1">mission <span className="fw-bolder">#{(agv as IPayload).mission_id}</span></p>
-              </div>
-              {(agv as IPayload).processMission!.dropList!.length > 1 ? <div className='pickup-process-line'>
-                <div className="mission-process-box" >
-                  <div className="pickup-box">
-                    <div className='pickup-text'>{(agv as IPayload).processMission!.dropList[0]}</div>
-                    <div className='pickup-time'>{(agv as IPayload).timestamp ?? ""}</div>
-                  </div>
-                  <div className='center-line-box'>
-                    <hr className="line-process-gray"></hr>
-                    <div className="line-process" style={{ width: `${(agv as IPayload).processMission!.percents}%` }}></div>
-                    <div className="circle-pickup"></div>
-                    <div className={`circle-goal ${(agv as IPayload).processMission?.numProcess === (agv as IPayload).processMission!.dropList.length - 1 ? 'active' : ''}`}></div>
-                    {(agv as IPayload).processMission!.dropList.slice(1, -1).map((drop, i) => <div key={i} className={`stations-box ${(agv as IPayload).processMission?.numProcess! >= i + 1 ? 'active' : ''}`} style={{ left: `${(i + 1) * 100 / ((agv as IPayload).processMission!.dropList.length - 1)}%` }}>
-                      <div className={`circle-top-stations ${(agv as IPayload).processMission?.numProcess! >= i + 1 ? 'active' : ''}`}></div>
-                      <div className={`label-station ${(agv as IPayload).processMission?.numProcess! >= i + 1 ? 'active' : ''}`}>{drop}</div>
-                    </div>)}
-
-                  </div>
-                  <div className="goal-box">
-                    <div className='pickup-text'>{(agv as IPayload).processMission!.dropList[(agv as IPayload).processMission!.dropList.length - 1]}</div>
-                  </div>
+        <div className="box-display-agv">
+          {agvAll.map((agv, index) => (agv.state === 0) ? <section key={index} className='box-agv-data'
+          >
+            <div className='top-box-data'>
+              <img className='image-agv' src={AgvImg}></img>
+              <div className='box-name-agv'>
+                <div className='box-name-battery'>
+                  <div className='agv-name-text' style={{ backgroundColor: "#ccc" }}>{agv.name}</div>
+                  <div className='agv-battery'><CiBatteryFull size={36} /><span>{93}%</span></div>
                 </div>
-                {(agv as IPayload).agv_code_status === "724" && <div className='alert-pickup'><BiSolidError size={28} color={'#ffce03'} />&nbsp;&nbsp;{t("sign_drop")}</div>}
-
-              </div> :
-                <div className='pickup-process-line'>
-
-                  <div className='pickup-data'><div className='circle88'></div>
-                    <div>{t("pick")} <span>{(agv as IPayload).processMission!.dropList[0]}</span></div></div>
-                  {(agv as IPayload).agv_code_status === "721" && <div className='alert-pickup'><BiSolidError size={28} color={'#ffce03'} />{t("sign_pick")}</div>}
-
-                </div>}
-            </div> : <div className="box-no-mossion">
-
-              <div className='circle-1'></div>
-              <div className='circle-2'></div>
-            </div>}
-          <div className='mission-container'>
-            <div className={`${(agv as IPayload).agv_code_status === "724" || (agv as IPayload).agv_code_status === "721" ? 'd-none' : 'mission-status'}`}>
-              {((agv as IPayload).mission?.status != 2) ? t(`m_status_${(agv as IPayload).mission?.status}`) : t(`t_state_${(agv as IPayload).mission?.transport_state}`)}
+                <div className='agv-state-offline'>{t("state_0")}</div>
+              </div>
+              <div className='velocity'>
+                <h1 className='velocity-number'>0.0</h1>
+                <p className="km-h">km/h</p>
+                <button className='button-agv' >{t("stop")}</button>
+              </div>
             </div>
-            {(agv as IPayload).agv_code_status === "724" ? <button className='drop-btn' onClick={() => setDialogSummary({ show: true, id: 0, name: (agv as IPayload).name, agvCode: '724', dropOne: (agv as IPayload).node })}>{t("btn_drop")}</button> :
-              (agv as IPayload).agv_code_status === "721" ? <button className='mission-btn miss-animate'
-                onClick={() => btnCallModal({ agv: agv.name, agvCode: "721", id: (agv as IPayload).mission?.id, state: (agv as IPayload).state, mode: (agv as IPayload).mode, pickup: (agv as IPayload).mission!.nodes })}>
-                {t("btn_pick")}
-              </button> :
-                <button className='mission-btn' onClick={() => btnCallModal({ agv: agv.name, agvCode: (agv as IPayload).agv_code_status, id: (agv as IPayload).mission?.id, state: agv.state, mode: (agv as IPayload).mode })}>
-                  {t("btn_create")}
-                </button>}
-          </div>
-        </section>)}
+            <div className="box-no-mossion">
+              <div className='circle-1 circle-bg-color'></div>
+              <div className='circle-2 circle-bg-color'></div>
+            </div>
+            <div className='mission-container'>
+              <div className='mission-status'></div>
+              <button className='mission-btn'>
+                {t("btn_create")}
+              </button>
+
+            </div>
+          </section> : <section key={index} className='box-agv-data'>
+            <div className='top-box-data'>
+              <img className='image-agv' src={AgvImg}></img>
+              <div className='box-name-agv'>
+                <div className='box-name-battery'>
+                  <div className='agv-name-text' style={{ backgroundColor: colorAgv[agv.name] }}>{agv.name}</div>
+                  <div className='agv-battery'><CiBatteryFull size={36} /><span>{(agv as IPayload).battery}%</span></div>
+                </div>
+
+                <div className={`auto-manual ${(agv as IPayload).mode}`}>{(agv as IPayload).mode}</div>
+                {((agv as IPayload).emergency_state || (agv as IPayload).state == 6) ? <div className='EmergencyBtn'><BiSolidError size={20} color='red' />&nbsp;&nbsp;{(agv as IPayload).emergency_state ? t("emer") : t("state_6")}</div>
+                  : <div className='agv-state'>{t(`state_${agv.state}`)}</div>}
+              </div>
+              <div className='velocity'>
+                <h1 className='velocity-number'>{(agv as IPayload).velocity.toFixed(1)}</h1>
+                <p className="km-h">km/h</p>
+                {(agv as IPayload).state == 4 ? <button className='button-agv' onClick={() => sendCommand((agv as IPayload).name, 'continue')}>{t("continue")}</button>
+                  : <button className='button-agv' onClick={() => sendCommand((agv as IPayload).name, 'pause')}>{t("stop")}</button>}
+              </div>
+            </div>
+
+            {(agv as IPayload).processMission ?
+              <div className='box-dotted-mission'>
+                <div className='circle-1 circle-bg-color'></div>
+                <div className='circle-2 circle-bg-color'></div>
+                <div className='circle-3 circle-bg-color'></div>
+                <div className='circle-4 circle-bg-color'></div>
+                <div className="mission-text-box">
+                  <img src={MissionImage} alt="logo rocket" className="me-1" width="24" height="24" />
+                  <p className="fs-6 mb-1">mission <span className="fw-bolder">#{(agv as IPayload).mission_id}</span></p>
+                </div>
+                {(agv as IPayload).processMission!.dropList!.length > 1 ? <div className='pickup-process-line'>
+                  <div className="mission-process-box" >
+                    <div className="pickup-box">
+                      <div className='pickup-text'>{(agv as IPayload).processMission!.dropList[0]}</div>
+                      <div className='pickup-time'>{(agv as IPayload).timestamp ?? ""}</div>
+                    </div>
+                    <div className='center-line-box'>
+                      <hr className="line-process-gray"></hr>
+                      <div className="line-process" style={{ width: `${(agv as IPayload).processMission!.percents}%` }}></div>
+                      <div className="circle-pickup"></div>
+                      <div className={`circle-goal ${(agv as IPayload).processMission?.numProcess === (agv as IPayload).processMission!.dropList.length - 1 ? 'active' : ''}`}></div>
+                      {(agv as IPayload).processMission!.dropList.slice(1, -1).map((drop, i) => <div key={i} className={`stations-box ${(agv as IPayload).processMission?.numProcess! >= i + 1 ? 'active' : ''}`} style={{ left: `${(i + 1) * 100 / ((agv as IPayload).processMission!.dropList.length - 1)}%` }}>
+                        <div className={`circle-top-stations ${(agv as IPayload).processMission?.numProcess! >= i + 1 ? 'active' : ''}`}></div>
+                        <div className={`label-station ${(agv as IPayload).processMission?.numProcess! >= i + 1 ? 'active' : ''}`}>{drop}</div>
+                      </div>)}
+
+                    </div>
+                    <div className="goal-box">
+                      <div className='pickup-text'>{(agv as IPayload).processMission!.dropList[(agv as IPayload).processMission!.dropList.length - 1]}</div>
+                    </div>
+                  </div>
+                  {(agv as IPayload).agv_code_status === "724" && <div className='alert-pickup'><BiSolidError size={28} color={'#ffce03'} />&nbsp;&nbsp;{t("sign_drop")}</div>}
+
+                </div> :
+                  <div className='pickup-process-line'>
+
+                    <div className='pickup-data'><div className='circle88'></div>
+                      <div>{t("pick")} <span>{(agv as IPayload).processMission!.dropList[0]}</span></div></div>
+                    {(agv as IPayload).agv_code_status === "721" && <div className='alert-pickup'><BiSolidError size={28} color={'#ffce03'} />{t("sign_pick")}</div>}
+
+                  </div>}
+              </div> : <div className="box-no-mossion">
+
+                <div className='circle-1 circle-bg-color'></div>
+                <div className='circle-2 circle-bg-color'></div>
+              </div>}
+            <div className='mission-container'>
+              <div className={`${(agv as IPayload).agv_code_status === "724" || (agv as IPayload).agv_code_status === "721" ? 'd-none' : 'mission-status'}`}>
+                {((agv as IPayload).mission?.status != 2) ? t(`m_status_${(agv as IPayload).mission?.status}`) : t(`t_state_${(agv as IPayload).mission?.transport_state}`)}
+              </div>
+              {(agv as IPayload).agv_code_status === "724" ? <button className='drop-btn' onClick={() => setDialogSummary({ show: true, id: 0, name: (agv as IPayload).name, agvCode: '724', dropOne: (agv as IPayload).node })}>{t("btn_drop")}</button> :
+                (agv as IPayload).agv_code_status === "721" ? <button className='mission-btn miss-animate'
+                  onClick={() => btnCallModal({ agv: agv.name, agvCode: "721", id: (agv as IPayload).mission?.id, state: (agv as IPayload).state, mode: (agv as IPayload).mode, pickup: (agv as IPayload).mission!.nodes })}>
+                  {t("btn_pick")}
+                </button> :
+                  <button className='mission-btn' onClick={() => btnCallModal({ agv: agv.name, agvCode: (agv as IPayload).agv_code_status, id: (agv as IPayload).mission?.id, state: agv.state, mode: (agv as IPayload).mode })}>
+                    {t("btn_create")}
+                  </button>}
+            </div>
+          </section>)}
+        </div>
+
       </section>
       <ResponseAPI response={responseData} />
       <div ref={confirmModalRef} className={`modal-summaryCommand ${!dialogSummary.show && 'd-none'}`}>
@@ -785,9 +783,6 @@ export default function Home() {
       <div ref={modalRef} className={`modal ${showModal} `}>
         <div className='modal-content-home'>
           <div className='box-map-and-btn'>
-            {buttonDropList.length === 0 && missionModel.agvCode === "721" && <div className='modal-loading-background'>
-              <div id="loading"></div>
-            </div>}
             <img src={Map_btn} className="map-img" alt='map' loading="lazy"></img>
             {missionModel.agvCode === "721" ?
               <>
@@ -815,9 +810,7 @@ export default function Home() {
                 <button className="btn-pickup-agv" onClick={() => clickPickup(6)} style={{ top: "54%", left: "36%" }}>P7</button>
                 <button className="btn-pickup-agv" onClick={() => clickPickup(7)} style={{ top: "66%", left: "36%" }}>P8</button>
               </>}
-
-
-
+            <button className='close-modal2-top-left' onClick={() => setShowModal("hidden-modal")}>{t("back")}</button>
           </div>
           <div className='agv-mission-box'>
             <div className='agv-mission-card' style={{ borderTop: `16px solid ${colorAgv[missionModel.agv]}` }}>
@@ -845,7 +838,7 @@ export default function Home() {
                       <h5>{pickup || missionModel.pickup}</h5>
                     </div>
                   </div> : null}
-                  {selectWarehouse.map((warehouse) => <div key={warehouse} id={warehouse} className='data-warehouse-box data-drop-box'>
+                  {selectWarehouse.map((warehouse) => <div key={warehouse} id={warehouse} className='data-warehouse-box'>
                     <div className='circle-goal-outline blue-circle-bg'>
                       <FaMapMarkerAlt size={32} color='#003092' />
                     </div>
@@ -857,8 +850,8 @@ export default function Home() {
                   </div>)}
                 </div>
               </div>
-              {missionModel.agvCode === '721' ? <button className='btn-send-command mt-4' disabled={!(selectWarehouse.length > 0)} onClick={() => showDialogSummary(missionModel.id ?? 0, missionModel.agv, '721', missionModel.pickup, selectWarehouse)}>{t("command")}</button> :
-                <button className='btn-send-command mt-4' disabled={!(pickup)} onClick={() => showDialogSummary(missionModel.id ?? 0, missionModel.agv, missionModel.agvCode ?? '', pickup ?? "",)}>{t("command")}</button>
+              {missionModel.agvCode === '721' ? <button className='btn-send-command mt-1 mt-xxl-4' disabled={!(selectWarehouse.length > 0)} onClick={() => showDialogSummary(missionModel.id ?? 0, missionModel.agv, '721', missionModel.pickup, selectWarehouse)}>{t("command")}</button> :
+                <button className='btn-send-command mt-xxl-4' disabled={!(pickup)} onClick={() => showDialogSummary(missionModel.id ?? 0, missionModel.agv, missionModel.agvCode ?? '', pickup ?? "",)}>{t("command")}</button>
               }
             </div>
             <button className='close-modal' onClick={() => setShowModal("hidden-modal")}>{t("back")}</button>

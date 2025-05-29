@@ -12,17 +12,22 @@
     padding: 0 .5rem;
     display: flex;
     justify-content: space-between;
-    background-color: #2052a2;
+    background-color: #1a46ba;
     width: 100%;
-    height: 60px;
+    height:var(--header-height);
     position: fixed;
     z-index: 2;
+}
+.headder-nav-bar .iconNav{
+    display: none;
+    padding: 2px;
+    background-color: #4f80fc;
+    border-radius: 4px;
 }
 
 .language-box {
     width: 100px;
     height: 20px;
-    margin-right: 16px;
     position: relative;
 }
 

@@ -1,5 +1,5 @@
 import { BiError } from "react-icons/bi";
-import { IoMdSettings } from "react-icons/io";
+import { IoMdSettings,IoMdDownload } from "react-icons/io";
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { axiosGet } from "../api/axiosFetch";
 import { BsConeStriped } from "react-icons/bs";
@@ -67,10 +67,8 @@ export default function Alarm() {
 
     const [alarmTable, setalarmTable] = useState<IAlarmTable[]>([]);
     const [pagination, setPagination] = useState<React.ReactElement | null>(null);
-    const [btnAGV, setbtnAGV] = useState<string[]>([]);
-    const btnAGVSet = useRef(false);
-
-
+    const [btnAGV, setBtnAGVName] = useState<string[]>([]);
+ 
     const [vehicle, setVehicle] = useState<string>("ALL"); // Default to "desc"
     const [startDate, setStartDate] = useState(new Date().toISOString().substring(0, 10))
     const [endDate, setEndDate] = useState(new Date().toISOString().substring(0, 10))
@@ -156,11 +154,6 @@ export default function Alarm() {
             }
             setPagination(_pagination(res.structure?.total_pages, savePage.current));
             setalarmTable(alert);
-            if (!btnAGVSet.current) {
-                setbtnAGV(_btnAGV);  // for button AGV
-                btnAGVSet.current = true;
-            }
-
         } catch (e: any) {
             console.error(e);
             if (e.message === "Network Error") {
@@ -252,6 +245,7 @@ export default function Alarm() {
                 if (response.ok) {
                     const _date = new Date().toISOString().substring(0, 10)
                     saveUrl.current = `/alarm/alarms?vehicle_name=ALL&start_date=${_date}&end_date=${_date}&page=1&page_size=10`
+                    setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle")!) as string[]);
                     alarmSetPage(saveUrl.current);
                     timerInterval.current = setInterval(() => alarmSetPage(saveUrl.current), 10000);
                 }
@@ -306,8 +300,8 @@ export default function Alarm() {
                                 <DatePicker selected={new Date(endDate)} onChange={(e) => reloadPage({ de: e ?? undefined })} />
                             </div>
                         </div>
-                        <button className="export-btn" onClick={() => downloadCSV(vehicle, startDate, endDate)}>{t("downloadBtn")}</button>
-                    </div>
+                        <button className="export-btn" onClick={() => downloadCSV(vehicle, startDate, endDate)}><IoMdDownload /> <span className='d-none d-sm-inline'>{t("downloadBtn")}</span></button>
+                     </div>
                 </div>
                 <div className='table-container overflow-auto'>
                     <table className="table table-hover">

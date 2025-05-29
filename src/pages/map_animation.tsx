@@ -86,7 +86,7 @@ function MapAnimate({ data, paths}: MapAnimateProps) {
       </svg>
       {data.map((agv,i) => <img key={i} src={AGV[agv[0]]} className='carmodel-position' style={{ left: `${agv[1]}`, bottom: `${agv[2]}`, transform: `rotate(${agv[3]}deg)` }} alt={`${agv[0]}`}></img>)}
       <div className="switch-map-pick">
-         <h5>{sw ? "show" : "hide"}</h5>
+         <h6>{sw ? "show" : "hide"}</h6>
         <Switch isOn={sw} handleToggle={setSwitchShow} />
       </div>
     </div>

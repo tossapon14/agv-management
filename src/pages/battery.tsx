@@ -45,9 +45,8 @@ const Battery = () => {
   const [battery, setBattery] = useState<IDataSeries>({ series: [] });
   const [checkNetwork, setCheckNetwork] = useState(true);
   const saveUrl = useRef<string>("");
-  const [btnAGV, setbtnAGV] = useState<string[]>([]);
-  const btnAGVSet = useRef(false);
-  const saveVehicle = useRef<string>("ALL");
+  const [btnAGV, setBtnAGVName] = useState<string[]>([]);
+   const saveVehicle = useRef<string>("ALL");
   const saveDateStart = useRef<string>("");
   const saveDateEnd = useRef<string>("");
   const timerInterval = useRef<NodeJS.Timeout>(null);
@@ -103,10 +102,7 @@ const Battery = () => {
         _series.push({ name: agv, data: dataBattery });
         _btnAGV.push(agv);
       }
-      if (!btnAGVSet.current) {
-        setbtnAGV(_btnAGV);  // for button AGV
-        btnAGVSet.current = true;
-      }
+      
       setBattery({ series: _series });
     } catch (e: any) {
       console.error(e);
@@ -133,6 +129,7 @@ const Battery = () => {
           saveUrl.current = `/vehicle/battery_level?vehicle_name=ALL&start_date=${_date}&end_date=${_date}`;
           saveDateStart.current = _date;
           saveDateEnd.current = _date;
+          setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle")!) as string[]);
           batterySetPage(saveUrl.current);
           timerInterval.current = setInterval(() => {
             batterySetPage(saveUrl.current);
@@ -158,15 +155,15 @@ const Battery = () => {
     </div>}
     {onlineBar !== null && <StatusOnline online={onlineBar}></StatusOnline>}
     {notauthenticated && <NotAuthenticated />}
-    <div className='d-flex align-items-center justify-content-between mb-3'>
+    <div className='mb-3 d-flex align-items-center justify-content-between flex-wrap'>
       <div>
         <h1>{t("bt_title")}</h1>
         <p> <FcChargeBattery size={32} style={{ transform: ' rotate(45deg)' }} />
-          <span className='ms-3'>{t("bt_subtitle")}</span>
+          <span className='ms-3 me-5'>{t("bt_subtitle")}</span>
         </p>
       </div>
 
-      {checkNetwork && <div className='input-date-box ms-5'>
+      {checkNetwork && <div className='input-date-box m-0'>
         <div className="form-group">
           <label>{t("from")}</label>
           <div className='box-of-text-date'>
@@ -182,11 +179,11 @@ const Battery = () => {
             <DatePicker selected={new Date(endDate)} onChange={(e) => reloadDataByDate({ de: e ?? undefined })} />
           </div>
         </div>
-        <button className="export-btn2" onClick={() => downloadCSV(startDate, endDate)}><IoMdDownload /> <span>{t("downloadBtn")}</span> </button>
+        <button className="export-btn2" onClick={() => downloadCSV(startDate, endDate)}><IoMdDownload /> <span className="d-none d-sm-inline">{t("downloadBtn")}</span> </button>
       </div>}
     </div>
     {!checkNetwork ? <NetworkError /> : <>
-      <div className="selected-agv-box mt-2">
+      <div className="selected-agv-box mb-2">
         {btnAGV.map((name) => <button key={name} onClick={() => reloadDataByDate({ v: name })} className={`${vehicle === name ? "active" : ""}`}>{name}</button>)}
       </div>
       <div className='chart-all-agv'>
@@ -199,23 +196,26 @@ const Battery = () => {
 
       </div>
 
-      {battery.series.map((agv, i) => <div className="agv-one-box" key={agv.name}>
-        <div className="battery-current">
-          <h5><RiBatteryChargeLine size={32} color='red' /><span className="ms-2">{agv.name}</span></h5>
-          <p className='p-subtitle'>{t("bt_sub2")}</p>
-          <div className="d-flex w-100 h-100 justify-content-center align-items-center">
-            <BatteryDonutChart2 level={agv.data[agv.data.length - 1].y}></BatteryDonutChart2>
+      {battery.series.map((agv, i) =>
+        <div className="agv-one-box" key={agv.name}>
+          <hr className="battery-label-center-hr"/>
+          <p className="battery-label-center">{agv.name}</p>
+          <div className="battery-current">
+            <h5><RiBatteryChargeLine size={32} color='red' /><span className="ms-2">{agv.name}</span></h5>
+            <p className='p-subtitle'>{t("bt_sub2")}</p>
+            <div className="d-flex w-100 h-100 justify-content-center align-items-center">
+              <BatteryDonutChart2 level={agv.data[agv.data.length - 1].y}></BatteryDonutChart2>
+            </div>
           </div>
-        </div>
-        <div className='agv-one-chart'>
-          <h5>{agv.name}</h5>
-          <p className='p-subtitle'>{t("bt_sub3")}</p>
-          <div className='chart'>
-            <BatteryAreaChart2 data={agv} color={colorLine[i]} />
+          <div className='agv-one-chart'>
+            <h5>{agv.name}</h5>
+            <p className='p-subtitle'>{t("bt_sub3")}</p>
+            <div className='chart'>
+              <BatteryAreaChart2 data={agv} color={colorLine[i]} />
+            </div>
           </div>
-        </div>
 
-      </div>)}
+        </div>)}
     </>}
 
   </div>;

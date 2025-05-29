@@ -31,5 +31,7 @@
     "reset_title":"Reset your Password",
     "reset_subtitle":"Enter the new password and confirm password",
     "new_pass":"New Password",
-    "btn_change":"Change Password"
+    "btn_change":"Change Password",
+    "online": "Online",
+    "offline": "Offline"
 }

@@ -217,13 +217,13 @@ export default function Statistics() {
       </div>}
       {onlineBar !== null && <StatusOnline online={onlineBar}></StatusOnline>}
       {notauthenticated && <NotAuthenticated />}
-      <div className='d-flex align-items-center justify-content-between'>
-        <div className='mb-4'>
+      <div className='mb-4 d-flex align-items-center justify-content-between flex-wrap'>
+        <div>
           <h1>{t("st_title")}</h1>
-          <p><FcComboChart size={32} />  <span className='ms-3'>{t("st_subtitle")}</span></p>
+          <p><FcComboChart size={32} />  <span className='ms-3 me-5'>{t("st_subtitle")}</span></p>
         </div>
 
-        {checkNetwork && <div className='input-date-box ms-5'>
+        {checkNetwork && <div className='input-date-box m-0'>
           <div className="form-group">
             <label >{t("from")}</label>
             <div className='box-of-text-date'>
@@ -239,11 +239,11 @@ export default function Statistics() {
               <DatePicker selected={new Date(endDate)} onChange={(e) => reloadDataByDate({ de: e ?? undefined })} />
             </div>
           </div>
-          <button className="export-btn2" onClick={() => downloadCSV(startDate, endDate)}><IoMdDownload /> <span>{t("downloadBtn")}</span> </button>
+          <button className="export-btn2" onClick={() => downloadCSV(startDate, endDate)}><IoMdDownload /> <span className='d-none d-sm-inline'>{t("downloadBtn")}</span> </button>
         </div>}
       </div>
       {!checkNetwork ? <NetworkError /> : <>
-        <div className='stat-card-box'>
+        <div className='stat-card-box flex-wrap flex-md-nowrap'>
           <div className='stat-card'>
             <div className='d-flex align-items-center'>
               <div className='box-icon' style={{ backgroundColor: "rgb(210, 246, 255)" }}>
@@ -282,26 +282,26 @@ export default function Statistics() {
           </div>
         </div>
 
-        <div className='stat-chart-pickup'>
-          <div className='col-8'>
+        <div className='stat-chart-pickup flex-lg-row flex-column-reverse'>
+          <div className='col-12 col-lg-8'>
             <div className='pickup-chart'>
-              <h5>{t("tb_pickup")}</h5>
-              <p className='p-subtitle'>{t("st_title_pick")}</p>
+              <h5>{t("st_title_pick")}</h5>
+              <p className='p-subtitle'>{t("st_subtitle_pick")}</p>
               <BGBarChart data={dataPickup} />
             </div>
           </div>
-          <div className='col-4'>
+          <div className='col-12 col-lg-4'>
             <div className='chart-donus-box'>
               <h5>{t("st_all")}</h5>
-              <p className='p-subtitle'>{t("st_title_miss")}</p>
+              <p className='p-subtitle'>{t("st_subtitle_miss")}</p>
               <BGBarChart data={dataMission} />
             </div>
           </div>
 
         </div>
         <div className='stat-chart-drop'>
-          <h5>{t("tb_drop")}</h5>
-          <p className='p-subtitle'>{t("st_title_drop")}</p>
+          <h5>{t("st_title_drop")}</h5>
+          <p className='p-subtitle'>{t("st_subtitle_drop")}</p>
           <BGBarChart data={dataDrop} />
         </div>
       </>}

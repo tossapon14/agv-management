@@ -1,5 +1,5 @@
 import './css/mission.css'
-import { IoMdSettings, IoMdClose } from "react-icons/io";
+import { IoMdSettings, IoMdClose, IoMdDownload } from "react-icons/io";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import MissionImage from '../assets/images/mission.png';
 import { useEffect, useState, useCallback, useRef } from 'react';
@@ -84,7 +84,7 @@ export default function Mission() {
 
     const [pagination, setPagination] = useState<React.ReactElement | null>(null);
     const [loadSuccess, setLoadSuccess] = useState(false);
-    const [btnAGV, setbtnAGV] = useState<string[]>([]);
+    const [btnAGV, setBtnAGVName] = useState<string[]>([]);
     // const btnAGVSet = useRef(false);
 
     const [checkNetwork, setCheckNetwork] = useState(true);
@@ -174,7 +174,6 @@ export default function Mission() {
                 onlineRef.current = true;
             }
             const _mission: IMissionTables[] = []
-            const _btnAGV: string[] = ['ALL']
             res.payload.forEach((ele) => {
                 _mission.push({
                     ...ele, str_status: pairMissionStatus(ele.status),
@@ -186,14 +185,10 @@ export default function Mission() {
                     tend: ele.arriving_time?.substring(11, 19),
                     duration: isoDurationToMinSec(ele.duration),
                 })
-                if (!_btnAGV.includes(ele.vehicle_name)) {
-                    _btnAGV.push(ele.vehicle_name);
-                }
             });
 
             setPagination(_pagination(res.structure?.total_pages, savePage.current));
             setMissionTable(_mission);
-            setbtnAGV(_btnAGV);  // for button AGV
 
         } catch (e: any) {
             console.error(e);
@@ -201,7 +196,7 @@ export default function Mission() {
                 setOnlineBar(false);
                 onlineRef.current = false;
             }
-           else if (e.response?.status === 401 || e.response?.data?.detail === "Invalid token or Token has expired.") {
+            else if (e.response?.status === 401 || e.response?.data?.detail === "Invalid token or Token has expired.") {
                 setNotAuthenticated(true)
                 if (timerInterval.current) {
                     clearInterval(timerInterval.current as NodeJS.Timeout);
@@ -285,6 +280,7 @@ export default function Mission() {
                 const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
                 if (response.ok) {
                     const _vehicle = sessionStorage.getItem('user')?.split(",")[2] == "admin" ? 'ALL' : sessionStorage.getItem('user')?.split(",")[2] ?? "";
+                    setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle")!) as string[]);
                     const _date = new Date().toISOString().substring(0, 10)
                     saveUrl.current = `/mission/missions?vehicle_name=${_vehicle}&status=ALL&start_date=${_date}&end_date=${_date}&page=1&page_size=10`
                     saveDateStart.current = _date;
@@ -366,11 +362,11 @@ export default function Mission() {
                             <DatePicker selected={new Date(endDate)} onChange={(e) => reloadMission({ de: e ?? undefined })} />
                         </div>
                     </div>
-                    <button className="export-btn" onClick={() => downloadCSV(vehicle, status, startDate, endDate)}>{t("downloadBtn")}</button>
+                    <button className="export-btn" onClick={() => downloadCSV(vehicle, status, startDate, endDate)}><IoMdDownload /> <span className='d-none d-sm-inline'>{t("downloadBtn")}</span></button>
                 </div>
             </div>
             <div className='table-container overflow-auto'>
-                <table className="table table-hover">
+                <table className="table table-hover" style={{ minWidth: "1150px" }}>
                     <thead className='text-center'>
                         <tr>
                             <th scope="col">{t("tb_jobid")}</th>

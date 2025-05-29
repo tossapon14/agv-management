@@ -5,9 +5,9 @@ import './css/login.css';
 import { IoInformationCircleOutline } from "react-icons/io5";
 
 import { useState, useEffect, FormEvent } from "react";
-import { axiosLogin,axiosPost } from "../api/axiosFetch";
+import { axiosLogin, axiosPost, axiosGet } from "../api/axiosFetch";
 import { useTranslation } from 'react-i18next';
-
+import BGCBanner from '../assets/images/bgc-logo2.svg';
 
 interface ILogin {
   access_token: string
@@ -27,13 +27,16 @@ interface IUser {
 }
 
 export default function Login() {
-   const [showPass, setShowPass] = useState(false);
+  const [showPass, setShowPass] = useState(false);
   const [user, setUser] = useState<IUser | null>(null);
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [responses, setResponse] = useState<string>("")
   const [load, setLoad] = useState(false);
-  const { t } = useTranslation("login"); 
+  const { t } = useTranslation("login");
+
+
+
 
   const postLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -43,40 +46,49 @@ export default function Login() {
       params.append('username', name);
       params.append('password', password);
       const response: ILogin = await axiosLogin("/authentication/login", params);
-
       if (response.token_type) {
         sessionStorage.setItem("token", `${response.token_type} ${response.access_token}`);
         sessionStorage.setItem("user", `${response.user.employee_no},${response.user.name},${response.user.position},${response.user.status},${response.user.username}`);
-        // setUser(response.user);
+        if (response.user.position === 'admin') {
+          const res: any = await axiosGet(
+            `/vehicle/vehicles?vehicle_name=ALL&state=ALL`,
+          );
+          if (res.payload) {
+            const vehicleList = res.payload.map((item: any) => item.name);
+            vehicleList.unshift("ALL");
+            sessionStorage.setItem("vehicle", JSON.stringify(vehicleList));
+          }
+        } else {
+          sessionStorage.setItem("vehicle", JSON.stringify(`[${response.user.position}]`));
+        }
+
         window.location.reload();
-      }
-      else if (response.status === 401) {
-        setResponse(response.response?.data.detail)
       }
       else if (response.message) {
         setResponse(response.message)
       }
- 
+
     } catch (error: any) {
       console.error(error);
       setResponse(error.message)
-    }finally{
+    } finally {
       setLoad(false);
     }
   };
   const onLogout = async () => {
     try {
-      sessionStorage.removeItem("token");
-      const body = {username:user?.username}
-      setUser(null);
-      sessionStorage.removeItem("user");
-      setLoad(true);
-      await axiosPost("/authentication/logout",body );
-      
 
-    } catch (e: any) { 
+      const body = { username: user?.username }
+      sessionStorage.removeItem("user");
+      sessionStorage.removeItem("vehicle");
+      sessionStorage.removeItem("token");
+      setLoad(true);
+      await axiosPost("/authentication/logout", body);
+
+
+    } catch (e: any) {
       console.error(e);
-    }finally{
+    } finally {
       setLoad(false);
       window.location.reload();
     }
@@ -99,58 +111,65 @@ export default function Login() {
 
 
   return (
-    <section id='login'>
+    <section id="login-wrapper">
       {load && <div className='loading-background'>
         <div id="loading"></div>
       </div>}
-      <div className="about-version"><IoInformationCircleOutline size={24} /><span> power by BGC {import.meta.env.VITE_REACT_APP_VERSION}</span>
-      </div>
-      {user ? <div className='profile'>
-        <h1>{t("imfor")}</h1>
-        <div className="subprofile-box">
-          <div className='d-flex justify-content-between'>
-            <div className='mb-4'>{t("name")}</div><h3 className='ms-4 d-inline'>{user.name}</h3>
-          </div>
-          <div className='d-flex justify-content-between'>
-            <div className='mb-4'>{t("username")}</div><h3 className='ms-4 d-inline'>{user.username}</h3>
-          </div>
-          <div className='d-flex justify-content-between'>
-            <div className='mb-4'>{t("employee_no")}</div><h3 className='ms-4 d-inline'>{user.employee_no}</h3>
-          </div>
-          <div className='d-flex justify-content-between'>
-            <div className='mb-4'>{t("position")}</div><h3 className='ms-4 d-inline'>{user.position}</h3>
-          </div>
-          <div className='d-flex justify-content-between'>
-            <div className='mb-4'>{t("status")}</div><h3 className='ms-4 d-inline fw-bold' style={{ color: 'rgb(82, 255, 8)' }}>{user.status ? "ONLINE" : "OFFLINE"}</h3>
-          </div>
+      <section id='login'>
 
-          <button type="button" className='btn btn-signout fw-bold' onClick={onLogout} >{t("logout")}</button>
-          {user.position === "admin" && <p className="signup mt-3">
-            {t("des")}&nbsp;
-            <a href='/signup-admin'>{t("singup")}</a></p>}
+        <div className="about-version"><IoInformationCircleOutline size={24} /><span> power by BGC {import.meta.env.VITE_REACT_APP_VERSION}</span>
         </div>
-      </div> : <div className="formBx">
-        <form onSubmit={postLogin}>
-          <h1>{t("signin")}</h1>
+        <div className="position-fixed font-weight-bold logoposition" >
+          <img src={BGCBanner} alt="logo" height={60} style={{ filter: 'brightness(0) invert(1)' }}></img>
+          <h5 className="mt-3">Login</h5>
+        </div>
+        {user ? <div className='profile'>
+          <h1>{t("imfor")}</h1>
+          <div className="subprofile-box">
+            <div className='d-flex justify-content-between'>
+              <div className='mb-4'>{t("name")}</div><h3 className='ms-4 d-inline'>{user.name}</h3>
+            </div>
+            <div className='d-flex justify-content-between'>
+              <div className='mb-4'>{t("username")}</div><h3 className='ms-4 d-inline'>{user.username}</h3>
+            </div>
+            <div className='d-flex justify-content-between'>
+              <div className='mb-4'>{t("employee_no")}</div><h3 className='ms-4 d-inline'>{user.employee_no}</h3>
+            </div>
+            <div className='d-flex justify-content-between'>
+              <div className='mb-4'>{t("position")}</div><h3 className='ms-4 d-inline'>{user.position}</h3>
+            </div>
+            <div className='d-flex justify-content-between'>
+              <div className='mb-4'>{t("status")}</div><h3 className='ms-4 d-inline fw-bold' style={{ color: 'rgb(82, 255, 8)' }}>{user.status ? t("online") : ("offline")}</h3>
+            </div>
 
-          <div className="input-textbox">
-            <span><BsPersonFill  ></BsPersonFill></span>
-            <input autoFocus type="text" onChange={(e) => setName(e.target.value)} autoComplete="off" required />
-            <label>Username</label>
+            <button type="button" className='btn btn-signout fw-bold' onClick={onLogout} >{t("logout")}</button>
+            {user.position === "admin" && <p className="signup mt-3">
+              {t("des")}&nbsp;
+              <a href='/signup-admin'>{t("singup")}</a></p>}
           </div>
-          <div className="input-textbox">
-            <span onClick={() => setShowPass(prev => !prev)}>
-              {showPass ? <FaRegEyeSlash ></FaRegEyeSlash> : <FaRegEye></FaRegEye>}</span>
-            <input type={showPass ? "text" : "password"} onChange={(e) => setPassword(e.target.value)} autoComplete="off" required />
-            <label>Password</label>
-          </div>
-          <button type="submit" className='btn btn-login fw-bold'>{t("login")}</button>
-          {responses && <h5 className='text-error-login'>{responses}</h5>}
+        </div> : <div className="formBx">
+          <form onSubmit={postLogin}>
+            <h1>{t("signin")}</h1>
 
-        </form>
+            <div className="input-textbox">
+              <span><BsPersonFill  ></BsPersonFill></span>
+              <input autoFocus type="text" onChange={(e) => setName(e.target.value)} autoComplete="off" required />
+              <label>Username</label>
+            </div>
+            <div className="input-textbox">
+              <span onClick={() => setShowPass(prev => !prev)}>
+                {showPass ? <FaRegEyeSlash ></FaRegEyeSlash> : <FaRegEye></FaRegEye>}</span>
+              <input type={showPass ? "text" : "password"} onChange={(e) => setPassword(e.target.value)} autoComplete="off" required />
+              <label>Password</label>
+            </div>
+            <button type="submit" className='btn btn-login fw-bold'>{t("login")}</button>
+            {responses && <h5 className='text-error-login'>{responses}</h5>}
 
-      </div>}
+          </form>
 
+        </div>}
+
+      </section>
     </section>
   )
 }

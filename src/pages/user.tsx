@@ -51,29 +51,35 @@ export default function User() {
     const checkAdmin = useRef<HTMLInputElement>(null);
     const checkNormal = useRef<HTMLInputElement>(null);
     const [notauthenticated, setNotAuthenticated] = useState(false);
-
+    const Debounce = useRef<NodeJS.Timeout | null>(null); // Use NodeJS.Timeout for TypeScript
     const { t } = useTranslation("user");
 
     const searchUser = () => {
-        const data = {
-            text: searchName.current?.value.trim().toLowerCase(),
-            admin: checkAdmin.current?.checked,
-            normal: checkNormal.current?.checked
-        };
 
-        const userSearch = userRef.current.filter((u: IuserPayload) => {
-            // Check position filter
-            const matchAdmin = data.admin && u.position === 'admin';
-            const matchNormal = data.normal && u.position !== 'admin';
-            const matchPosition = data.admin || data.normal ? (matchAdmin || matchNormal) : true;
+        if (Debounce.current)  // Clear the previous timeout if it exists          
+            clearTimeout(Debounce.current);
+        Debounce.current = setTimeout(() => {
+            const data = {
+                text: searchName.current?.value.trim().toLowerCase(),
+                admin: checkAdmin.current?.checked,
+                normal: checkNormal.current?.checked
+            };
 
-            // Check name filter
-            const matchName = data.text ? u.name.toLowerCase().includes(data.text) : true;
+            const userSearch = userRef.current.filter((u: IuserPayload) => {
+                // Check position filter
+                const matchAdmin = data.admin && u.position === 'admin';
+                const matchNormal = data.normal && u.position !== 'admin';
+                const matchPosition = data.admin || data.normal ? (matchAdmin || matchNormal) : true;
 
-            return matchPosition && matchName;
-        });
+                // Check name filter
+                const matchName = data.text ? u.name.toLowerCase().includes(data.text) : true;
 
-        setUserList(userSearch);
+                return matchPosition && matchName;
+            });
+
+            setUserList(userSearch);
+        }, 500); // Debounce delay
+
     };
     const btnForOption = (index: number) => {
         setShowOption({ show: false });
@@ -378,9 +384,9 @@ export default function User() {
                                             <td>{user.position}</td>
                                             <td>
                                                 {user.status ? <div className='boxonline'>
-                                                    ONLINE
-                                                </div> : <div className='boxonline' style={{ backgroundColor: "red" }}>
-                                                    OFFLINE
+                                                    {t('online')}
+                                                </div> : <div className='boxonline' style={{ backgroundColor: "rgb(250, 216, 216)", color:"rgb(255, 0, 0)" }}>
+                                                    {t('offline')}
                                                 </div>}
                                             </td>
                                             <td>

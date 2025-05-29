@@ -1,43 +1,63 @@
-// import { FaWarehouse, FaClipboardList, FaPoll, FaUser, FaBars, FaHive, FaRegEdit, FaFolderOpen } from 'react-icons/fa';
 import BGClogo from './assets/images/bgc-logo.png';
-// import Json1 from "./assets/locales/main.json";
 import "./pages/css/header.css";
 import { useEffect, useState, useRef } from "react";
 import TH_language_img from './assets/images/thailand.png';
 import EN_language_img from './assets/images/united.png';
 import { useTranslation } from 'react-i18next';
+import { HiOutlineBars3, HiXMark } from "react-icons/hi2";
 
 
-export default function Headers() {
+export default function Headers({ drawerFunction }: { drawerFunction: (t: boolean) => void }) {
     const { i18n } = useTranslation();
     const user = (sessionStorage.getItem("user")?.split(",")[4] || "");
-    const [lang, setLang] = useState<string>(localStorage.getItem('BGLanguage')??"en");
+    const [lang, setLang] = useState<string>(localStorage.getItem('BGLanguage') ?? "en");
     const [open, setOpen] = useState<boolean>(false);
+    const [iconNav, setIconNav] = useState<boolean>(true);
     const languageBlockRef = useRef<HTMLDivElement>(null)
-     
-    const changeLanguage = (lng:string) => {
+
+    const changeLanguage = (lng: string) => {
         i18n.changeLanguage(lng);
         setLang(lng);
     };
+    const handleDrawer = () => {
+        setIconNav(prev => !prev);
+        drawerFunction(iconNav);
+    }
     useEffect(() => {
-       
-        const handle = (e: any) => {
+        const handleClickOutside = (e: any) => {
             if (!languageBlockRef.current?.contains(e.target)) {
                 setOpen(false);
             }
-        }
-        document.addEventListener('click', handle);
-        return () => document.removeEventListener('click', handle); // Cleanup on unmount
+        };
+
+        const handleResize = () => {
+            if (window.innerWidth >= 1530) {
+                setIconNav(true);
+                drawerFunction(false);
+            }
+        };
+
+        document.addEventListener('click', handleClickOutside);
+        window.addEventListener('resize', handleResize);
+
+         return () => {
+            document.removeEventListener('click', handleClickOutside);
+            window.removeEventListener('resize', handleResize);
+        };
     }, []);
 
     return (
         <nav className="headder-nav-bar">
-            <div className='float-end my-0 my-xl-3 my-lg-1 mx-lg-2'>
+            <div className='d-flex align-items-center gap-3 ps-3'>
+                <div className="iconNav" onClick={handleDrawer}>
+                    {iconNav ? <HiOutlineBars3 color='white' size={32} ></HiOutlineBars3> :
+                        <HiXMark color='white' size={32} ></HiXMark>}
+                </div>
                 <img src={BGClogo} className='img-logo' alt='logo'></img>
             </div>
 
             <div className='nav-end'>
-                <div ref={languageBlockRef} className='language-box' onClick={() => setOpen(prev => !prev)}>
+                <div ref={languageBlockRef} className='language-box me-1 me-md-2' onClick={() => setOpen(prev => !prev)}>
                     <button className='btn-language'>
                         {lang == 'th' ? <>
                             <img src={TH_language_img} alt='th'></img>
@@ -61,12 +81,9 @@ export default function Headers() {
                 <div className='timer-clock'>
                     <div className="d-flex align-items-center" >
                         {user && <div className="rounded-circle d-flex  align-items-center justify-content-center me-2" style={{ fontWeight: 'bold', width: "32px", height: "32px", backgroundColor: "rgb(89, 238, 255)", color: 'white' }}>{user[0].toUpperCase()}</div>}
-                        <span className='h5 m-0 pe-1'>{user} </span> <span>@ BGC อยุธยากล๊าส</span>
+                        <span className='h5 m-0 pe-1 pe-md-3'>{user} </span> <span className='d-none d-md-inline'>@ BGC อยุธยากล๊าส</span>
                     </div>
                 </div>
-                <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span className="navbar-toggler-icon"></span>
-                </button>
             </div>
 
         </nav>

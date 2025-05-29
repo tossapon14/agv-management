@@ -1,46 +1,80 @@
 :root {
   --map-width: 1320px;
   --map-height: calc(var(--map-width) * 1261/2155);
+  --agv-card-width: 460px;
+  --bgc-bg-color: #1a46ba;
+  --bgc-bg-gray-color: #F4F4F4;
+  --bgc-hover-color: #386dff;
+  --header-height: 60px;
 }
 
 .home {
   display: grid;
   width: 100vw;
-  overflow-y: hidden;
-  grid-template-areas: "col1 col2";
+  overflow-y: auto;
+  grid-template-areas: "col1 col2-vehicle"
+    "home-table col2-vehicle";
   grid-template-columns: var(--map-width) 1fr;
-  grid-template-rows: 1fr;
+  grid-template-rows: var(--map-height) 1fr;
 
 }
 
 .home>.col1 {
   grid-area: col1;
-  display: block;
-  height: 100%;
-  width: 100%;
   margin-top: 0.5rem;
   padding-bottom: 2rem;
-  overflow-y: auto;
-  /* background-color: #fbc0c0; */
+  overflow: hidden;
+  background-color: #fbc0c0;
+  animation: home-background-fade 1s ease-out forwards;
+  opacity: 0;
 }
 
-.home>.col2 {
-  grid-area: col2;
+.home-table {
+  grid-area: home-table;
+  height: 400px;
+  overflow-y: hidden;
+  animation: form-fade 1s linear forwards;
+  animation-delay: 1s;
+  opacity: 0;
+}
+
+.home>.col2-vehicle {
+  grid-area: col2-vehicle;
   width: 100%;
-  padding-left: 2rem;
-  height: 100%;
+  padding-left: 1.5rem;
+  padding-bottom: 2rem;
   overflow: auto;
-  font-family: 'K2D-Regular', sans-serif;
-  height: calc(100vh - 64px);
-  overflow-y: auto;
-  ;
+  height: auto;
+  animation: form-fade 1s linear forwards;
+  animation-delay: 0.5s;
+  opacity: 0;
+
+}
+
+@keyframes home-background-fade {
+  0% {
+    transform: scale(1.02);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.box-display-agv {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
 }
 
 .box-agv-btn {
   display: flex;
-  flex-wrap: wrap;
+  flex-grow: 1;
+  width: var(--agv-card-width);
   row-gap: 1rem;
-  /* width: 100%; */
   justify-content: start;
   margin-top: 1rem;
   margin-bottom: 1.5rem;
@@ -50,6 +84,7 @@
   margin-right: 1rem;
   font-size: 14px;
   width: 100px;
+  min-width: 72px;
   height: 36px;
   border-radius: 36px;
   background-color: #b1b1b1;
@@ -69,7 +104,9 @@
 
 .box-agv-data {
   margin-bottom: 2rem;
-  width: 460px;
+  min-width: 340px;
+  max-width: 460px;
+  width: var(--agv-card-width);
   height: fit-content;
   background-color: white;
   border-radius: 5px;
@@ -88,6 +125,7 @@
   flex-direction: column;
   justify-content: start;
   height: fit-content;
+  flex-shrink: 1;
   /* background-color: rgb(215, 250, 217); */
 }
 
@@ -143,7 +181,8 @@
   flex-direction: row;
   justify-content: start;
   align-items: start;
-  width: 200px;
+  width: auto;
+  min-width: 180px;
   height: fit-content;
   /* background-color: rgb(215, 250, 217); */
 }
@@ -157,15 +196,16 @@
   font-size: 20px;
   margin-top: 0.2rem;
   font-weight: 500;
-  width: 200px;
+  width: auto;
+  text-wrap: nowrap;
   color: #3E3E3E;
 }
 
 .agv-state-offline {
-  font-size: 28px;
+  font-size: 24px;
   margin-top: .8rem;
   font-weight: 500;
-  width: 200px;
+  width: auto;
   color: #3E3E3E;
 }
 
@@ -188,7 +228,7 @@
 .km-h {
   font-size: 16px;
   color: #3E3E3E;
-  margin: 0 28px 0 0;
+  margin: 0 22px 0 0;
 
 }
 
@@ -436,10 +476,12 @@
   justify-content: center;
   align-items: center;
   margin-top: 5px;
-  width: 46px;
-  height: 46px;
+  width: auto;
+  height: auto;
+  padding: 12px 6px;
   font-weight: 500;
   border-radius: 5px;
+  font-size: 16px;
   background-color: #E8E8E8;
 }
 
@@ -493,8 +535,9 @@
 
 .mission-status {
   flex-grow: 2;
-  margin-left: 24px;
-  font-size: 24px;
+  padding-top: 8px;
+  padding-left: 24px;
+  font-size: 22px;
   color: #000000;
   font-weight: 600;
 }
@@ -655,6 +698,9 @@
 .modal {
   display: none;
   position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   top: 0;
   left: 0;
   width: 100%;
@@ -666,7 +712,7 @@
 }
 
 .modal.show-modal {
-  display: block;
+  display: flex;
   overflow: hidden;
   /* transform-origin: center; */
   animation: expandCenter 0.4s ease-out forwards;
@@ -674,7 +720,7 @@
 
 .modal.hidden-modal {
   animation: shrinkmodal 0.4s ease-out forwards;
-  display: block;
+  display: flex;
   overflow: hidden;
 }
 
@@ -720,25 +766,24 @@
   padding: 1rem;
   background: #ffffff;
   display: flex;
-  margin-inline: auto;
+  justify-content: start;
   align-items: flex-start;
 }
 
 .modal-content-home .box-map-and-btn {
   position: relative;
-  width: fit-content;
+  width: 1200px;
   flex-grow: 1;
-  height: 800px;
+  height: 100%;
 }
 
 .modal-content-home .map-img {
   position: absolute;
   top: 0;
   left: 0;
-  max-width: 1200px;
-  height: auto;
-  object-fit: contain;
-  aspect-ratio: 1672/1164;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
 }
 
 .agv-mission-box {
@@ -762,6 +807,19 @@
 
 .agv-mission-box .close-modal:hover {
   background-color: #414141;
+}
+
+.close-modal2-top-left {
+  position: absolute;
+  display: none;
+  border: none;
+  border-radius: 5px;
+  width: 120px;
+  height: 50px;
+  margin-left: auto;
+  background-color: #050505;
+  font-size: 18px;
+  color: white;
 }
 
 .btn-send-command {
@@ -795,7 +853,7 @@
   background-color: #fff;
   border-radius: 8px;
   padding: 0 1rem 1.2rem;
-  margin: 0 auto;
+  margin: 0 0 0 0.5rem;
   transition: height 2s linear 1s;
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 
@@ -870,7 +928,7 @@
   100% {
     opacity: 1;
     width: 100%;
-    height: 90px;
+    height: 80px;
   }
 }
 
@@ -1026,8 +1084,8 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 1200px;
-  height: 105%;
+  width: 100%;
+  height: 100%;
   background-color: rgb(233, 233, 233);
   z-index: 4;
 }
@@ -1204,52 +1262,532 @@
   }
 }
 
-.authDiaload-bg {
-  position: absolute;
-  top: 0;
-  left:0;
-  width: 100vw;
-  height: 100%;
-  z-index:12;
- }
+@media only screen and (max-width: 1890px) {
+  :root {
+    --agv-card-width: 430px;
+  }
+}
 
-dialog {
-  border: none;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  padding: 20px;
-  margin-top: 150px;
-  max-width: 400px;
-  background-color: #000000;
-  color: #ffffff;
-  font-family: Arial, sans-serif;
+@media only screen and (max-width: 1850px) {
+  :root {
+    --map-width: 70vw;
+    --agv-card-width: 23vw;
+  }
+
+  /* .box-agv-data {
+    width: 420px;
+  } */
+}
+
+@media only screen and (max-width: 1770px) {
+  :root {
+    --map-width: 68vw;
+    --agv-card-width: 25vw;
+  }
+}
+
+@media only screen and (max-width: 1660px) {
+  :root {
+    --map-width: 65vw;
+    --agv-card-width: 28vw;
+  }
+
+  .home>.col2-vehicle {
+    width: 100%;
+    padding-left: 0;
+  }
+
+  .box-agv-btn {
+    margin: 1rem auto;
+  }
+
+  .box-agv-data {
+    margin-inline: auto;
+  }
+
+  .modal-content-home {
+    width: 1450px;
+    height: 780px;
+  }
+
+  .image-agv-modal {
+    height: 100px;
+  }
+
+  .agv-mission-card {
+    width: 350px;
+  }
+
+  .data-warehouse-box {
+    padding: 0;
+  }
+
+  @keyframes addmission {
+    0% {
+      opacity: .2;
+    }
+
+    100% {
+      opacity: 1;
+      width: 100%;
+      height: 80px;
+    }
+  }
+
+  .btn-pickup-agv {
+    width: 60px;
+    height: 50px;
+  }
+}
+
+@media only screen and (max-width: 1530px) {
+  :root {
+    --map-width: 70vw;
+  }
+
+  .drawer {
+    display: none;
+  }
+
+  .navbar-mobile.open-navbar {
+    height: 600px;
+  }
+
+  .headder-nav-bar .iconNav {
+    display: inline-block;
+  }
+
+  .modal-content-home {
+    width: 1340px;
+    height: 700px;
+  }
+
+  .btn-pickup-agv {
+    width: 50px;
+  }
+}
+
+@media only screen and (max-width: 1400px) {
+  :root {
+    --map-width: 68vw;
+    --agv-card-width: 30vw;
+  }
+
+  .pickup-text {
+    font-size: 16px;
+  }
+}
+
+@media only screen and (max-width: 1350px) {
+  .miss-animate {
+    font-size: 18px;
+  }
+
+  .drop-btn {
+    font-size: 18px;
+  }
+
+  .button-agv {
+    width: 80px;
+    height: 40px;
+    font-size: 14px;
+  }
+
+  .modal-content-home {
+    width: 1230px;
+    height: 660px;
+  }
+
+  .agv-mission-card {
+    width: 300px;
+    padding-bottom: 8px;
+  }
+
+  .agv-mission-card .agv-top-name-box {
+    height: 110px;
+  }
+
+  .image-agv-modal {
+    height: 90px;
+  }
+
+
+  .selected-mission-btn {
+    width: 100% !important;
+    margin-right: 0;
+  }
+
+  #login .logoposition {
+    top: 10vh !important;
+    left: 100px !important;
+  }
+}
+
+@media only screen and (max-width: 1240px) {
+  :root {
+    --map-width: 68vw;
+    --agv-card-width: 30vw;
+
+  }
+
+  .box-agv-data {
+    box-shadow: none;
+  }
+
+  .auto-manual+.EmergencyBtn {
+    font-size: 14px;
+    transform: translateX(-50px);
+
+  }
+
+  .mission-status {
+    padding-top: 8px;
+    margin-left: 16px;
+    font-size: 20px;
+    font-weight: 500;
+  }
+
+  .home-table-head th {
+    font-size: 14px;
+  }
+
+  .home tbody td {
+    font-size: 12px;
+  }
+
+  .modal-content-home {
+    width: 1000px;
+    height: 560px;
+  }
+
+  .agv-mission-card {
+    width: 280px;
+    padding-bottom: 8px;
+  }
+
+  .image-agv-modal {
+    height: 80px;
+    transform: translateX(14px);
+  }
+
+  button.close-modal {
+    display: none;
+  }
+
+  .close-modal2-top-left {
+    display: block;
+    z-index: 5;
+    top: 0;
+    right: 100%;
+    position: sticky;
+  }
+
+  .mission-header {
+    flex-direction: column-reverse;
+    height: auto !important;
+  }
+
+  .input-date-box {
+    justify-content: flex-start !important;
+    margin-block: 1rem !important;
+  }
+
+  .react-datepicker-popper {
+    transform: translate(0px, 50px) !important;
+    will-change: transform;
+  }
 
 }
 
-.dialog-header {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 10px;
+@media only screen and (max-width: 1150px) {
+
+  .agv-name-text {
+    font-size: 14px;
+    width: 54px;
+    margin-top: 8px;
+  }
+
+  .velocity-number {
+    font-size: 50px;
+  }
+
+  .label-station {
+    font-size: 14px;
+    padding: 8px 6px;
+  }
+
+  .km-h {
+    margin: 0 18px 0 0;
+  }
+
+  .mission-status {
+    padding-top: 8px;
+    padding-left: 0px;
+    font-size: 20px;
+    font-weight: 500;
+  }
+
+  .btn-pickup-agv {
+    width: 46px;
+    height: 40px;
+    font-size: 14px;
+  }
+
 }
 
-.dialog-body {
-  font-size: 16px;
-  margin-bottom: 20px;
+@media only screen and (max-width: 1110px) {
+  :root {
+    --map-width: 65vw;
+  }
 }
 
-.dialog-footer {
-  text-align: right;
+@media only screen and (max-width: 1000px) {
+  :root {
+    --map-width: 100vw;
+    --agv-card-width: 360px;
+  }
+
+  .home {
+    overflow: scroll;
+    grid-template-areas:
+      "col1"
+      "col2-vehicle"
+      "home-table";
+    grid-template-columns: 1fr;
+    grid-template-rows: var(--map-height) 500px 400px;
+  }
+
+  .home>.col2-vehicle {
+    padding: 0;
+    overflow: hidden;
+    padding: 0 0.5rem;
+  }
+
+  .box-display-agv {
+    flex-direction: row;
+    column-gap: 32px;
+    overflow-y: hidden;
+    overflow-x: scroll;
+    padding: 0 32px 0 16px;
+    border-radius: 5px;
+    background-color: #e0e0e0;
+    border: 1px solid #000000;
+    padding-block: 0.5rem;
+    height: 430px;
+  }
+
+  .box-agv-data {
+    margin: 0;
+    box-shadow: none;
+    min-width: 360px;
+  }
+
+  .circle-bg-color {
+    background-color: #e0e0e0 !important;
+  }
+
+  .pickup-text {
+    font-size: 16px;
+  }
+
+  .agv-name-text {
+    font-size: 16px;
+    width: 64px !important;
+  }
+
+  .box-agv-btn {
+    margin: 1rem 0.5rem;
+  }
+
+  .modal-content-home {
+    width: 100vw;
+    height: 560px;
+  }
+
+  .modal-content-home .box-map-and-btn {
+    height: 450px;
+  }
+
+  .btn-pickup-agv {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+    padding: 0;
+  }
+
+  .agv-one-box {
+    flex-direction: column !important;
+  }
+
+  .battery-label-center {
+    display: block !important;
+  }
+
+  .battery-label-center-hr {
+    display: block !important;
+  }
 }
 
-.dialog-footer>button {
-  padding: 6px 20px;
-  background-color: #c0392b;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+@media only screen and (max-width: 850px) {
+  .modal-content-home {
+    width: 100vw;
+    min-width: 100vw;
+    height: 100vh;
+    padding-bottom: 1rem;
+    flex-wrap: wrap;
+    overflow: scroll;
+  }
+
+  .modal-content-home .box-map-and-btn {
+    width: 100vw;
+    height: calc(100vw * 1164/1672);
+    margin-bottom: 1rem;
+  }
+
+  .table-container {
+    margin: 2rem 0.5rem 1rem !important;
+  }
+
+  .btn-pickup-agv {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+    padding: 0;
+  }
+
+  .agv-mission-box {
+    height: fit-content;
+    width: 100%;
+  }
+
+  .agv-mission-card {
+    width: 100%;
+    padding-bottom: 1rem;
+    margin: 1rem 0 7rem;
+  }
+
+  .image-agv-modal {
+    height: 130px;
+  }
+
+  .agv-mission-card .agv-top-name-box {
+    height: 150px;
+  }
+
+  /* mission.tsx */
+  .mission-title-box {
+    padding-left: 12px !important;
+  }
+
+  .selected-mission-btn {
+    overflow-y: auto;
+  }
+
+  .selected-mission-btn button {
+    margin-top: 4px !important;
+    font-size: 10px !important;
+  }
+
+  .table-container tbody td {
+    font-size: 12px;
+  }
+
+  .velocity-content-box {
+    flex-wrap: wrap;
+  }
+
+  .vehicle-card {
+    margin: 0 auto;
+  }
+
+  .statistics-box {
+    padding: 32px 12px 32px !important;
+  }
+
+  .stat-card-box .stat-card {
+    flex: 1 0 180px !important;
+  }
 }
 
-.dialog-footer>button:hover {
-  background-color: #a93226;
+@media only screen and (max-width: 630px) {
+  .btn-pickup-agv {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+    padding: 0;
+  }
+
+  /* mission.tsx */
+  .mission-title-box {
+    height: 130px !important;
+  }
+
+  .form-group {
+    width: 120px !important;
+    font-size: 14px !important;
+  }
+
+  .form-group input[type="text"] {
+    width: 120px !important;
+  }
+
+  .form-group>.box-of-text-date {
+    padding-top: 14px !important;
+    width: 120px !important;
+
+  }
+
+  .box-of-text-date .ps-2 {
+    transform: translateY(-5px) !important;
+  }
+
+  .container-card {
+    margin: 0.5rem 0.5rem 3rem !important;
+  }
+
+  /* mission.tsx */
+  /* statistics.tsx */
+  .statistics-box {
+    padding: 32px 16px 32px !important;
+  }
+
+  /* statistics.tsx */
+  #map .switch-map-pick h6 {
+    transform: translateY(-3px);
+    font-size: 14px;
+  }
+
+}
+
+
+@media only screen and (max-width: 500px) {
+  .box-display-agv {
+    padding-left: 12px;
+  }
+
+  .btn-pickup-agv {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+    padding: 0;
+  }
+
+  .stat-card .box-icon+p {
+    font-size: 14px;
+    text-wrap: nowrap;
+  }
+
+}
+
+@media only screen and (max-width: 400px) {
+  .btn-pickup-agv {
+    width: 24px;
+    height: 28px;
+    font-size: 8px;
+    padding: 0;
+  }
+
+  .stat-card-box .stat-card {
+    width: 160px !important;
+  }
 }

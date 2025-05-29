@@ -8,7 +8,8 @@
     "username": "Username:",
     "position": "Job title :",
     "status": "Status :",
-    "on": "Online",
+    "online": "Online",
+    "offline": "Offline",
     "des": "EDIT THE ACCOUNT",
     "singup": "singup"
 

@@ -138,7 +138,7 @@ export default function Vehicle() {
                 {agvAll.map((agv, index) => <div className='vehicle-card' key={agv.name}>
                     <div className="v-content-top-box">
                         <div className="v-content-image">
-                            <div className={`border-of-image ${agv.state == 0 && 'agv-offline'}`}>
+                            <div className={`border-of-image ${(agv.state === 0) && 'agv-offline'}`}>
                                 <img src={AgvImg} alt="agv" width="238" height='180' />
                             </div>
                             <div className="v-content-name">
