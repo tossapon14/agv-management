@@ -196,6 +196,9 @@ export default function Mission() {
                 setOnlineBar(false);
                 onlineRef.current = false;
             }
+            else if (e.status === 404) {
+               setMissionTable([]);
+            }
             else if (e.response?.status === 401 || e.response?.data?.detail === "Invalid token or Token has expired.") {
                 setNotAuthenticated(true)
                 if (timerInterval.current) {

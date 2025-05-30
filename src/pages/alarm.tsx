@@ -1,5 +1,5 @@
 import { BiError } from "react-icons/bi";
-import { IoMdSettings,IoMdDownload } from "react-icons/io";
+import { IoMdSettings, IoMdDownload } from "react-icons/io";
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { axiosGet } from "../api/axiosFetch";
 import { BsConeStriped } from "react-icons/bs";
@@ -68,7 +68,7 @@ export default function Alarm() {
     const [alarmTable, setalarmTable] = useState<IAlarmTable[]>([]);
     const [pagination, setPagination] = useState<React.ReactElement | null>(null);
     const [btnAGV, setBtnAGVName] = useState<string[]>([]);
- 
+
     const [vehicle, setVehicle] = useState<string>("ALL"); // Default to "desc"
     const [startDate, setStartDate] = useState(new Date().toISOString().substring(0, 10))
     const [endDate, setEndDate] = useState(new Date().toISOString().substring(0, 10))
@@ -85,7 +85,7 @@ export default function Alarm() {
     const saveVehicle = useRef<string>("ALL");
     const [onlineBar, setOnlineBar] = useState<null | boolean>(null);
     const onlineRef = useRef<boolean | null>(null);
-    const { t } = useTranslation("mission");
+    const { t, i18n } = useTranslation("mission");
 
 
     const reloadPage = useCallback(async (data: { v?: string, s?: string, d?: Date, de?: Date, p?: number, ps?: string }) => {
@@ -140,25 +140,22 @@ export default function Alarm() {
                 setOnlineBar(true);
                 onlineRef.current = true;
             }
-            const alert: IAlarmTable[] = [];
-            const _btnAGV: string[] = ["ALL"];
+            const alarmData: IAlarmTable[] = [];
             for (let i = 0; i < res.payload?.length; i++) {
                 const descript = res.payload[i].description.split("|");
                 const _date = res.payload[i].timestamp?.substring(0, 10);
                 const _time = res.payload[i].timestamp?.substring(11, 19);
-                alert.push({ id: res.payload[i].id, code: res.payload[i].code, vehicle_name: res.payload[i].vehicle_name, date: _date, time: _time, th: descript[1], en: descript[0] });
-
-                if (!_btnAGV.includes(res.payload[i].vehicle_name)) {
-                    _btnAGV.push(res.payload[i].vehicle_name);
-                }
+                alarmData.push({ id: res.payload[i].id, code: res.payload[i].code, vehicle_name: res.payload[i].vehicle_name, date: _date, time: _time, th: descript[1], en: descript[0] });
             }
             setPagination(_pagination(res.structure?.total_pages, savePage.current));
-            setalarmTable(alert);
+            setalarmTable(alarmData);
         } catch (e: any) {
             console.error(e);
             if (e.message === "Network Error") {
                 setOnlineBar(false);
                 onlineRef.current = false;
+            } else if (e.status === 404) {
+                setalarmTable([]);
             }
             else if (e.response?.status === 401 || e.response?.data?.detail === "Invalid token or Token has expired.") {
                 setNotAuthenticated(true)
@@ -245,6 +242,8 @@ export default function Alarm() {
                 if (response.ok) {
                     const _date = new Date().toISOString().substring(0, 10)
                     saveUrl.current = `/alarm/alarms?vehicle_name=ALL&start_date=${_date}&end_date=${_date}&page=1&page_size=10`
+                    saveDateStart.current = _date;
+                    saveDateEnd.current = _date;
                     setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle")!) as string[]);
                     alarmSetPage(saveUrl.current);
                     timerInterval.current = setInterval(() => alarmSetPage(saveUrl.current), 10000);
@@ -301,14 +300,14 @@ export default function Alarm() {
                             </div>
                         </div>
                         <button className="export-btn" onClick={() => downloadCSV(vehicle, startDate, endDate)}><IoMdDownload /> <span className='d-none d-sm-inline'>{t("downloadBtn")}</span></button>
-                     </div>
+                    </div>
                 </div>
                 <div className='table-container overflow-auto'>
-                    <table className="table table-hover">
+                    <table className="table table-hover" style={{ minWidth: "750px" }}>
                         <thead className='text-center'>
                             <tr>
-                                <th scope="col" style={{ width: "100px" }}>#</th>
-                                <th scope="col" style={{ width: "150px" }}>{t("tb_car")}</th>
+                                <th scope="col">#</th>
+                                <th scope="col">{t("tb_car")}</th>
                                 <th scope="col"><div className="head-table-flex">
                                     <div className='mission-circle-icon' style={{ background: "#ffe6e6" }}>
                                         <IoMdSettings color='red' />
@@ -321,8 +320,8 @@ export default function Alarm() {
                                     </div>
                                     {t("al_status")}</div>
                                 </th>
-                                <th scope="col" style={{ width: "150px" }}>{t("tb_date")}</th>
-                                <th scope="col" style={{ width: "150px" }}>{t("al_time")}</th>
+                                <th scope="col">{t("tb_date")}</th>
+                                <th scope="col">{t("al_time")}</th>
 
                             </tr>
                         </thead>
@@ -331,7 +330,7 @@ export default function Alarm() {
                                 <td scope="row">#{data.id}</td>
                                 <td><div className='td-vehicle-name'><div className='circle-vehicle-icon' style={{ background: `${colorAgv[data.vehicle_name]}` }}></div><span>{data.vehicle_name}</span></div></td>
                                 <td><div className='box-status' style={{ background: "#f5f5f5", color: "#444444", }}>{data.code}</div></td>
-                                <td>{data["th"]}</td>
+                                <td>{i18n.language === "th" ? data.th : data.en}</td>
                                 <td>{data.date}</td>
                                 <td>{data.time}</td>
                             </tr>)}

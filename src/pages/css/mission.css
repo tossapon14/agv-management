@@ -15,7 +15,7 @@
 .mission-title-box {
   width: 100%;
   padding-left: 30px;
-  height: 100px;
+  height: fit-content;
   margin-bottom: 1rem;
 }
 

@@ -16,7 +16,7 @@
     width: 100%;
     height:var(--header-height);
     position: fixed;
-    z-index: 2;
+    z-index: 10;
 }
 .headder-nav-bar .iconNav{
     display: none;
@@ -26,7 +26,7 @@
 }
 
 .language-box {
-    width: 100px;
+    width: fit-content;
     height: 20px;
     position: relative;
 }

@@ -1,11 +1,12 @@
 import NetworkError from './networkError';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from "react-router-dom";
 import './css/changepassword.css';
 import { axiosPut } from "../api/axiosFetch";
 import Lock_img from '../assets/images/lock.png';
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import { useTranslation } from 'react-i18next';
+import { IoMdClose } from "react-icons/io";
 
 export default function ChangePassword() {
     const [errorMessage, setErrorMessage] = useState(false);
@@ -58,7 +59,9 @@ export default function ChangePassword() {
             }
         }
     };
-
+    const buttonBackLogin = useCallback(() => {
+        window.location.href = "/signup-admin";
+    }, [])
     useEffect(() => {
         const checkNetwork = async () => {
             try {
@@ -83,6 +86,8 @@ export default function ChangePassword() {
                             <div id="loading"></div>
                         </div>}
                         <div className="card-change-password">
+                            <button className="button-close" onClick={buttonBackLogin}><IoMdClose size={18} color={'#000000'}></IoMdClose></button>
+
                             <img src={Lock_img} alt="lock" width={54} height={54} />
                             <br />
                             <h1>{t("reset_title")}</h1>

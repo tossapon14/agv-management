@@ -46,7 +46,7 @@ const Battery = () => {
   const [checkNetwork, setCheckNetwork] = useState(true);
   const saveUrl = useRef<string>("");
   const [btnAGV, setBtnAGVName] = useState<string[]>([]);
-   const saveVehicle = useRef<string>("ALL");
+  const saveVehicle = useRef<string>("ALL");
   const saveDateStart = useRef<string>("");
   const saveDateEnd = useRef<string>("");
   const timerInterval = useRef<NodeJS.Timeout>(null);
@@ -93,16 +93,14 @@ const Battery = () => {
         onlineRef.current = true;
       }
       const _series: { name: string; data: { x: number, y: number }[] }[] = [];
-      const _btnAGV = ['ALL'];
       for (var agv in res) {
         const dataBattery: { x: number, y: number }[] = [];
         for (var i = 0; i < res[agv].length; i += 3) {
           dataBattery.push({ x: res[agv][i][2] * 1000, y: res[agv][i][1] });
         }
         _series.push({ name: agv, data: dataBattery });
-        _btnAGV.push(agv);
       }
-      
+
       setBattery({ series: _series });
     } catch (e: any) {
       console.error(e);
@@ -198,7 +196,7 @@ const Battery = () => {
 
       {battery.series.map((agv, i) =>
         <div className="agv-one-box" key={agv.name}>
-          <hr className="battery-label-center-hr"/>
+          <hr className="battery-label-center-hr" />
           <p className="battery-label-center">{agv.name}</p>
           <div className="battery-current">
             <h5><RiBatteryChargeLine size={32} color='red' /><span className="ms-2">{agv.name}</span></h5>

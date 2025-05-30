@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './css/createuser.css';
 import AddUserImage from '../assets/images/add-user.png';
 import { FaCircleUser } from "react-icons/fa6";
@@ -9,6 +9,7 @@ import NetworkError from './networkError';
 import { axiosGet, axiosPost } from "../api/axiosFetch";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import { useTranslation } from 'react-i18next';
+import {IoMdClose } from "react-icons/io";
 
 export interface IVehicles {
     message: string
@@ -94,6 +95,10 @@ export default function CreateUser() {
         }
 
     }
+     const buttonBackLogin=useCallback(()=>{
+            window.location.href = "/signup-admin";
+        },[])
+    
     useEffect(() => {
         const getVehicle = async () => {
             const res: IVehicles = await axiosGet(
@@ -128,6 +133,7 @@ export default function CreateUser() {
                     <div id="loading"></div>
                 </div>}
                 <div id='modal55' className="card-modal">
+                    <button className="button-close" onClick={buttonBackLogin}><IoMdClose size={18} color={'#000000'}></IoMdClose></button>
                     <img src={CreateUserImg} alt="edit" className='img-create-user' />
                     <div className="card-user">
                         <h4>
@@ -147,7 +153,7 @@ export default function CreateUser() {
                                 <br></br>
                                 <label>{t("pass")}</label>
                                 <div className="create-user-password-box">
-                                    <input type={showPassword?"text":"password"} name='password' className='input-user' autoComplete="new-password" required />
+                                    <input type={showPassword ? "text" : "password"} name='password' className='input-user' autoComplete="new-password" required />
                                     <button onClick={() => setShowPassword(prev => !prev)}>
                                         {showPassword ? <FaRegEyeSlash ></FaRegEyeSlash> : <FaRegEye></FaRegEye>}</button>
                                 </div>

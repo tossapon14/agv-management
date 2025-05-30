@@ -36,6 +36,7 @@ interface IuserPayload {
 export default function User() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const page: number = Number(searchParams.get("page") || 1);
     const page_size = searchParams.get('page_size') || '10';
 
     const [checkNetwork, setCheckNetwork] = useState(true);
@@ -107,7 +108,7 @@ export default function User() {
     const openOption = (e: React.MouseEvent, index: number) => {
         const rect = e.currentTarget.getBoundingClientRect();
         saveUserIndex.current = index; // Save the index of the clicked user
-        setShowOption({ show: true, left: `${rect.left}px`, top: `${rect.top}px`, indexRow: index });
+        setShowOption({ show: true, left: `${rect.left - 120}px`, top: `${rect.top}px`, indexRow: index });
     }
 
     const handleOpenInNewTab = () => {
@@ -119,10 +120,8 @@ export default function User() {
             if (data.p) {
                 params = `?username=ALL&page=${data.p?.toString()}&page_size=${page_size}`
             } else if (data.ps) {
-                params = `?username=ALL&page=1&page_size=${page_size}`
-
+                params = `?username=ALL&page=1&page_size=${data.ps}`
             }
-
             navigate(params);
             window.location.reload(); // Force reload if needed
         } catch (e: any) {
@@ -146,7 +145,6 @@ export default function User() {
             const delres: IUser = await axiosDelete(
                 '/user/delete_user?page=1&page_size=10', data
             );
-            console.log(delres)
             if (delres.message ===
                 "Payload of all available users.") {
                 setShowconfirmDelete({ show: false });
@@ -169,9 +167,10 @@ export default function User() {
 
 
     useEffect(() => {
-
+        if (sessionStorage.getItem('user')?.split(",")[2] !== "admin") {
+            window.location.href = "/login";
+        }
         const _pagination = (ttp: number): React.ReactElement | null => {
-            const page: number = Number(searchParams.get("page") || 1); // Default to 1 if not found
 
             if (ttp <= 5) {
                 return (<div className='pagination'>
@@ -247,7 +246,7 @@ export default function User() {
         const getUser = async () => {
             try {
                 const res: IUser = await axiosGet(
-                    '/user/users?username=ALL&page=1&page_size=10'
+                    `/user/users?username=ALL&page=${page}&page_size=${page_size}`
                 );
                 const userList: IuserPayload[] = [];
                 res.payload.forEach((user) => {
@@ -298,7 +297,7 @@ export default function User() {
             </div>
             {!checkNetwork ? <NetworkError /> :
 
-                <div className='px-4'>
+                <div className='px-2 px-lg-4'>
                     <ResponseAPI response={responseData} />
                     <div className={`fixed-bg-delete ${showConfirmDelete.show ? "" : "d-none"}`}>
                         <div className='box-confirm-delete'>
@@ -330,34 +329,39 @@ export default function User() {
                         </div>
 
                     </div>}
-                    <div className='user-card d-flex '>
-                        <div className='box-of-search'>
+                    <div className='user-card d-flex mb-5'>
+                        <div className='box-of-search position-relative'>
                             <h5>{t("search")}</h5>
-                            <div className='box-of-search-content'>
-                                <div className='box-of-search-content-item'>
+                             <div className="create-reload-mobile-button">
+                                <button className='btn btn-outline-primary mt-2' onClick={handleOpenInNewTab}>{t("create")}</button>
+                                <button className='btn btn-outline-dark mt-2 ms-2' onClick={() => window.location.reload()}>{t("reload")}</button>
+                            </div>
+                            <div className="search-content">
+                                <div className='box-of-search-content-item me-2 me-lg-0'>
                                     <label htmlFor="username">{t("name")}</label><br></br>
                                     <input ref={searchName} type="text" id="username" placeholder={t("inp_name")} onChange={() => searchUser()} />
                                 </div>
 
-                                <div className='box-of-search-content-item mt-3'>
-                                    <h6>{t("other")}</h6>
-                                    <div className='d-flex align-items-center'>
-                                        <input ref={checkAdmin} type="checkbox" id="admin" onChange={() => searchUser()} />
-                                        <label htmlFor="admin">{t("admin")}</label>
-                                    </div>
-                                    <div className='d-flex align-items-center'>
-                                        <input ref={checkNormal} type="checkbox" id="user" onChange={() => searchUser()} />
-                                        <label htmlFor="user">{t("nor_us")}</label>
-                                    </div>
+                                <h6 className=' me-3 d-none d-sm-block'>{t("other")}</h6>
+                                <div className='d-flex align-items-center mb-1 me-3'>
+                                    <input ref={checkAdmin} type="checkbox" id="admin" onChange={() => searchUser()} />
+                                    <label htmlFor="admin">{t("admin")}</label>
+                                </div>
+                                <div className='d-flex align-items-center mb-1'>
+                                    <input ref={checkNormal} type="checkbox" id="user" onChange={() => searchUser()} />
+                                    <label htmlFor="user">{t("nor_us")}</label>
                                 </div>
                             </div>
 
                         </div>
-                        <div className='col-10'>
-                            <button className='btn btn-outline-primary mt-2' onClick={handleOpenInNewTab}>{t("create")}</button>
-                            <button className='btn btn-outline-dark mt-2 ms-2' onClick={() => window.location.reload()}>{t("reload")}</button>
-                            <div className='table-user'>
-                                <table className="table table-hover mt-2 ">
+                        <div className='flex-grow-1 overflow-hidden column-user-table'>
+                            <div className="create-reload-button">
+                                <button className='btn btn-outline-primary mt-2' onClick={handleOpenInNewTab}>{t("create")}</button>
+                                <button className='btn btn-outline-dark mt-2 ms-2' onClick={() => window.location.reload()}>{t("reload")}</button>
+                            </div>
+
+                            <div className='table-user overflow-auto'>
+                                <table className="table table-hover mt-2 " style={{ minWidth: "665px" }}>
                                     <thead className='bg-light'>
                                         <tr>
                                             <th scope="col">{t("tb_id")}</th>
@@ -385,7 +389,7 @@ export default function User() {
                                             <td>
                                                 {user.status ? <div className='boxonline'>
                                                     {t('online')}
-                                                </div> : <div className='boxonline' style={{ backgroundColor: "rgb(250, 216, 216)", color:"rgb(255, 0, 0)" }}>
+                                                </div> : <div className='boxonline' style={{ backgroundColor: "rgb(250, 216, 216)", color: "rgb(255, 0, 0)" }}>
                                                     {t('offline')}
                                                 </div>}
                                             </td>

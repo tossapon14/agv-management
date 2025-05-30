@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './css/createuser.css';
 import AddUserImage from '../assets/images/add-user.png';
 import { FaUserGear } from "react-icons/fa6";
@@ -6,6 +6,7 @@ import CreateUserImg from '../assets/images/creat-user.jpg';
 import NetworkError from './networkError';
 import { axiosGet, axiosPut } from "../api/axiosFetch";
 import { useSearchParams, useNavigate  } from "react-router-dom";
+import {IoMdClose } from "react-icons/io";
 
 interface IVehicles {
     message: string
@@ -95,6 +96,9 @@ export default function EditUser() {
         const { name, value } = e.target;
         setUserInfo({ ...userInfo, [name]: value });
     };
+    const buttonBackLogin=useCallback(()=>{
+        window.location.href = "/signup-admin";
+    },[])
 
     useEffect(() => {
         const getVehicle = async () => {
@@ -129,9 +133,9 @@ export default function EditUser() {
                     <div id="loading"></div>
                 </div>}
                 <div id='modal55' className="card-modal height-card-modal-edit">
+                    <button className="button-close" onClick={buttonBackLogin}><IoMdClose size={18} color={'#000000'}></IoMdClose></button>
                     <img src={CreateUserImg} alt="edit" className='img-create-user' />
                     <div className="card-user">
-                    
                             <div>
                                 <h4>
                                     <img src={AddUserImage} alt="edit" width={32} height={32} />

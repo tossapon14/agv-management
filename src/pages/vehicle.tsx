@@ -155,7 +155,7 @@ export default function Vehicle() {
                         </div>
                         <div className="v-content-chart">
                             <section className='battery-chart'>
-                                <BatteryDonutChart level={agv.battery}></BatteryDonutChart>
+                                <BatteryDonutChart level={agv.state===0?0:agv.battery}></BatteryDonutChart>
                             </section>
                             <section className="velocity-chart">
                                 <VelocityChart level={(agv.velocity)}></VelocityChart>

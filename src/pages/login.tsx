@@ -49,26 +49,18 @@ export default function Login() {
       if (response.token_type) {
         sessionStorage.setItem("token", `${response.token_type} ${response.access_token}`);
         sessionStorage.setItem("user", `${response.user.employee_no},${response.user.name},${response.user.position},${response.user.status},${response.user.username}`);
-        if (response.user.position === 'admin') {
-          const res: any = await axiosGet(
-            `/vehicle/vehicles?vehicle_name=ALL&state=ALL`,
-          );
-          if (res.payload) {
-            const vehicleList = res.payload.map((item: any) => item.name);
-            vehicleList.unshift("ALL");
-            sessionStorage.setItem("vehicle", JSON.stringify(vehicleList));
-          }
-        } else {
-          sessionStorage.setItem("vehicle", JSON.stringify(`[${response.user.position}]`));
-        }
-
         window.location.reload();
       }
       else if (response.message) {
         setResponse(response.message)
       }
+      console.log(response);
 
     } catch (error: any) {
+      if (error.status == 401) {
+        setResponse('username or password incorrect')
+        return;
+      }
       console.error(error);
       setResponse(error.message)
     } finally {
@@ -94,7 +86,20 @@ export default function Login() {
     }
 
   };
-
+  const getAGVButton = async function (user:string) {
+    if (user === 'admin') {
+      const res: any = await axiosGet(
+        `/vehicle/vehicles?vehicle_name=ALL&state=ALL`,
+      );
+      if (res.payload) {
+        const vehicleList = res.payload.map((item: any) => item.name);
+        vehicleList.unshift("ALL");
+        sessionStorage.setItem("vehicle", JSON.stringify(vehicleList));
+      }
+    } else {
+      sessionStorage.setItem("vehicle", JSON.stringify(`[${user}]`));
+    }
+  }
   useEffect(() => {
     if (sessionStorage.getItem("user")) {
       const [employee_no, name, position, status, username] = sessionStorage.getItem("user")!.split(",");
@@ -105,6 +110,7 @@ export default function Login() {
         status: status === "true" ? true : false,
         username: username
       };
+      getAGVButton(user.position);
       setUser(user);
     }
   }, []);

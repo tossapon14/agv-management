@@ -25,8 +25,8 @@
   padding-bottom: 2rem;
   overflow: hidden;
   background-color: #fbc0c0;
-  animation: home-background-fade 1s ease-out forwards;
   opacity: 0;
+  animation: home-background-fade 1s ease-out forwards;
 }
 
 .home-table {
@@ -773,7 +773,6 @@
 .modal-content-home .box-map-and-btn {
   position: relative;
   width: 1200px;
-  flex-grow: 1;
   height: 100%;
 }
 
@@ -1365,6 +1364,12 @@
   .btn-pickup-agv {
     width: 50px;
   }
+
+  .box-of-search {
+    width: 250px !important;
+  }
+
+   
 }
 
 @media only screen and (max-width: 1400px) {
@@ -1418,9 +1423,17 @@
   }
 
   #login .logoposition {
-    top: 10vh !important;
+    top: 120px !important;
     left: 100px !important;
   }
+}
+
+@media only screen and (max-width: 1300px) {
+  .box-of-search {
+    width: 200px !important;
+  }
+
+   
 }
 
 @media only screen and (max-width: 1240px) {
@@ -1474,6 +1487,10 @@
     display: none;
   }
 
+  .btn-send-command {
+    font-size: 20px;
+  }
+
   .close-modal2-top-left {
     display: block;
     z-index: 5;
@@ -1495,6 +1512,10 @@
   .react-datepicker-popper {
     transform: translate(0px, 50px) !important;
     will-change: transform;
+  }
+
+  .create-reload-button button {
+    font-size: 14px !important;
   }
 
 }
@@ -1532,7 +1553,6 @@
     height: 40px;
     font-size: 14px;
   }
-
 }
 
 @media only screen and (max-width: 1110px) {
@@ -1554,10 +1574,11 @@
       "col2-vehicle"
       "home-table";
     grid-template-columns: 1fr;
-    grid-template-rows: var(--map-height) 500px 400px;
+    grid-template-rows: var(--map-height) 520px 400px;
   }
 
   .home>.col2-vehicle {
+    grid-area: col2-vehicle;
     padding: 0;
     overflow: hidden;
     padding: 0 0.5rem;
@@ -1566,14 +1587,13 @@
   .box-display-agv {
     flex-direction: row;
     column-gap: 32px;
-    overflow-y: hidden;
+    overflow-y: scroll;
     overflow-x: scroll;
-    padding: 0 32px 0 16px;
+    padding: 8px 32px 16px 16px;
     border-radius: 5px;
     background-color: #e0e0e0;
     border: 1px solid #000000;
-    padding-block: 0.5rem;
-    height: 430px;
+    height: 425px;
   }
 
   .box-agv-data {
@@ -1596,7 +1616,7 @@
   }
 
   .box-agv-btn {
-    margin: 1rem 0.5rem;
+    margin: 1.2rem 0.5rem;
   }
 
   .modal-content-home {
@@ -1626,6 +1646,13 @@
   .battery-label-center-hr {
     display: block !important;
   }
+  .box-of-search {
+    width: 180px !important;
+  }
+  .column-user-table{
+    padding: 0.5rem !important;
+  }
+
 }
 
 @media only screen and (max-width: 850px) {
@@ -1634,13 +1661,15 @@
     min-width: 100vw;
     height: 100vh;
     padding-bottom: 1rem;
-    flex-wrap: wrap;
+    /* flex-wrap: wrap; */
+    flex-direction: column;
     overflow: scroll;
   }
 
   .modal-content-home .box-map-and-btn {
     width: 100vw;
     height: calc(100vw * 1164/1672);
+    min-height: calc(100vw * 1164/1672);
     margin-bottom: 1rem;
   }
 
@@ -1663,7 +1692,7 @@
   .agv-mission-card {
     width: 100%;
     padding-bottom: 1rem;
-    margin: 1rem 0 7rem;
+    margin: 2rem 0 0;
   }
 
   .image-agv-modal {
@@ -1688,6 +1717,10 @@
     font-size: 10px !important;
   }
 
+  .btn-send-command {
+    font-size: 22px;
+  }
+
   .table-container tbody td {
     font-size: 12px;
   }
@@ -1707,6 +1740,51 @@
   .stat-card-box .stat-card {
     flex: 1 0 180px !important;
   }
+
+  .user-card {
+    flex-direction: column;
+  }
+
+  .box-of-search {
+    width: 100% !important;
+  }
+
+  .box-of-search h5 {
+    margin: 0 !important;
+  }
+
+  .search-content {
+    flex-direction: row !important;
+    align-items: end;
+    column-gap: 8px;
+    flex-wrap: wrap;
+  }
+
+   
+
+  .card-modal {
+    flex-wrap: wrap;
+  }
+
+  .img-create-user {
+    width: 300px !important;
+  }
+  .create-reload-button{
+    display:none;
+  }
+  .create-reload-mobile-button{
+    position: absolute;
+    display:inline-block !important;
+    top: 8px;
+    right: 8px;
+   
+  }
+  .create-reload-mobile-button button{
+     font-size: 12px !important;
+  }
+  .column-user-table{
+    padding:0 0.5rem !important;
+  }
 }
 
 @media only screen and (max-width: 630px) {
@@ -1718,9 +1796,6 @@
   }
 
   /* mission.tsx */
-  .mission-title-box {
-    height: 130px !important;
-  }
 
   .form-group {
     width: 120px !important;
@@ -1772,9 +1847,26 @@
     padding: 0;
   }
 
+  .btn-send-command {
+    font-size: 20px;
+  }
+
   .stat-card .box-icon+p {
     font-size: 14px;
     text-wrap: nowrap;
+  }
+
+  .card-modal {
+    padding: 24px 0.5rem 0;
+
+  }
+
+  .card-user {
+    padding: 0 0.5rem 1rem !important;
+  }
+
+  .img-create-user {
+    width: 270px !important;
   }
 
 }

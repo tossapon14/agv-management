@@ -1,6 +1,6 @@
 import BGClogo from './assets/images/bgc-logo.png';
 import "./pages/css/header.css";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import TH_language_img from './assets/images/thailand.png';
 import EN_language_img from './assets/images/united.png';
 import { useTranslation } from 'react-i18next';
@@ -22,7 +22,13 @@ export default function Headers({ drawerFunction }: { drawerFunction: (t: boolea
     const handleDrawer = () => {
         setIconNav(prev => !prev);
         drawerFunction(iconNav);
-    }
+    } 
+    const handleResize = useCallback(() => {
+        if (window.innerWidth >= 1530 && iconNav) {
+            setIconNav(true);
+            drawerFunction(false);
+        }
+    },[iconNav]);
     useEffect(() => {
         const handleClickOutside = (e: any) => {
             if (!languageBlockRef.current?.contains(e.target)) {
@@ -30,17 +36,12 @@ export default function Headers({ drawerFunction }: { drawerFunction: (t: boolea
             }
         };
 
-        const handleResize = () => {
-            if (window.innerWidth >= 1530) {
-                setIconNav(true);
-                drawerFunction(false);
-            }
-        };
+
 
         document.addEventListener('click', handleClickOutside);
         window.addEventListener('resize', handleResize);
 
-         return () => {
+        return () => {
             document.removeEventListener('click', handleClickOutside);
             window.removeEventListener('resize', handleResize);
         };
