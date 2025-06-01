@@ -115,15 +115,22 @@
      margin-left: 8px;
      font-size: 12px;
  }
- .column-user-table{
-    padding: 1rem;
+
+ .column-user-table {
+     padding: 1rem;
  }
+
  .table-user {
-     margin: 1rem 0 ;
+     margin: 1rem 0;
      border: 1px solid #979797;
      border-radius: 8px;
      min-height: 600px;
      overflow: auto;
+     font-size: 10px;
+  }
+
+ .table-user th {
+     color: #4a4a4a !important;
  }
 
  .fixed-bg-delete {

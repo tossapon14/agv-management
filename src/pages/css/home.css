@@ -565,7 +565,8 @@
 
 .miss-animate {
   flex: 1 0 130px;
-  height: 54px;
+  padding: 0.7rem 0;
+  height: fit-content !important;
   font-size: 20px;
   animation: mission-btn-animate 1s infinite alternate ease-in-out;
 
@@ -584,7 +585,8 @@
   background-color: #ff0800;
   border: none;
   width: 130px;
-  height: 54px;
+  padding: 0.7rem 0;
+  height: fit-content;
   font-size: 20px;
   border-radius: 5px;
   font-weight: 500;
@@ -871,7 +873,6 @@
 .agv-top-name-box .agv-name-state {
   background-color: #fff;
   width: 100px;
-
 }
 
 .box-selected-drop {
@@ -905,6 +906,11 @@
   justify-content: center;
   align-items: end;
   /* background-color: #000dff; */
+}
+
+.goal-padding {
+  padding-left: 5px !important;
+  padding-right: 12px;
 }
 
 .data-warehouse-box {
@@ -964,8 +970,8 @@
 }
 
 .circle-goal-outline {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1085,7 +1091,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgb(233, 233, 233);
+  background-color: rgba(210, 210, 210, 0.848);
   z-index: 4;
 }
 
@@ -1104,8 +1110,8 @@
 }
 
 .card-summaryCommand {
-  width: 500px;
-  /* height: 400px; */
+  width: 450px;
+  margin: 0 0.5rem;
   background-color: #ffffff;
   border-radius: 8px;
   padding: 1rem 0 0;
@@ -1218,6 +1224,7 @@
   padding-left: 16px;
   right: 0;
   top: 50px;
+  min-width: 350px;
   width: 500px;
   height: 100px;
   background-color: rgb(0, 0, 0);
@@ -1358,7 +1365,7 @@
 
   .modal-content-home {
     width: 1340px;
-    height: 700px;
+    height: 750px;
   }
 
   .btn-pickup-agv {
@@ -1369,7 +1376,10 @@
     width: 250px !important;
   }
 
-   
+  .agv-mission-card .agv-top-name-box {
+    height: 120px;
+  }
+
 }
 
 @media only screen and (max-width: 1400px) {
@@ -1403,6 +1413,18 @@
     height: 660px;
   }
 
+  @keyframes addmission {
+    0% {
+      opacity: .2;
+    }
+
+    100% {
+      opacity: 1;
+      width: 100%;
+      height: 72px;
+    }
+  }
+
   .agv-mission-card {
     width: 300px;
     padding-bottom: 8px;
@@ -1433,7 +1455,11 @@
     width: 200px !important;
   }
 
-   
+  .warehouse-from-to-box h5 {
+    font-size: 18px;
+  }
+
+
 }
 
 @media only screen and (max-width: 1240px) {
@@ -1470,7 +1496,7 @@
 
   .modal-content-home {
     width: 1000px;
-    height: 560px;
+    height: 600px;
   }
 
   .agv-mission-card {
@@ -1559,6 +1585,10 @@
   :root {
     --map-width: 65vw;
   }
+
+  .warehouse-from-to-box h5 {
+    font-size: 16px;
+  }
 }
 
 @media only screen and (max-width: 1000px) {
@@ -1628,6 +1658,22 @@
     height: 450px;
   }
 
+  .warehouse-from-to-box h5 {
+    font-size: 18px;
+  }
+
+  @keyframes addmission {
+    0% {
+      opacity: .2;
+    }
+
+    100% {
+      opacity: 1;
+      width: 100%;
+      height: 64px;
+    }
+  }
+
   .btn-pickup-agv {
     width: 32px;
     height: 32px;
@@ -1646,12 +1692,15 @@
   .battery-label-center-hr {
     display: block !important;
   }
+
   .box-of-search {
     width: 180px !important;
   }
-  .column-user-table{
+
+  .column-user-table {
     padding: 0.5rem !important;
   }
+
 
 }
 
@@ -1671,6 +1720,18 @@
     height: calc(100vw * 1164/1672);
     min-height: calc(100vw * 1164/1672);
     margin-bottom: 1rem;
+  }
+
+  @keyframes addmission {
+    0% {
+      opacity: .2;
+    }
+
+    100% {
+      opacity: 1;
+      width: 100%;
+      height: 72px;
+    }
   }
 
   .table-container {
@@ -1760,7 +1821,7 @@
     flex-wrap: wrap;
   }
 
-   
+
 
   .card-modal {
     flex-wrap: wrap;
@@ -1769,21 +1830,25 @@
   .img-create-user {
     width: 300px !important;
   }
-  .create-reload-button{
-    display:none;
+
+  .create-reload-button {
+    display: none;
   }
-  .create-reload-mobile-button{
+
+  .create-reload-mobile-button {
     position: absolute;
-    display:inline-block !important;
+    display: inline-block !important;
     top: 8px;
     right: 8px;
-   
+
   }
-  .create-reload-mobile-button button{
-     font-size: 12px !important;
+
+  .create-reload-mobile-button button {
+    font-size: 12px !important;
   }
-  .column-user-table{
-    padding:0 0.5rem !important;
+
+  .column-user-table {
+    padding: 0 0.5rem !important;
   }
 }
 

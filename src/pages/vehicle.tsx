@@ -4,21 +4,23 @@ import AgvImg from '../assets/images/plyagvmirror.png';
 import BatteryDonutChart from './chart/batteryDonut.tsx';
 import VelocityChart from './chart/velocityChart.tsx';
 import { CiWifiOn } from "react-icons/ci";
-import { RiBusWifiLine } from "react-icons/ri";
+import { RiBusWifiLine, RiHome9Line } from "react-icons/ri";
 import { GoGear } from "react-icons/go";
 import { PiPath } from "react-icons/pi";
 import { BsFillRocketTakeoffFill } from "react-icons/bs";
 import { HiOutlineStatusOnline } from "react-icons/hi";
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { IVehicles, IPayload } from './home.tsx';
-import { axiosGet } from "../api/axiosFetch";
+import { axiosGet, axiosPost } from "../api/axiosFetch";
 import { colorAgv } from '../utils/centerFunction';
 import StatusOnline from './statusOnline';
 import NetworkError from './networkError';
 import { BiSolidError } from "react-icons/bi";
 import { useTranslation } from 'react-i18next';
 import NotAuthenticated from './not_authenticated.tsx';
+import { IoMdClose } from "react-icons/io";
+import ResponseAPI from './responseAPI.tsx';
 
 
 export default function Vehicle() {
@@ -31,6 +33,10 @@ export default function Vehicle() {
     const [checkNetwork, setCheckNetwork] = useState(true);
     const [agvDataExtend, setAgvDataExtend] = useState<IPayload | null>(null)
     const [notauthenticated, setNotAuthenticated] = useState(false);
+    const [responseData, setResponseData] = useState<{ error: boolean | null, message?: string }>({ error: null });
+    const confirmModalRef = useRef<HTMLDivElement>(null);
+    const [dialogGoHome, setDialogGoHome] = useState<{ show: boolean, name?: string, homeNode?: string }>({ show: false });
+    const myUser = useRef<string>("");
 
     const { t } = useTranslation("vehicle");
 
@@ -40,10 +46,30 @@ export default function Vehicle() {
     const closeModal = () => {
         setAgvDataExtend(null);
     }
+    const btnGoHome = useCallback(async (homeNode: string, name: string) => {
+        const command = {
+            "nodes": homeNode,
+            "requester": myUser.current,
+            "type": 0,
+            "vehicle_name": name
+        }
+        try {
+            setDialogGoHome({ show: false });
+            await axiosPost("/mission/create", command);
+            setResponseData({ error: false, message: "send command success" })
+        } catch (e: any) {
+            console.error(e?.message);
+            setResponseData({ error: true, message: e?.message })
+        }
+    }, []);
+    const btnConfirmGoHome = (homeNode: string, name: string) => {
+        setDialogGoHome({ show: true, homeNode: homeNode, name: name });
+    };
 
     useEffect(() => {
-        const myUser = sessionStorage.getItem("user")?.split(",")[2] ?? "";
-        const vehicle = myUser === "admin" ? "ALL" : myUser;
+        myUser.current = sessionStorage.getItem("user")?.split(",")[2] ?? "";
+        const vehicle = myUser.current === "admin" ? "ALL" : myUser.current;
+
         const getAgv = async () => {
             try {
                 const res: IVehicles = await axiosGet(
@@ -88,8 +114,16 @@ export default function Vehicle() {
                 }
             }
         };
+        const handleClickOutsideConfirm = (event: any) => {
+            if (confirmModalRef.current === event.target) {
+                setDialogGoHome({ show: false })
+            }
+        }; if (confirmModalRef.current) {
+            confirmModalRef.current.addEventListener("mouseup", handleClickOutsideConfirm)
+        }
         checkNetwork();
         return () => {
+            confirmModalRef.current?.removeEventListener("mouseup", handleClickOutsideConfirm);
             clearInterval(timerInterval.current as NodeJS.Timeout);
         };
     }, []);
@@ -106,6 +140,25 @@ export default function Vehicle() {
                 <p className="title1">
                     <img src={Car3D} alt="Logo agv" className="me-3" width="32" height="32" />
                     {t("subtitle")}</p>
+            </div>
+            <ResponseAPI response={responseData} />
+            <div ref={confirmModalRef} className={`modal-summaryCommand ${!dialogGoHome.show && 'd-none'}`}>
+                <div className='card-summaryCommand'>
+                    <div className='card-summaryCommand-header'>
+                        <div className="icon-name-agv">
+                            <div className='bg-img' style={{ background: 'rgb(233, 255, 251)' }}>
+                                <RiHome9Line size={40} color="rgb(4, 0, 255)" />
+                            </div>
+                            <h5>{dialogGoHome.name}</h5>
+                        </div>
+                        <button className='btn-close-summary' onClick={() => setDialogGoHome({ show: false })}><IoMdClose size={16} /></button>
+                    </div>
+                    <div className='summary-command-pickup'>
+                        <div className='h4'>{t("md_gohome")}</div>
+                    </div>
+                    <p style={{ color: '#ccc', fontWeight: "300" }}>{t("md_confirm")}</p>
+                    <button className='btn-confirm' onClick={() => btnGoHome(dialogGoHome.homeNode!, dialogGoHome.name!)}>{t("btn_confirm")}</button>
+                </div>
             </div>
             {!checkNetwork ? <NetworkError /> : <div className="velocity-content-box">
                 {agvDataExtend && <div className='fix-bg-info-vehicle' onClick={closeModal}>
@@ -155,7 +208,7 @@ export default function Vehicle() {
                         </div>
                         <div className="v-content-chart">
                             <section className='battery-chart'>
-                                <BatteryDonutChart level={agv.state===0?0:agv.battery}></BatteryDonutChart>
+                                <BatteryDonutChart level={agv.state === 0 ? 0 : agv.battery}></BatteryDonutChart>
                             </section>
                             <section className="velocity-chart">
                                 <VelocityChart level={(agv.velocity)}></VelocityChart>
@@ -179,7 +232,7 @@ export default function Vehicle() {
                                 <RiBusWifiLine size={24} />
                             </div>
                             <div className='d-flex flex-column'>
-                                <p className='ms-2 fs-6 my-0' style={{ color: '#646464', fontWeight: '500' }}>{t(`state_${agv.state}`)}</p>
+                                <p className='ms-2 fs-6 my-0' style={{ color: `${agv.state == 0 ? 'red' : '#646464'}`, fontWeight: '500' }}>{t(`state_${agv.state}`)}</p>
                                 <p className='ms-2  my-0' style={{ color: 'rgb(194, 194, 194)', fontSize: '12px' }}>{t('state')}</p>
 
                             </div>
@@ -211,7 +264,7 @@ export default function Vehicle() {
                             {/* <div className='trapezoid' style={{borderBottom:`72px solid ${colorAgv[agv.name]}`}}><MdOnlinePrediction size={50} color='#0dff20' style={{margin:'12px 16px 0'}} /></div> */}
                             <div className='trapezoid' >
                                 <h3 style={{ color: 'white', margin: '16px 32px 0', fontWeight: '500' }}>{agv.name}</h3>
-                                <div className="agvColorBoxIcon" style={{ margin: '14px 0px 0', background: colorAgv[agv.name] }}></div>
+                                <button className="goback-home" onClick={() => btnConfirmGoHome(agv.home, agv.name)} style={{ margin: '14px 0px 0', background: colorAgv[agv.name] }}>go home</button>
                             </div>
                             {agv.state == 0 ? <HiOutlineStatusOnline size={40} color={'#cccc'} style={{ margin: '0px 28px 0 0' }} />
                                 : <div className='onlineneon'><HiOutlineStatusOnline size={32} color='#0dff20' /></div>}

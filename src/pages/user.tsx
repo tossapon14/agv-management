@@ -167,7 +167,7 @@ export default function User() {
 
 
     useEffect(() => {
-        if (sessionStorage.getItem('user')?.split(",")[2] !== "admin") {
+        if (sessionStorage.getItem('user')!.split(",")[2] !== "admin") {
             window.location.href = "/login";
         }
         const _pagination = (ttp: number): React.ReactElement | null => {

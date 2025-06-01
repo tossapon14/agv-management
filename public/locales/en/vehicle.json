@@ -37,5 +37,8 @@
   "t_state_2": "Loaded",
   "t_state_3": "Transit",
   "t_state_4": "Lift things down",
-  "t_state_5": "Complete"
+  "t_state_5": "Complete",
+  "md_gohome":"Back to the garage",
+  "md_confirm":"Press confirm to send command",
+  "btn_confirm":"Confirm"
 }

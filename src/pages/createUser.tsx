@@ -6,31 +6,12 @@ import { useNavigate } from 'react-router-dom';
 
 import CreateUserImg from '../assets/images/creat-user.jpg';
 import NetworkError from './networkError';
-import { axiosGet, axiosPost } from "../api/axiosFetch";
+import { axiosPost } from "../api/axiosFetch";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import { useTranslation } from 'react-i18next';
-import {IoMdClose } from "react-icons/io";
+import { IoMdClose } from "react-icons/io";
 
-export interface IVehicles {
-    message: string
-    payload: IPayload[]
-}
-export interface IPayload {
-    battery: number
-    coordinate: string
-    emergency_state: boolean
-    home: string
-    ip_address: string
-    mission_id: number
-    mode: string
-    name: string
-    node: string
-    port: string
-    state: number
-    velocity: number
-    agv_code_status: string
-    mission: null
-}
+ 
 interface ICreateUser {
     message: string,
     detail?: string,
@@ -95,26 +76,28 @@ export default function CreateUser() {
         }
 
     }
-     const buttonBackLogin=useCallback(()=>{
-            window.location.href = "/signup-admin";
-        },[])
-    
-    useEffect(() => {
-        const getVehicle = async () => {
-            const res: IVehicles = await axiosGet(
-                `/vehicle/vehicles?vehicle_name=ALL&state=ALL`,
-            );
-            if (res) {
-                const vehicle = res.payload.map((item: IPayload) => item.name);
-                setPosition(vehicle);
-            }
+    const buttonBackLogin = useCallback(() => {
+        window.location.href = "/signup-admin";
+    }, [])
 
+    useEffect(() => {
+        if (sessionStorage.getItem('user')!.split(",")[2] !== "admin") {
+            window.location.href = "/login";
         }
         const checkNetwork = async () => {
             try {
                 const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
                 if (response.ok) {
-                    getVehicle();
+                    if (sessionStorage.getItem('vehicle')) {
+                        const listvehicle: string[] = JSON.parse(sessionStorage.getItem('vehicle') as string)
+                        const vehicle = listvehicle.map((ele) => {
+                            if (ele === "ALL") {
+                                return "admin"; // Modify the value if condition is met
+                            }
+                            return ele;
+                        });
+                        setPosition(vehicle);
+                    };
                 }
             } catch (e: any) {
                 console.error(e);
@@ -142,32 +125,31 @@ export default function CreateUser() {
 
                         {response.show ? <h5 className={`text-response ${response.error ? 'bg-error' : 'bg-ok'}`}>{response.message}</h5>
                             : <form onSubmit={submitUserForm}>
-                                <label>{t("empl")}</label>
-                                <input type="text" name='employee_no' className='input-user' required />
+                                <label htmlFor='employee'>{t("empl")}</label>
+                                <input type="text" id='employee' name='employee_no' className='input-user' required />
                                 <br></br>
-                                <label>{t("user")}</label>
-                                <input type="text" name='username' className='input-user' autoComplete="off" />
+                                <label htmlFor="username">{t("user")}</label>
+                                <input type="text" id='username' name='username' className='input-user' autoComplete="off" />
                                 <br></br>
-                                <label>{t("name2")}</label>
-                                <input type="text" name='name' className='input-user' required />
+                                <label htmlFor='name'>{t("name2")}</label>
+                                <input type="text" id='name' name='name' className='input-user' required />
                                 <br></br>
-                                <label>{t("pass")}</label>
+                                <label htmlFor='password'>{t("pass")}</label>
                                 <div className="create-user-password-box">
-                                    <input type={showPassword ? "text" : "password"} name='password' className='input-user' autoComplete="new-password" required />
+                                    <input type={showPassword ? "text" : "password"} id='password' name='password' className='input-user' autoComplete="new-password" required />
                                     <button onClick={() => setShowPassword(prev => !prev)}>
                                         {showPassword ? <FaRegEyeSlash ></FaRegEyeSlash> : <FaRegEye></FaRegEye>}</button>
                                 </div>
 
                                 <br></br>
-                                <label>{t("confirm")}</label>
-                                <input type="password" name='confirm' className='input-user' onClick={() => setErrorMessage(false)} required />
+                                <label htmlFor='confirm'>{t("confirm")}</label>
+                                <input type="password" id='confirm' name='confirm' className='input-user' onClick={() => setErrorMessage(false)} required />
                                 {errorMessage && <div style={{ color: "red", height: '16px' }}>{t("err_pass")}</div>}
                                 <br></br>
                                 <label>{t("position")}</label>
-                                <select className="form-select mt-3" name='position' defaultValue='0' onChange={() => setErrorPosition(false)} aria-label="Default select example" >
+                                <select className="form-select option-font-size mt-3" name='position' defaultValue='0' onChange={() => setErrorPosition(false)} aria-label="Default select example" >
                                     <option value='0'>{t("option0")}</option>
-                                    <option value="admin">Admin</option>
-                                    {position.map((item) => (
+                                     {position.map((item) => (
                                         <option key={item} value={item}>{item}</option>
                                     ))}
                                 </select>

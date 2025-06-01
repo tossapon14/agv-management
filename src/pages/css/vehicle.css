@@ -20,7 +20,7 @@
     display: flex;
     overflow-x: auto;
     width: 100%;
-    height:auto;
+    height: auto;
     padding: 0 16px 32px;
     gap: 16px;
 }
@@ -68,8 +68,8 @@
     height: 100%;
     justify-content: start;
     align-items: center;
-    /* background: #d56e6e; */
 }
+
 
 .border-of-image {
     width: 170px;
@@ -199,12 +199,19 @@
 
 }
 
-.agvColorBoxIcon {
-    width: 60px;
+.goback-home {
+    padding: 2px 8px;
+    color: white;
+    width: 100px;
     height: 36px;
-    background-color: #0004ff;
-    border: 3px solid #151515;
-    opacity: 0.7;
+    border-radius: 5px;
+    border: 1px solid #ffffff;
+    position: relative;
+    overflow: visible;
+}
+
+.goback-home:active {
+   transform: scale(0.96);
 }
 
 .onlineneon {

@@ -124,7 +124,7 @@ function App() {
               </li>
             </ul>
           </div>
-          <nav id="mobile-menu" className={`navbar-mobile ${iconNavOpen ? "open-navbar" : "close-navbar"}`}>
+          <nav  className={`drawer-mobile ${iconNavOpen ? "open-drawer" : "close-drawer"}`}>
             <ul>
               <li>
                 <a href="/home" className={linkFocused[0]}>

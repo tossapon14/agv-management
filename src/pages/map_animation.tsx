@@ -29,7 +29,7 @@ function MapAnimate({ data, paths}: MapAnimateProps) {
       const positionsPoint = (point:number[]):string[]=>{
          const x = point[0] * -0.9966398834184859 - point[1] * 0.08190813622337459;
           const y = point[0] * 0.08190813622337459 + point[1] * -0.9966398834184859;
-          const positionX = (((x + 54) / 996.782) * mapID.current!.clientWidth).toFixed(2);
+          const positionX = (((x + 50) / 996.782) * mapID.current!.clientWidth).toFixed(2);
           const positionY = ((1 - ((y + 280) / 586.10)) * mapID.current!.clientHeight).toFixed(2);
           return [positionX,positionY]
       }; 

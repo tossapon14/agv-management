@@ -123,6 +123,12 @@ interface IdialogConfirm {
   dropAll?: string[]
   pickupName?: string
 }
+interface IGetCanDrop {
+  pickup: string
+  selected_dropoffs: string[]
+  blocked_dropoffs: string[]
+  available_dropoffs: string[]
+}
 
 
 export default function Home() {
@@ -136,7 +142,7 @@ export default function Home() {
   }
   ]);
   const [pickup, setPickup] = useState<string | null>(null);
-  const [selectWarehouse, setselectWarehouse] = useState<string[]>([])
+  const [selectStations, setselectStations] = useState<string[]>([])
   const [missionTable, setMissionTable] = useState<IPayloadMission[]>([]);
   const timerInterval = useRef<NodeJS.Timeout>(null);
   const missionLoop = useRef(0);
@@ -150,7 +156,7 @@ export default function Home() {
   const modalRef = useRef<HTMLDivElement>(null);
   const confirmModalRef = useRef<HTMLDivElement>(null);
   const selectAgv = useRef<string>('');
-   const loadSave = useRef(false);
+  const loadSave = useRef(false);
   const [btnAGVName, setBtnAGVName] = useState<string[] | null>(null);
   const [waitMode, setWaitMode] = useState<boolean>(false);
   const [dialogSummary, setDialogSummary] = useState<IdialogConfirm>({ show: false });
@@ -221,12 +227,6 @@ export default function Home() {
   }
 
 
-  const getCanDrop = useCallback(async (pick: string): Promise<string[]> => {
-    const response = await axiosGet(`/node/unloading_points?pickup_point=${pick}`);
-    return response.payload;
-  }, []);
-
-
   const APIPutDropProduct = useCallback(async (name: string) => {
     setResponseData({ error: null, message: "loading" });
     try {
@@ -292,7 +292,7 @@ export default function Home() {
       setMissionModel(data);
       setShowModal("show-modal");
       setPickup(null);
-      setselectWarehouse([]);  // show when select button drop
+      setselectStations([]);  // show when select button drop
       setButtonDropList([]);  // button drop on image bgc
       if (data.agvCode !== "721") {
         return;
@@ -311,22 +311,55 @@ export default function Home() {
     }
   }, []);
 
-  const deleteDrop = useCallback((node: string) => {
+  const deleteDrop = useCallback(async (pickup: string, node: string) => {
     const element = document.getElementById(node);
     if (element) {
       element.classList.add("slide-out");
+      const resultRemove = selectStations.filter(item => item !== node);
+      const allGoal: string[] = [pickup, ...resultRemove];
+      const btnDropList = await getDropNextStation(allGoal);
+      const index_drop = btnDropList.map((drop) => Number(drop.substring(1, 3)) - 1);
+      setButtonDropList(index_drop);
       setTimeout(() => {
-        setselectWarehouse((prev) => prev.filter((item) => item !== node));
+        setselectStations(resultRemove);
       }, 500);
     }
-  }, []);
+  }, [selectStations]);
 
-  const clickDrop = useCallback((index: string) => {
-    if (!selectWarehouse.includes(`D${index}S`)) {
-      setselectWarehouse(prev => [...prev, `D${index}S`]);
+  const getCanDrop = useCallback(async (pick: string): Promise<string[]> => {
+    try {
+      const response: IGetCanDrop = await axiosPost(`/node/validate_stations`, [pick]);
+      const available_drop: string[] = response.available_dropoffs;
+      return available_drop;
+    } catch (e) {
+      console.error(e);
+      return []
     }
 
-  }, [selectWarehouse])
+  }, []);
+
+  const getDropNextStation = async (allGoal: string[]): Promise<string[]> => {
+    try {
+      const response: IGetCanDrop = await axiosPost(`/node/validate_stations`, allGoal);
+      const available_drop: string[] = response.available_dropoffs.filter((item: string) =>
+        !response.blocked_dropoffs.includes(item)
+      );
+      return available_drop;
+    } catch (e) {
+      console.error(e)
+      return []
+    }
+
+  };
+
+  const clickDrop = useCallback(async (pickup: string, index: string) => {
+    if (!selectStations.includes(`D${index}S`) && selectStations.length <= 3) {
+      setselectStations(prev => [...prev, `D${index}S`]);
+      const btnDropList = await getDropNextStation([pickup, ...selectStations, `D${index}S`]);
+      const index_drop = btnDropList.map((drop) => Number(drop.substring(1, 3)) - 1);
+      setButtonDropList(index_drop);
+    }
+  }, [selectStations])
 
   const clickPickup = (index: number) => {
     const PS = ["P01S", "P02S", "P03S", "P04S", "P05S", "P06S", "P07S", "P08S"];
@@ -374,7 +407,7 @@ export default function Home() {
       const rawPose = coor.split(",");
       const x = Number(rawPose[0]) * -Math.cos(-0.082) - Number(rawPose[1]) * -Math.sin(-0.082);
       const y = Number(rawPose[0]) * -Math.sin(-0.082) + Number(rawPose[1]) * -Math.cos(-0.082);
-      const positionX = (((x + 45) / 996.782) * 100).toFixed(3) + '%'; //width :1016.8 height: 598.9952
+      const positionX = (((x + 45) / 996.782) * 100).toFixed(3) + '%';
       const positionY = (((y + 270) / 586.10) * 100).toFixed(3) + '%';
       const degree = ((Number(rawPose[2]) - 0.082) * -180) / Math.PI;
       if (prev_deg.current[name] === undefined) {
@@ -384,10 +417,10 @@ export default function Home() {
       if (delta > 180) {
         delta = delta - 360;
       } else if (delta < -180) {
-        delta = delta + 360
+        delta = delta + 360;
       }
       prev_deg.current[name] = prev_deg.current[name] + delta;
-      return [name, positionX, positionY, prev_deg.current[name].toString()];
+      return [name, positionX, positionY, prev_deg.current[name].toFixed(3)];
     }
 
     const _date = new Date().toISOString().substring(0, 10)
@@ -429,7 +462,7 @@ export default function Home() {
         }
         const _agvPosition: string[][] = [];
         const _agv: IPayload[] = [];
-         res.payload.forEach((data: IPayload) => {
+        res.payload.forEach((data: IPayload) => {
 
           var _agvData: IPayload;
           if (data.state > 0) {
@@ -466,7 +499,7 @@ export default function Home() {
           _agv.push(_agvData);
         });
 
-  
+
         setSelectedAgv(selectAgv.current);
         setAgvPosition(_agvPosition);
         setAgvAll(_agv);
@@ -505,7 +538,7 @@ export default function Home() {
         setDialogSummary({ show: false })
       }
     };
-    
+
     myUser.current = sessionStorage.getItem("user")?.split(",")[2] ?? "";
     selectAgv.current = myUser.current === "admin" ? "ALL" : myUser.current;
     if (selectAgv.current === "") return;
@@ -551,8 +584,13 @@ export default function Home() {
           <div className="card-body">
             <div className="d-flex align-items-center mb-4">
               <img src={MissionImage} alt="Logo with a yellow circle and blue border" className="me-3" width="32" height="32" />
-              <h4>mission</h4>
+              <h4>
+                <a href="/mission" className='link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover' style={{ color: "black" }}>
+                  mission
+                </a>
+              </h4>
             </div>
+
             <div className="table-responsive">
               <table className="table" style={{ minWidth: "665px" }}>
                 <thead className="thead-light text-center">
@@ -793,7 +831,7 @@ export default function Home() {
                   <button
                     key={i}
                     className="btn-pickup-agv color-btn-warehouse"
-                    onClick={() => clickDrop(buttonsDrop[i].id)}
+                    onClick={() => clickDrop(missionModel.pickup!, buttonsDrop[i].id)}
                     style={{ top: buttonsDrop[i].top, left: buttonsDrop[i].left }}
                   >
                     {`D${buttonsDrop[i].id}`}
@@ -826,7 +864,7 @@ export default function Home() {
                 <img className='image-agv-modal' src={AgvImg2}></img>
               </div>
               <div className="position-relative">
-                {!!selectWarehouse.length && <div className='dotted-mission-line'></div>}
+                {!!selectStations.length && <div className='dotted-mission-line'></div>}
                 <div className='box-selected-drop'>
                   {missionModel.agvCode !== "721" && <h6>Select your pickup</h6>}
                   {(pickup || missionModel.pickup) ? <div className='data-warehouse-box'>
@@ -838,19 +876,19 @@ export default function Home() {
                       <h5>{pickup || missionModel.pickup}</h5>
                     </div>
                   </div> : null}
-                  {selectWarehouse.map((warehouse) => <div key={warehouse} id={warehouse} className='data-warehouse-box'>
+                  {selectStations.map((station) => <div key={station} id={station} className='data-warehouse-box goal-padding'>
                     <div className='circle-goal-outline blue-circle-bg'>
-                      <FaMapMarkerAlt size={32} color='#003092' />
+                      <FaMapMarkerAlt size={24} color='#003092' />
                     </div>
                     <div className='warehouse-from-to-box'>
                       <p style={{ color: '#838383' }}>to</p>
-                      <h5>{warehouse}</h5>
+                      <h5>{station}</h5>
                     </div>
-                    <div className="trash" onClick={() => deleteDrop(warehouse)}><FaRegTrashCan size={24} color='gray' /></div>
+                    <div className="trash" onClick={() => deleteDrop(missionModel.pickup!, station)}><FaRegTrashCan size={24} color='gray' /></div>
                   </div>)}
                 </div>
               </div>
-              {missionModel.agvCode === '721' ? <button className='btn-send-command mt-1 mt-xxl-4' disabled={!(selectWarehouse.length > 0)} onClick={() => showDialogSummary(missionModel.id ?? 0, missionModel.agv, '721', missionModel.pickup, selectWarehouse)}>{t("command")}</button> :
+              {missionModel.agvCode === '721' ? <button className='btn-send-command mt-1 mt-xxl-4' disabled={!(selectStations.length > 0)} onClick={() => showDialogSummary(missionModel.id ?? 0, missionModel.agv, '721', missionModel.pickup, selectStations)}>{t("command")}</button> :
                 <button className='btn-send-command mt-xxl-4' disabled={!(pickup)} onClick={() => showDialogSummary(missionModel.id ?? 0, missionModel.agv, missionModel.agvCode ?? '', pickup ?? "",)}>{t("command")}</button>
               }
             </div>

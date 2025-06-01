@@ -24,7 +24,7 @@
 }
 
 .height-card-modal-edit {
-    min-height: 600px !important;
+    min-height: 530px !important;
     width: 700px;
  }
 
@@ -120,4 +120,7 @@
     position: absolute;
     top: 10px;
     right: 12px;
+}
+.option-font-size option{
+    font-size:12px !important;
 }

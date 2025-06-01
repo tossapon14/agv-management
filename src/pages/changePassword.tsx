@@ -63,12 +63,12 @@ export default function ChangePassword() {
         window.location.href = "/signup-admin";
     }, [])
     useEffect(() => {
+         if (sessionStorage.getItem('user')?.split(",")[2] !== "admin") {
+            window.location.href = "/login";
+        }
         const checkNetwork = async () => {
             try {
-                const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
-                if (response.ok) {
-                    // Network is available
-                }
+               await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
             } catch (e: any) {
                 console.error(e);
                 setCheckNetwork(false);
