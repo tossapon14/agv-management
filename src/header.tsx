@@ -61,7 +61,7 @@ export default function Headers({ drawerFunction }: { drawerFunction: (t: boolea
                 <div ref={languageBlockRef} className='language-box me-1 me-md-2' onClick={() => setOpen(prev => !prev)}>
                     <button className='btn-language'>
                         {lang == 'th' ? <>
-                            <img src={TH_language_img} alt='th'></img>
+                            <img src={TH_language_img} alt='th' width={20} height={20}></img>
                             <h6 className='ms-2'>Thai</h6>
                         </> : <>
                             <img src={EN_language_img} alt='en' width={20} height={20}></img>

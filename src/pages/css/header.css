@@ -37,6 +37,7 @@
     height: 24px;
     padding-inline: 8px;
     border: none;
+    /* overflow: hidden; */
 }
 
 .btn-language+.select-language-box {
