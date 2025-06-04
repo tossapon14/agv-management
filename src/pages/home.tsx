@@ -542,7 +542,6 @@ export default function Home() {
     myUser.current = sessionStorage.getItem("user")?.split(",")[2] ?? "";
     if (myUser.current === "") return;
     selectAgv.current = myUser.current === "admin" ? "ALL" : myUser.current;
-    console.log(sessionStorage.getItem("vehicle"), typeof JSON.parse(sessionStorage.getItem("vehicle")!));
     setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle")!) as string[]);
     getAgv();
     getMission();

@@ -633,11 +633,11 @@
 }
 
 .row-misstion-background td {
-  background-color: #dbfffa;
-  animation: rowmissionfade 0.5s linear infinite alternate;
+  background-color: #e7fdf9 !important;
+  /* animation: rowmissionfade 1s linear infinite alternate; */
 }
 
-@keyframes rowmissionfade {
+/* @keyframes rowmissionfade {
   from {
     background-color: #dbfffa;
   }
@@ -645,7 +645,7 @@
   to {
     background-color: #ffffff;
   }
-}
+} */
 
 
 .mission-circle-icon {
