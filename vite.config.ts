@@ -14,7 +14,7 @@ export default defineConfig({
           icons: ['react-icons/bi', 'react-icons/pi', 'react-icons/io', 'react-icons/bs',
             'react-icons/fc', 'react-icons/ri', 'react-icons/fa', 'react-icons/fa6', 'react-icons/go',
             'react-icons/tb', 'react-icons/ci', 'react-icons/io5', 'react-icons/ai', 'react-icons/ri',
-            'react-icons/hi'
+            'react-icons/hi','react-icons/hi2'
           ],
           chart_utils: [
             'src/pages/chart/barChart2.tsx',
@@ -45,7 +45,9 @@ export default defineConfig({
             './src/pages/switch.tsx',
             './src/pages/user.tsx',
             './src/pages/vehicle.tsx',
-           './src/pages/not_authenticated.tsx'
+           './src/pages/not_authenticated.tsx',
+           './src/App.tsx',
+           './src/header.tsx'
           ],
         },
       },
