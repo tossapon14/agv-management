@@ -118,13 +118,14 @@ export default function Vehicle() {
             if (confirmModalRef.current === event.target) {
                 setDialogGoHome({ show: false })
             }
-        }; if (confirmModalRef.current) {
-            confirmModalRef.current.addEventListener("mouseup", handleClickOutsideConfirm)
-        }
+        };
+        confirmModalRef.current?.addEventListener("mouseup", handleClickOutsideConfirm)
         checkNetwork();
         return () => {
             confirmModalRef.current?.removeEventListener("mouseup", handleClickOutsideConfirm);
-            clearInterval(timerInterval.current as NodeJS.Timeout);
+            if (timerInterval.current != null) {
+                clearInterval(timerInterval.current as NodeJS.Timeout);
+            }
         };
     }, []);
     return (

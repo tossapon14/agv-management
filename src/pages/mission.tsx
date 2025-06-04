@@ -76,7 +76,7 @@ const isoDurationToMinSec = (duration: string | undefined | null): string => {
 export default function Mission() {
 
     const [missionTable, setMissionTable] = useState<IMissionTables[]>([]);
-    const [vehicle, setVehicle] = useState<string>("ALL"); // Default to "desc"
+    const [vehicle, setVehicle] = useState<string>(""); // Default to "desc"
     const [status, setStatus] = useState<string>("ALL"); // Default to "asc"
     const [startDate, setStartDate] = useState(new Date().toISOString().substring(0, 10))
     const [endDate, setEndDate] = useState(new Date().toISOString().substring(0, 10))
@@ -197,7 +197,7 @@ export default function Mission() {
                 onlineRef.current = false;
             }
             else if (e.status === 404) {
-               setMissionTable([]);
+                setMissionTable([]);
             }
             else if (e.response?.status === 401 || e.response?.data?.detail === "Invalid token or Token has expired.") {
                 setNotAuthenticated(true)
@@ -284,6 +284,7 @@ export default function Mission() {
                 if (response.ok) {
                     const _vehicle = sessionStorage.getItem('user')?.split(",")[2] == "admin" ? 'ALL' : sessionStorage.getItem('user')?.split(",")[2] ?? "";
                     setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle")!) as string[]);
+                    setVehicle(_vehicle);
                     const _date = new Date().toISOString().substring(0, 10)
                     saveUrl.current = `/mission/missions?vehicle_name=${_vehicle}&status=ALL&start_date=${_date}&end_date=${_date}&page=1&page_size=10`
                     saveDateStart.current = _date;
@@ -313,7 +314,7 @@ export default function Mission() {
         checkNetwork();
 
         return () => {
-            cancelModalRef.current!.removeEventListener("mouseup", handleClickOutsideCancel);
+            cancelModalRef.current?.removeEventListener("mouseup", handleClickOutsideCancel);
             if (timerInterval.current != null) {
                 clearInterval(timerInterval.current);
             }

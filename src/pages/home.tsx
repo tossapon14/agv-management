@@ -157,7 +157,7 @@ export default function Home() {
   const confirmModalRef = useRef<HTMLDivElement>(null);
   const selectAgv = useRef<string>('');
   const loadSave = useRef(false);
-  const [btnAGVName, setBtnAGVName] = useState<string[] | null>(null);
+  const [btnAGVName, setBtnAGVName] = useState<string[] | null>(["All"]);
   const [waitMode, setWaitMode] = useState<boolean>(false);
   const [dialogSummary, setDialogSummary] = useState<IdialogConfirm>({ show: false });
   const [responseData, setResponseData] = useState<{ error: boolean | null, message?: string }>({ error: null });
@@ -540,8 +540,9 @@ export default function Home() {
     };
 
     myUser.current = sessionStorage.getItem("user")?.split(",")[2] ?? "";
+    if (myUser.current === "") return;
     selectAgv.current = myUser.current === "admin" ? "ALL" : myUser.current;
-    if (selectAgv.current === "") return;
+    console.log(sessionStorage.getItem("vehicle"), typeof JSON.parse(sessionStorage.getItem("vehicle")!));
     setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle")!) as string[]);
     getAgv();
     getMission();
@@ -564,9 +565,11 @@ export default function Home() {
     }
 
     return () => {
-      modalRef.current!.removeEventListener("mouseup", handleClickOutside);
-      confirmModalRef.current!.removeEventListener("mouseup", handleClickOutsideConfirm);
-      clearInterval(timerInterval.current as NodeJS.Timeout);
+      modalRef.current?.removeEventListener("mouseup", handleClickOutside);
+      confirmModalRef.current?.removeEventListener("mouseup", handleClickOutsideConfirm);
+      if (timerInterval.current != null) {
+        clearInterval(timerInterval.current as NodeJS.Timeout);
+      }
     };
   }, []);
   return (

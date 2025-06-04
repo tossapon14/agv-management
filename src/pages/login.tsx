@@ -86,8 +86,8 @@ export default function Login() {
     }
 
   };
-  const getAGVButton = async function (user:string) {
-    if (user === 'admin') {
+  const getAGVButton = async function (position: string) {
+    if (position === 'admin') {
       const res: any = await axiosGet(
         `/vehicle/vehicles?vehicle_name=ALL&state=ALL`,
       );
@@ -97,7 +97,7 @@ export default function Login() {
         sessionStorage.setItem("vehicle", JSON.stringify(vehicleList));
       }
     } else {
-      sessionStorage.setItem("vehicle", JSON.stringify(`[${user}]`));
+       sessionStorage.setItem("vehicle", JSON.stringify([position]));
     }
   }
   useEffect(() => {
