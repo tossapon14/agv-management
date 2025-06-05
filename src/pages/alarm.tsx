@@ -85,6 +85,8 @@ export default function Alarm() {
     const saveVehicle = useRef<string>("ALL");
     const [onlineBar, setOnlineBar] = useState<null | boolean>(null);
     const onlineRef = useRef<boolean | null>(null);
+    const [loadingWhenClick, setLoadingWhenClick] = useState<boolean>(false);
+
     const { t, i18n } = useTranslation("mission");
 
 
@@ -127,7 +129,8 @@ export default function Alarm() {
             setPageSize(data.ps);
         }
 
-        saveUrl.current = `/alarm/alarms?vehicle_name=${saveVehicle.current}&start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}&page=${savePage.current}&page_size=${savePageSize.current}`;;
+        saveUrl.current = `/alarm/alarms?vehicle_name=${saveVehicle.current}&start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}&page=${savePage.current}&page_size=${savePageSize.current}`;
+        setLoadingWhenClick(true);
         alarmSetPage(saveUrl.current);
     }, []);
 
@@ -163,6 +166,8 @@ export default function Alarm() {
                     clearInterval(timerInterval.current as NodeJS.Timeout);
                 }
             }
+        } finally {
+            setLoadingWhenClick(false);
         }
     }, []);
 
@@ -264,6 +269,9 @@ export default function Alarm() {
     }, []);
     return <>
         {!loadSuccess && <div className='loading-background'>
+            <div id="loading"></div>
+        </div>}
+        {loadingWhenClick && <div className="fixed-top w-100 h-100 d-flex justify-content-center align-items-center z-2" style={{ background: "rgb(5,5,5,0.2)" }}>
             <div id="loading"></div>
         </div>}
         {onlineBar !== null && <StatusOnline online={onlineBar}></StatusOnline>}

@@ -53,6 +53,8 @@ const Battery = () => {
   const [notauthenticated, setNotAuthenticated] = useState(false);
   const [onlineBar, setOnlineBar] = useState<null | boolean>(null);
   const onlineRef = useRef<boolean | null>(null);
+  const [loadingWhenClick, setLoadingWhenClick] = useState<boolean>(false);
+
   const { t } = useTranslation("mission");
 
 
@@ -82,6 +84,7 @@ const Battery = () => {
       setEndDate(_date);
     }
     saveUrl.current = `/vehicle/battery_level?vehicle_name=${saveVehicle.current}&start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}`;
+    setLoadingWhenClick(true);
     batterySetPage(saveUrl.current);
   }, []);
 
@@ -114,6 +117,8 @@ const Battery = () => {
           clearInterval(timerInterval.current as NodeJS.Timeout);
         }
       }
+    } finally {
+      setLoadingWhenClick(false);
     }
   }, []);
   useEffect(() => {
@@ -149,6 +154,9 @@ const Battery = () => {
   }, []);
   return <div className="statistics-box">
     {!loadSuccess && <div className='loading-background'>
+      <div id="loading"></div>
+    </div>}
+    {loadingWhenClick && <div className="fixed-top w-100 h-100 d-flex justify-content-center align-items-center z-2" style={{ background: "rgb(5,5,5,0.2)" }}>
       <div id="loading"></div>
     </div>}
     {onlineBar !== null && <StatusOnline online={onlineBar}></StatusOnline>}

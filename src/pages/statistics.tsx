@@ -65,6 +65,7 @@ export default function Statistics() {
   const timerInterval = useRef<NodeJS.Timeout>(null);
   const [notauthenticated, setNotAuthenticated] = useState(false);
   const [onlineBar, setOnlineBar] = useState<null | boolean>(null);
+  const [loadingWhenClick, setLoadingWhenClick] = useState<boolean>(false);
   const onlineRef = useRef<boolean | null>(null);
 
   const { t } = useTranslation("mission");
@@ -91,12 +92,15 @@ export default function Statistics() {
       setEndDate(_date);
 
     }
-    saveUrl.current = `/statistics/report?start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}`
+    saveUrl.current = `/statistics/report?start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}`;
+    setLoadingWhenClick(true);
+
     statisticsSetPage(saveUrl.current);
   }, []);
 
   const statisticsSetPage = useCallback(async (url: string) => {
     try {
+
       const res = await getData(url);
       if (onlineRef.current == false) {
         setOnlineBar(true);
@@ -176,6 +180,8 @@ export default function Statistics() {
           clearInterval(timerInterval.current as NodeJS.Timeout);
         }
       }
+    } finally {
+      setLoadingWhenClick(false);
     }
   }, []);
 
@@ -213,6 +219,9 @@ export default function Statistics() {
   return (
     <div className="statistics-box">
       {!loadSuccess && <div className='loading-background'>
+        <div id="loading"></div>
+      </div>}
+      {loadingWhenClick && <div className="fixed-top w-100 h-100 d-flex justify-content-center align-items-center z-2" style={{ background: "rgb(5,5,5,0.2)" }}>
         <div id="loading"></div>
       </div>}
       {onlineBar !== null && <StatusOnline online={onlineBar}></StatusOnline>}
