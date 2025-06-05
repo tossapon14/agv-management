@@ -97,7 +97,7 @@ export default function Login() {
         sessionStorage.setItem("vehicle", JSON.stringify(vehicleList));
       }
     } else {
-       sessionStorage.setItem("vehicle", JSON.stringify([position]));
+      sessionStorage.setItem("vehicle", JSON.stringify([position]));
     }
   }
   useEffect(() => {
@@ -110,8 +110,11 @@ export default function Login() {
         status: status === "true" ? true : false,
         username: username
       };
-      getAGVButton(user.position);
       setUser(user);
+      if (!sessionStorage.getItem("vehicle")) {
+        getAGVButton(user.position);
+      }
+      
     }
   }, []);
 
