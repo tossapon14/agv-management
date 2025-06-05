@@ -103,6 +103,7 @@ export default function Mission() {
     const [onlineBar, setOnlineBar] = useState<null | boolean>(null);
     const onlineRef = useRef<boolean | null>(null);
     const { t } = useTranslation("mission");
+    const [loadingWhenClick, setLoadingWhenClick] = useState(false);
 
     const btnCancelMission = useCallback(async (id: number | undefined, name: string | undefined) => {
         if (!id || !name) return;
@@ -161,13 +162,14 @@ export default function Mission() {
             savePage.current = 1;
             setPageSize(data.ps);
         }
-        saveUrl.current = `/mission/missions?vehicle_name=${saveVehicle.current}&status=${status}&start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}&page=${savePage.current}&page_size=${savePageSize.current}`;
+        saveUrl.current = `/mission/missions?vehicle_name=${saveVehicle.current}&status=${saveStatus.current}&start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}&page=${savePage.current}&page_size=${savePageSize.current}`;
         missionSetPage(saveUrl.current);
     }, []);
 
 
     const missionSetPage = useCallback(async (url: string) => {
         try {
+            setLoadingWhenClick(true);
             const res = await getMissions(url);
             if (onlineRef.current == false) {
                 setOnlineBar(true);
@@ -206,6 +208,8 @@ export default function Mission() {
                 }
             }
 
+        }finally{
+            setLoadingWhenClick(false);
         }
     }, []);
 
@@ -323,6 +327,9 @@ export default function Mission() {
     }, []);
     return <section className='mission-box-page'>
         {!loadSuccess && <div className='loading-background'>
+            <div id="loading"></div>
+        </div>}
+        {loadingWhenClick && <div className="fixed-top w-100 h-100 d-flex justify-content-center align-items-center z-2" style={{background:"rgb(5,5,5,0.2)"}}>
             <div id="loading"></div>
         </div>}
         {onlineBar !== null && <StatusOnline online={onlineBar}></StatusOnline>}
