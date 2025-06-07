@@ -111,6 +111,7 @@ export default function Login() {
         username: username
       };
       setUser(user);
+      console.log(!sessionStorage.getItem("vehicle"));
       if (!sessionStorage.getItem("vehicle")) {
         getAGVButton(user.position);
       }

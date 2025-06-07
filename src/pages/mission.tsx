@@ -283,12 +283,13 @@ export default function Mission() {
     }, []);
 
     useEffect(() => {
+        console.log(78,JSON.parse(sessionStorage.getItem("vehiclesdf")??'[]'));
         const checkNetwork = async () => {
-            try {
+            try { 
                 const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
                 if (response.ok) {
                     const _vehicle = sessionStorage.getItem('user')?.split(",")[2] == "admin" ? 'ALL' : sessionStorage.getItem('user')?.split(",")[2] ?? "";
-                    setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle")!) as string[]);
+                    setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle")??'[]') as string[]);
                     setVehicle(_vehicle);
                     const _date = new Date().toISOString().substring(0, 10)
                     saveUrl.current = `/mission/missions?vehicle_name=${_vehicle}&status=ALL&start_date=${_date}&end_date=${_date}&page=1&page_size=10`
@@ -356,7 +357,6 @@ export default function Mission() {
                     <button onClick={() => reloadMission({ s: "6" })} className={`${status === "6" ? "active" : ""}`}>{t("fail")}</button>
                     <button onClick={() => reloadMission({ s: "5" })} className={`${status === "5" ? "active" : ""}`}>{t("cancel")}</button>
                     <button onClick={() => reloadMission({ s: "0" })} className={`${status === "0" ? "active" : ""}`}>{t("panding")}</button>
-
                 </div>
                 <div className='input-date-box'>
                     <div className="form-group">

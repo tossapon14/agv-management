@@ -144,17 +144,17 @@
   border-radius: 5px;
   width: 56px;
   /* height: 18px; */
-  font-size: 10px;
+  font-size: 12px;
   text-align: center;
   padding: 0.2rem 0;
 }
 
-.AUTO {
+.AUTO,.auto {
   background-color: #FFEDC5;
   color: #FF9012;
 }
 
-.MANUAL {
+.MANUAL,.manual {
   background-color: #dafeff;
   color: #52ceff;
 }

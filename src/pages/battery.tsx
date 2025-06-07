@@ -99,7 +99,7 @@ const Battery = () => {
       for (var agv in res) {
         const dataBattery: { x: number, y: number }[] = [];
         for (var i = 0; i < res[agv].length; i += 3) {
-          dataBattery.push({ x: res[agv][i][2] * 1000, y: res[agv][i][1] });
+           dataBattery.push({ x:  (res[agv][i][2]+25200)*1000 , y: res[agv][i][1] });
         }
         _series.push({ name: agv, data: dataBattery });
       }
@@ -132,7 +132,7 @@ const Battery = () => {
           saveUrl.current = `/vehicle/battery_level?vehicle_name=ALL&start_date=${_date}&end_date=${_date}`;
           saveDateStart.current = _date;
           saveDateEnd.current = _date;
-          setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle")!) as string[]);
+          setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle")??'[]') as string[]);
           batterySetPage(saveUrl.current);
           timerInterval.current = setInterval(() => {
             batterySetPage(saveUrl.current);

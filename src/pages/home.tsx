@@ -542,7 +542,7 @@ export default function Home() {
     myUser.current = sessionStorage.getItem("user")?.split(",")[2] ?? "";
     if (myUser.current === "") return;
     selectAgv.current = myUser.current === "admin" ? "ALL" : myUser.current;
-    setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle")!) as string[]);
+    setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle")??'[]') as string[]);
     getAgv();
     getMission();
     timerInterval.current = setInterval(() => {
