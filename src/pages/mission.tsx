@@ -283,8 +283,7 @@ export default function Mission() {
     }, []);
 
     useEffect(() => {
-        console.log(78,JSON.parse(sessionStorage.getItem("vehiclesdf")??'[]'));
-        const checkNetwork = async () => {
+         const checkNetwork = async () => {
             try { 
                 const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
                 if (response.ok) {

@@ -289,7 +289,7 @@ export default function Alarm() {
             {!checkNetwork ? <NetworkError /> : <div className='container-card'>
                 <div className='mission-header'>
                     <div className='selected-mission-btn'>
-                        {btnAGV.map((name) => <button onClick={() => reloadPage({ v: name })} className={`${vehicle === name ? "active" : ""}`}>{name}</button>)}
+                        {btnAGV.map((name) => <button key={name} onClick={() => reloadPage({ v: name })} className={`${vehicle === name ? "active" : ""}`}>{name}</button>)}
                     </div>
                     <div className='input-date-box'>
                         <div className="form-group">
