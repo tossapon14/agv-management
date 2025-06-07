@@ -82,7 +82,7 @@ export default function Vehicle() {
                 const agv = res.payload;
                 setAgvAll(agv);
             } catch (e: any) {
-                console.log(e);
+                console.error(e);
                 if (e.message === "Network Error") {
                     setOnlineBar(false);
                     onlineRef.current = false;

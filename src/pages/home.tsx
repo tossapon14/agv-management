@@ -303,7 +303,7 @@ export default function Home() {
         const index_drop = btnDropList.map((drop) => Number(drop.substring(1, 3)) - 1);
         setButtonDropList(index_drop);
       } else {
-        console.log("can't find pickup", data.pickup);
+        console.warn("can't find pickup", data.pickup);
       }
 
     } catch (e) {
@@ -440,7 +440,7 @@ export default function Home() {
           setMissionTable([]);
         }
         else if (e.response?.data?.detail) {
-          console.log('mission', e.response.data.detail);
+          console.error('mission', e.response.data.detail);
         }
         return e.response?.data || { message: "Unknown error occurred" };
       } finally {
@@ -514,7 +514,7 @@ export default function Home() {
           }
         }
         else if (e.response?.data?.detail) {
-          console.log('getAGV', e.response.data.detail);
+          console.error('getAGV', e.response.data.detail);
         }
         else {
           console.error(e.message)

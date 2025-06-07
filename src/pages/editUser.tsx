@@ -53,8 +53,7 @@ export default function EditUser() {
             try {
                 setLoad(true);
                 const res: IUserInfo = await axiosPut('/user/edit_user', data);
-                console.log(res);
-                if (res.message) {
+                 if (res.message) {
                     setResponse({ show: true, error: false, message: res.message });
                     setTimeout(() => {
                         navigate(-1)
