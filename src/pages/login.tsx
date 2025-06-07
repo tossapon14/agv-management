@@ -54,8 +54,6 @@ export default function Login() {
       else if (response.message) {
         setResponse(response.message)
       }
-      console.log(response);
-
     } catch (error: any) {
       if (error.status == 401) {
         setResponse('username or password incorrect')
@@ -111,8 +109,7 @@ export default function Login() {
         username: username
       };
       setUser(user);
-      console.log(!sessionStorage.getItem("vehicle"));
-      if (!sessionStorage.getItem("vehicle")) {
+       if (!sessionStorage.getItem("vehicle")) {
         getAGVButton(user.position);
       }
       
