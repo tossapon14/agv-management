@@ -204,7 +204,7 @@ export default function Vehicle() {
                                     </div>
                                     <span className='ms-2 fs-6' style={{ color: '#646464', fontWeight: '500' }}>{agv.ip_address}:{agv.port}</span>
                                 </div>
-                                {(agv.emergency_state || agv.state == 6) && <div className='EmergencyBtn'><BiSolidError size={20} color='red' />&nbsp;&nbsp;{agv.emergency_state ? t("emer") : t("state_6")}</div>}
+                                {(agv.state!=0&&(agv.emergency_state || agv.state == 6)) && <div className='EmergencyBtn'><BiSolidError size={20} color='red' />&nbsp;&nbsp;{agv.emergency_state ? t("emer") : t("state_6")}</div>}
                             </div>
                         </div>
                         <div className="v-content-chart">
@@ -212,7 +212,7 @@ export default function Vehicle() {
                                 <BatteryDonutChart level={agv.state === 0 ? 0 : agv.battery}></BatteryDonutChart>
                             </section>
                             <section className="velocity-chart">
-                                <VelocityChart level={(agv.velocity)}></VelocityChart>
+                                <VelocityChart level={agv.state === 0?0:(agv.velocity)}></VelocityChart>
                             </section>
                         </div>
                     </div>
@@ -265,9 +265,9 @@ export default function Vehicle() {
                             {/* <div className='trapezoid' style={{borderBottom:`72px solid ${colorAgv[agv.name]}`}}><MdOnlinePrediction size={50} color='#0dff20' style={{margin:'12px 16px 0'}} /></div> */}
                             <div className='trapezoid' >
                                 <h3 style={{ color: 'white', margin: '16px 32px 0', fontWeight: '500' }}>{agv.name}</h3>
-                                <button className="goback-home" onClick={() => btnConfirmGoHome(agv.home, agv.name)} style={{ margin: '14px 0px 0', background: colorAgv[agv.name] }}>go home</button>
+                                <button className="goback-home" disabled={agv.state === 0} onClick={() => btnConfirmGoHome(agv.home, agv.name)} style={{ margin: '14px 0px 0', background: colorAgv[agv.name] }}>go home</button>
                             </div>
-                            {agv.state == 0 ? <HiOutlineStatusOnline size={40} color={'#cccc'} style={{ margin: '0px 28px 0 0' }} />
+                            {agv.state === 0 ? <HiOutlineStatusOnline size={40} color={'#cccc'} style={{ margin: '0px 28px 0 0' }} />
                                 : <div className='onlineneon'><HiOutlineStatusOnline size={32} color='#0dff20' /></div>}
                         </div>
                     </div>

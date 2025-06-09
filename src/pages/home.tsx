@@ -419,7 +419,8 @@ export default function Home() {
       } else if (delta < -180) {
         delta = delta + 360;
       }
-      prev_deg.current[name] = prev_deg.current[name] + delta;
+       prev_deg.current[name] = prev_deg.current[name] + delta;
+        
       return [name, positionX, positionY, prev_deg.current[name].toFixed(3)];
     }
 
@@ -495,6 +496,9 @@ export default function Home() {
 
           } else {
             _agvData = data;
+            if(selectAgv.current !== 'ALL'){
+              setAgvPath(null);
+            }
           }
           _agv.push(_agvData);
         });
