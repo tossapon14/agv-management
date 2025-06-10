@@ -999,6 +999,9 @@
   cursor: pointer;
   border-radius: 8px;
 }
+.btn-pickup-agv:active{
+  transform: scale(0.95);
+ }
 
 
 .color-btn-warehouse {

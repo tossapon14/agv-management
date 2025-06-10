@@ -21,7 +21,7 @@
 .headder-nav-bar .iconNav{
     display: none;
     padding: 2px;
-    background-color: #4f80fc;
+   background: linear-gradient(135deg, rgb(11, 97, 255) 0%, rgb(130, 222, 255) 100%);
     border-radius: 4px;
 }
 

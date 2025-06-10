@@ -161,10 +161,11 @@ export default function Home() {
   const [waitMode, setWaitMode] = useState<boolean>(false);
   const [dialogSummary, setDialogSummary] = useState<IdialogConfirm>({ show: false });
   const [responseData, setResponseData] = useState<{ error: boolean | null, message?: string }>({ error: null });
-  const [currentMission, setCurrentMission] = useState<number | null>(null);
+  const [currentMission, setCurrentMission] = useState<number[]>([]);
   const trigger = useRef(false);
   const myUser = useRef<string>("");
   const [notauthenticated, setNotAuthenticated] = useState(false);
+  const mapHavePath = useRef<boolean>(false)
   const { t } = useTranslation('home'); // using the 'home' namespace
 
   const buttonsDrop = [
@@ -419,8 +420,8 @@ export default function Home() {
       } else if (delta < -180) {
         delta = delta + 360;
       }
-       prev_deg.current[name] = prev_deg.current[name] + delta;
-        
+      prev_deg.current[name] = prev_deg.current[name] + delta;
+
       return [name, positionX, positionY, prev_deg.current[name].toFixed(3)];
     }
 
@@ -463,6 +464,7 @@ export default function Home() {
         }
         const _agvPosition: string[][] = [];
         const _agv: IPayload[] = [];
+        const _currentMissionId: number[] = [];
         res.payload.forEach((data: IPayload) => {
 
           var _agvData: IPayload;
@@ -475,9 +477,14 @@ export default function Home() {
                   data.mission?.nodes_coordinate.shift()
                 }
                 var drop = data.mission?.nodes_coordinate.slice(_processMission.dropNumber);
+                mapHavePath.current = true;
                 setAgvPath({ paths: data.mission!.paths_coordinate[1], drop });
               } else {
-                setAgvPath(null);
+                if (mapHavePath.current) {
+                  setAgvPath(null);   // set when state > 5 mistion complete or agv != ALL
+                  mapHavePath.current = false;
+                }
+
               }
               _agvData = {
                 ...data,
@@ -485,25 +492,25 @@ export default function Home() {
                 agv_code_status: `${data.state}${data.mission.status}${data.mission.transport_state}`,
                 timestamp: data.mission.dispatch_time?.substring(11, 16),
               }
-              setCurrentMission(data.mission.id);
-            }
-            else {
-
+              _currentMissionId.push(data.mission.id);
+            } else {
               _agvData = data;
-              setAgvPath(null);
-              setCurrentMission(null);
+              if (mapHavePath.current) {
+                setAgvPath(null);
+                mapHavePath.current = false;
+              }
             }
-
           } else {
             _agvData = data;
-            if(selectAgv.current !== 'ALL'){
+            if (mapHavePath.current) {
               setAgvPath(null);
+              mapHavePath.current = false;
             }
           }
           _agv.push(_agvData);
         });
 
-
+        setCurrentMission(_currentMissionId);
         setSelectedAgv(selectAgv.current);
         setAgvPosition(_agvPosition);
         setAgvAll(_agv);
@@ -546,7 +553,7 @@ export default function Home() {
     myUser.current = sessionStorage.getItem("user")?.split(",")[2] ?? "";
     if (myUser.current === "") return;
     selectAgv.current = myUser.current === "admin" ? "ALL" : myUser.current;
-    setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle")??'[]') as string[]);
+    setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle") ?? '[]') as string[]);
     getAgv();
     getMission();
     timerInterval.current = setInterval(() => {
@@ -623,7 +630,7 @@ export default function Home() {
                   </tr>
                 </thead>
                 <tbody className='text-center'>
-                  {missionTable.map((data, i) => <tr key={i} className={`${currentMission === data.id ? "row-misstion-background" : ""}`}>
+                  {missionTable.map((data, i) => <tr key={i} className={`${currentMission.includes(data.id) ? "row-misstion-background" : ""}`}>
                     <td>#{data.id}</td>
                     <td><div className='td-vehicle-name'><div className='circle-vehicle-icon' style={{ background: `${colorAgv[data.vehicle_name]}` }}></div><span className="dot dot-blue"></span>{data.vehicle_name}</div></td>
                     <td>{data.pick}</td>
