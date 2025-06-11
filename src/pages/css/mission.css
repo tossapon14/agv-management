@@ -16,7 +16,6 @@
   width: 100%;
   padding-left: 30px;
   height: fit-content;
-  margin-bottom: 1rem;
 }
 
 .mission-box-page .title1 {
@@ -84,6 +83,20 @@
   font-weight: 600;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
+}
+
+.btn-circle-overflow {
+  position: absolute;
+  background-color: #dbdbdb;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3;
+  font-size: 16px;
 }
 
 .input-date-box {

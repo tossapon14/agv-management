@@ -161,7 +161,7 @@ const Battery = () => {
     </div>}
     {onlineBar !== null && <StatusOnline online={onlineBar}></StatusOnline>}
     {notauthenticated && <NotAuthenticated />}
-    <div className='mb-3 d-flex align-items-center justify-content-between flex-wrap'>
+    <div className='mb-1 mb-md-3 d-flex align-items-center justify-content-between flex-wrap'>
       <div>
         <h1>{t("bt_title")}</h1>
         <p> <FcChargeBattery size={32} style={{ transform: ' rotate(45deg)' }} />

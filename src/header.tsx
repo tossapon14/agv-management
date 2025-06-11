@@ -36,8 +36,6 @@ export default function Headers({ drawerFunction }: { drawerFunction: (t: boolea
             }
         };
 
-
-
         document.addEventListener('click', handleClickOutside);
         window.addEventListener('resize', handleResize);
 

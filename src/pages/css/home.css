@@ -149,12 +149,14 @@
   padding: 0.2rem 0;
 }
 
-.AUTO,.auto {
+.AUTO,
+.auto {
   background-color: #FFEDC5;
   color: #FF9012;
 }
 
-.MANUAL,.manual {
+.MANUAL,
+.manual {
   background-color: #dafeff;
   color: #52ceff;
 }
@@ -540,6 +542,7 @@
   font-size: 22px;
   color: #000000;
   font-weight: 600;
+  text-align: start;
 }
 
 @keyframes mission-btn-animate {
@@ -999,9 +1002,10 @@
   cursor: pointer;
   border-radius: 8px;
 }
-.btn-pickup-agv:active{
+
+.btn-pickup-agv:active {
   transform: scale(0.95);
- }
+}
 
 
 .color-btn-warehouse {
@@ -1483,11 +1487,8 @@
   }
 
   .mission-status {
-    padding-top: 8px;
-    margin-left: 16px;
     font-size: 20px;
-    font-weight: 500;
-  }
+   }
 
   .home-table-head th {
     font-size: 14px;
@@ -1535,7 +1536,7 @@
 
   .input-date-box {
     justify-content: flex-start !important;
-    margin-block: 1rem !important;
+    margin: 0.8rem 0.8rem 0.5rem !important;
   }
 
   .react-datepicker-popper {
@@ -1568,13 +1569,6 @@
 
   .km-h {
     margin: 0 18px 0 0;
-  }
-
-  .mission-status {
-    padding-top: 8px;
-    padding-left: 0px;
-    font-size: 20px;
-    font-weight: 500;
   }
 
   .btn-pickup-agv {
@@ -1773,7 +1767,7 @@
   }
 
   .selected-mission-btn {
-    overflow-y: auto;
+    overflow-x: auto;
   }
 
   .selected-mission-btn button {
@@ -1875,23 +1869,27 @@
   }
 
   .form-group>.box-of-text-date {
-    padding-top: 14px !important;
     width: 120px !important;
-
-  }
-
-  .box-of-text-date .ps-2 {
-    transform: translateY(-5px) !important;
   }
 
   .container-card {
     margin: 0.5rem 0.5rem 3rem !important;
   }
 
-  /* mission.tsx */
-  /* statistics.tsx */
+  .vehicle-box-page {
+    padding-top: 16px !important;
+  }
+
+  .mission-box-page {
+    padding-top: 16px !important;
+  }
+
+  .input-date-box {
+    margin: 0.8rem 0.8rem 0.2rem !important;
+  }
+
   .statistics-box {
-    padding: 32px 16px 32px !important;
+    padding: 16px 8px 32px !important;
   }
 
   /* statistics.tsx */

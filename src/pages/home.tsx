@@ -408,7 +408,7 @@ export default function Home() {
       const rawPose = coor.split(",");
       const x = Number(rawPose[0]) * -Math.cos(-0.082) - Number(rawPose[1]) * -Math.sin(-0.082);
       const y = Number(rawPose[0]) * -Math.sin(-0.082) + Number(rawPose[1]) * -Math.cos(-0.082);
-      const positionX = (((x + 45) / 996.782) * 100).toFixed(3) + '%';
+      const positionX = (((x + 45) / 1008) * 100).toFixed(3) + '%';
       const positionY = (((y + 270) / 586.10) * 100).toFixed(3) + '%';
       const degree = ((Number(rawPose[2]) - 0.082) * -180) / Math.PI;
       if (prev_deg.current[name] === undefined) {

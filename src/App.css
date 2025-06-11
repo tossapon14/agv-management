@@ -99,7 +99,6 @@
   position: absolute;
   top: var(--hadder-height);
   left: 0;
-  border-bottom-right-radius: 8px;
   min-width: 350px;
   max-width: 100vw;
   height: 0px;
@@ -107,14 +106,6 @@
   background-color: var(--bgc-bg-color);
   overflow-y: scroll;
   transition: height 0.3s ease-in-out;
-}
-
-.drawer-mobile.open-drawer {
-  height: 490px;
-}
-
-.drawer-mobile.close-drawer {
-  height: 0px;
 }
 
 .drawer-mobile a {

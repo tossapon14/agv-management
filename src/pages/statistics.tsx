@@ -226,7 +226,7 @@ export default function Statistics() {
       </div>}
       {onlineBar !== null && <StatusOnline online={onlineBar}></StatusOnline>}
       {notauthenticated && <NotAuthenticated />}
-      <div className='mb-4 d-flex align-items-center justify-content-between flex-wrap'>
+      <div className='mb-2 mb-md-4 d-flex align-items-center justify-content-between flex-wrap'>
         <div>
           <h1>{t("st_title")}</h1>
           <p><FcComboChart size={32} />  <span className='ms-3 me-5'>{t("st_subtitle")}</span></p>
