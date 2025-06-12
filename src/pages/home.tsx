@@ -162,11 +162,11 @@ export default function Home() {
   const [dialogSummary, setDialogSummary] = useState<IdialogConfirm>({ show: false });
   const [responseData, setResponseData] = useState<{ error: boolean | null, message?: string }>({ error: null });
   const [currentMission, setCurrentMission] = useState<number[]>([]);
-   const myUser = useRef<string>("");
+  const myUser = useRef<string>("");
   const [notauthenticated, setNotAuthenticated] = useState(false);
   const mapHavePath = useRef<boolean>(false)
-  const getAGVAPI = useRef<() => Promise<void>>(async () => {});
-  const getMissionAPI = useRef<() => Promise<void>>(async () => {});
+  const getAGVAPI = useRef<() => Promise<void>>(async () => { });
+  const getMissionAPI = useRef<() => Promise<void>>(async () => { });
 
   const { t } = useTranslation('home');
 
@@ -201,10 +201,10 @@ export default function Home() {
     try {
       await axiosPut(`/mission/update/status?mission_id=${id}&vehicle_name=${name}&command=cancel`);
       setResponseData({ error: false, message: "Cancel success" })
-      if(getMissionAPI.current){
+      if (getMissionAPI.current) {
         getMissionAPI.current();
       }
-     } catch (e: any) {
+    } catch (e: any) {
       console.error(e);
       setResponseData({ error: true, message: e?.message })
     }
@@ -341,7 +341,7 @@ export default function Home() {
       return []
     }
 
-  } ;
+  };
 
   const getDropNextStation = async (allGoal: string[]): Promise<string[]> => {
     try {
@@ -377,7 +377,7 @@ export default function Home() {
 
   const selectAgvFunction = (agvName: string) => {
     selectAgv.current = agvName;
-     loadSave.current = false;
+    loadSave.current = false;
     setSelectedAgv(agvName);
     setWaitModeLoad(true);
     setLoadSuccess(false);
@@ -386,7 +386,7 @@ export default function Home() {
       getMissionAPI.current!();
     }
 
-  } ;
+  };
 
   useEffect(() => {
     const calProcessMission = (agvCurrent_index: number | null, missionNodes_index: string | undefined, nodes: string): { percents?: number, dropList: string[], numProcess?: number, dropNumber?: number } | null => {
@@ -416,25 +416,22 @@ export default function Home() {
       const rawPose = coor.split(",");
       const x = Number(rawPose[0]) * -Math.cos(-0.082) - Number(rawPose[1]) * -Math.sin(-0.082);
       const y = Number(rawPose[0]) * -Math.sin(-0.082) + Number(rawPose[1]) * -Math.cos(-0.082);
-      const positionX = (((x + 45) / 1008) * 100).toFixed(3) + '%';
+      const positionX = (((x + 45) / 996.782) * 100).toFixed(3) + '%';
       const positionY = (((y + 270) / 586.10) * 100).toFixed(3) + '%';
       const degree = ((Number(rawPose[2]) - 0.082) * -180) / Math.PI;
-       if (prev_deg.current[name] === undefined) {
+      if (prev_deg.current[name] === undefined) {
         prev_deg.current[name] = 0.0;
       }
       let delta = degree - prev_deg.current[name];
-      if (delta > 180) {
-        delta = delta - 360;
-      } else if (delta < -180) {
-        delta = delta + 360;
-      }
-       if(delta < -355||delta>355){
-        delta = 0;
-      }
+
+      delta = ((delta + 180) % 360 + 360) % 360 - 180;
       prev_deg.current[name] = prev_deg.current[name] + delta;
+      if (Math.abs(prev_deg.current[name]) > 1e6) {
+        prev_deg.current[name] %= 360;
+      }
+      console.log(delta, prev_deg.current[name])
       return [name, positionX, positionY, prev_deg.current[name].toFixed(3)];
     }
-
     const _date = new Date().toISOString().substring(0, 10)
 
     getMissionAPI.current = async () => {
@@ -571,7 +568,7 @@ export default function Home() {
       getAGVAPI.current!();
       if (missionLoop.current === 5) {
         missionLoop.current = 0;
-         getMissionAPI.current!();
+        getMissionAPI.current!();
       }
     }, 3000);
 
