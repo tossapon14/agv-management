@@ -158,15 +158,17 @@ export default function Home() {
   const selectAgv = useRef<string>('');
   const loadSave = useRef(false);
   const [btnAGVName, setBtnAGVName] = useState<string[] | null>(["All"]);
-  const [waitMode, setWaitMode] = useState<boolean>(false);
+  const [waitModeLoad, setWaitModeLoad] = useState<boolean>(false);
   const [dialogSummary, setDialogSummary] = useState<IdialogConfirm>({ show: false });
   const [responseData, setResponseData] = useState<{ error: boolean | null, message?: string }>({ error: null });
   const [currentMission, setCurrentMission] = useState<number[]>([]);
-  const trigger = useRef(false);
-  const myUser = useRef<string>("");
+   const myUser = useRef<string>("");
   const [notauthenticated, setNotAuthenticated] = useState(false);
   const mapHavePath = useRef<boolean>(false)
-  const { t } = useTranslation('home'); // using the 'home' namespace
+  const getAGVAPI = useRef<() => Promise<void>>(async () => {});
+  const getMissionAPI = useRef<() => Promise<void>>(async () => {});
+
+  const { t } = useTranslation('home');
 
   const buttonsDrop = [
     { id: "01", top: "80%", left: "26%" },
@@ -192,25 +194,27 @@ export default function Home() {
     { id: "21", top: "68%", left: "60%" },
     { id: "22", top: "68%", left: "69%" },
   ];
-  const btnCancelMission = useCallback(async (id: number | undefined, name: string | undefined) => {
+  const btnCancelMission = async (id: number | undefined, name: string | undefined) => {
     if (!id || !name) return;
     setDialogSummary({ show: false });
     setResponseData({ error: null, message: "loading" });
     try {
       await axiosPut(`/mission/update/status?mission_id=${id}&vehicle_name=${name}&command=cancel`);
       setResponseData({ error: false, message: "Cancel success" })
-      trigger.current = true;
-    } catch (e: any) {
+      if(getMissionAPI.current){
+        getMissionAPI.current();
+      }
+     } catch (e: any) {
       console.error(e);
       setResponseData({ error: true, message: e?.message })
     }
 
-  }, []);
+  };
 
-  const showDialogSummary = useCallback((id: number, name: string, agvCode: string, pickup: string | undefined, dropall?: string[]) => {
+  const showDialogSummary = (id: number, name: string, agvCode: string, pickup: string | undefined, dropall?: string[]) => {
     setShowModal("hidden-modal");
     setDialogSummary({ show: true, id, name, agvCode, pickupName: pickup, dropAll: dropall });
-  }, []);
+  };
 
 
   const btnDialogConfirm = (id: number, name: string, agvCode: string | undefined, pick?: string | undefined, drop?: string[] | undefined) => {
@@ -228,7 +232,7 @@ export default function Home() {
   }
 
 
-  const APIPutDropProduct = useCallback(async (name: string) => {
+  const APIPutDropProduct = async (name: string) => {
     setResponseData({ error: null, message: "loading" });
     try {
       await axiosPut(`fleet/command?command=next&vehicle_name=${name}`);
@@ -237,10 +241,10 @@ export default function Home() {
       console.error("drop product", e)
       setResponseData({ error: true, message: e?.message })
     }
-  }, []);
+  };
 
 
-  const sendCommand = useCallback(async (agv: string, command: string) => {
+  const sendCommand = async (agv: string, command: string) => {
     setResponseData({ error: null, message: "loading" });
     try {
       await axiosPut(`fleet/command?command=${command}&vehicle_name=${agv}`);
@@ -249,9 +253,9 @@ export default function Home() {
       console.error('send stop or continue', e)
       setResponseData({ error: true, message: e?.message })
     }
-  }, []);
+  };
 
-  const APIPutMissionGoal = useCallback(async (id: number, agv: string, nodeCommand: string) => {
+  const APIPutMissionGoal = async (id: number, agv: string, nodeCommand: string) => {
 
     const dataMission: IMissionDrop = {
       id: id,
@@ -268,10 +272,10 @@ export default function Home() {
       setResponseData({ error: true, message: e?.message })
     }
 
-  }, []);
+  };
 
 
-  const APIPostPickupMission = useCallback(async (agv: string, pickup: string) => {
+  const APIPostPickupMission = async (agv: string, pickup: string) => {
     const dataMission: IMissionCreate = {
       "nodes": pickup,
       "requester": myUser.current,
@@ -285,10 +289,10 @@ export default function Home() {
       console.error(e?.message);
       setResponseData({ error: true, message: e?.message })
     }
-  }, []);
+  };
 
 
-  const btnCallModal = useCallback(async (data: IagvDataModel) => {
+  const btnCallModal = async (data: IagvDataModel) => {
     try {
       setMissionModel(data);
       setShowModal("show-modal");
@@ -310,7 +314,7 @@ export default function Home() {
     } catch (e) {
       console.error(e);
     }
-  }, []);
+  };
 
   const deleteDrop = useCallback(async (pickup: string, node: string) => {
     const element = document.getElementById(node);
@@ -327,7 +331,7 @@ export default function Home() {
     }
   }, [selectStations]);
 
-  const getCanDrop = useCallback(async (pick: string): Promise<string[]> => {
+  const getCanDrop = async (pick: string): Promise<string[]> => {
     try {
       const response: IGetCanDrop = await axiosPost(`/node/validate_stations`, [pick]);
       const available_drop: string[] = response.available_dropoffs;
@@ -337,7 +341,7 @@ export default function Home() {
       return []
     }
 
-  }, []);
+  } ;
 
   const getDropNextStation = async (allGoal: string[]): Promise<string[]> => {
     try {
@@ -371,14 +375,18 @@ export default function Home() {
 
   };
 
-  const selectAgvFunction = useCallback((agvName: string) => {
+  const selectAgvFunction = (agvName: string) => {
     selectAgv.current = agvName;
-    trigger.current = true;
-    loadSave.current = false;
+     loadSave.current = false;
     setSelectedAgv(agvName);
-    setWaitMode(true);
+    setWaitModeLoad(true);
     setLoadSuccess(false);
-  }, []);
+    if (getAGVAPI.current && getMissionAPI.current) {
+      getAGVAPI.current!();
+      getMissionAPI.current!();
+    }
+
+  } ;
 
   useEffect(() => {
     const calProcessMission = (agvCurrent_index: number | null, missionNodes_index: string | undefined, nodes: string): { percents?: number, dropList: string[], numProcess?: number, dropNumber?: number } | null => {
@@ -411,7 +419,7 @@ export default function Home() {
       const positionX = (((x + 45) / 1008) * 100).toFixed(3) + '%';
       const positionY = (((y + 270) / 586.10) * 100).toFixed(3) + '%';
       const degree = ((Number(rawPose[2]) - 0.082) * -180) / Math.PI;
-      if (prev_deg.current[name] === undefined) {
+       if (prev_deg.current[name] === undefined) {
         prev_deg.current[name] = 0.0;
       }
       let delta = degree - prev_deg.current[name];
@@ -420,14 +428,16 @@ export default function Home() {
       } else if (delta < -180) {
         delta = delta + 360;
       }
+       if(delta < -355||delta>355){
+        delta = 0;
+      }
       prev_deg.current[name] = prev_deg.current[name] + delta;
-
       return [name, positionX, positionY, prev_deg.current[name].toFixed(3)];
     }
 
     const _date = new Date().toISOString().substring(0, 10)
 
-    const getMission = async () => {
+    getMissionAPI.current = async () => {
       try {
         const res: IMissionData = await axiosGet(
           `/mission/missions?vehicle_name=${selectAgv.current}&status=ALL&start_date=${_date}&end_date=${_date}&page=1&page_size=10`
@@ -453,7 +463,7 @@ export default function Home() {
       }
     };
 
-    const getAgv = async () => {
+    getAGVAPI.current = async () => {
       try {
         const res: IVehicles = await axiosGet(
           `/vehicle/vehicles?vehicle_name=${selectAgv.current}&state=ALL`,
@@ -511,7 +521,6 @@ export default function Home() {
         });
 
         setCurrentMission(_currentMissionId);
-        setSelectedAgv(selectAgv.current);
         setAgvPosition(_agvPosition);
         setAgvAll(_agv);
       } catch (e: any) {
@@ -554,15 +563,15 @@ export default function Home() {
     if (myUser.current === "") return;
     selectAgv.current = myUser.current === "admin" ? "ALL" : myUser.current;
     setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle") ?? '[]') as string[]);
-    getAgv();
-    getMission();
+    setSelectedAgv(selectAgv.current);
+    getAGVAPI.current();
+    getMissionAPI.current();
     timerInterval.current = setInterval(() => {
       missionLoop.current++;
-      getAgv();
-      if (missionLoop.current === 5 || trigger.current) {
+      getAGVAPI.current!();
+      if (missionLoop.current === 5) {
         missionLoop.current = 0;
-        trigger.current = false;
-        getMission();
+         getMissionAPI.current!();
       }
     }, 3000);
 
@@ -584,7 +593,7 @@ export default function Home() {
   }, []);
   return (
     <section className='home'>
-      {!loadSuccess && <div className={`loading-background ${waitMode ? 'bg-opacity' : ''}`}>
+      {!loadSuccess && <div className={`loading-background ${waitModeLoad ? 'bg-opacity' : ''}`}>
         <div id="loading"></div>
       </div>}
       {onlineBar !== null && <StatusOnline online={onlineBar}></StatusOnline>}

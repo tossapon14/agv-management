@@ -1,8 +1,9 @@
+
 import './css/mission.css'
 import { IoMdSettings, IoMdClose, IoMdDownload } from "react-icons/io";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import MissionImage from '../assets/images/mission.png';
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { axiosGet, axiosPut } from "../api/axiosFetch";
 import { IMissionData } from './home';
 import { pairMissionStatus, colorAgv } from '../utils/centerFunction';
@@ -105,7 +106,7 @@ export default function Mission() {
     const { t } = useTranslation("mission");
     const [loadingWhenClick, setLoadingWhenClick] = useState<boolean >(false);
 
-    const btnCancelMission = useCallback(async (id: number | undefined, name: string | undefined) => {
+    const btnCancelMission = async (id: number | undefined, name: string | undefined) => {
         if (!id || !name) return;
         setDialogCancel({ show: false });
         setResponseData({ error: null, message: "loading" });
@@ -118,9 +119,9 @@ export default function Mission() {
             setResponseData({ error: true, message: e?.message })
         }
 
-    }, []);
+    };
 
-    const reloadMission = useCallback(async (data: { v?: string, s?: string, d?: Date | undefined, de?: Date | undefined, p?: number, ps?: string }) => {
+    const reloadMission = async (data: { v?: string, s?: string, d?: Date | undefined, de?: Date | undefined, p?: number, ps?: string }) => {
         if (data.v) {
             savePage.current = 1;
             saveVehicle.current = data.v;
@@ -165,10 +166,10 @@ export default function Mission() {
         saveUrl.current = `/mission/missions?vehicle_name=${saveVehicle.current}&status=${saveStatus.current}&start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}&page=${savePage.current}&page_size=${savePageSize.current}`;
         setLoadingWhenClick(true);
         missionSetPage(saveUrl.current);
-    }, []);
+    };
 
 
-    const missionSetPage = useCallback(async (url: string) => {
+    const missionSetPage = async (url: string) => {
         try {
             
             const res = await getMissions(url);
@@ -212,9 +213,9 @@ export default function Mission() {
         } finally {
             setLoadingWhenClick(false);
         }
-    }, []);
+    };
 
-    const _pagination = useCallback((ttp: number, page: number): React.ReactElement | null => {
+    const _pagination = (ttp: number, page: number): React.ReactElement | null => {
 
         if (ttp <= 5) {
             return (<div className='pagination'>
@@ -280,7 +281,7 @@ export default function Mission() {
             </div>);
         }
         else return null
-    }, []);
+    };
 
     useEffect(() => {
          const checkNetwork = async () => {

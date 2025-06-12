@@ -1,6 +1,6 @@
 import { BiError } from "react-icons/bi";
 import { IoMdSettings, IoMdDownload } from "react-icons/io";
-import { useCallback, useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { axiosGet } from "../api/axiosFetch";
 import { BsConeStriped } from "react-icons/bs";
 import { colorAgv } from '../utils/centerFunction';
@@ -90,7 +90,7 @@ export default function Alarm() {
     const { t, i18n } = useTranslation("mission");
 
 
-    const reloadPage = useCallback(async (data: { v?: string, s?: string, d?: Date, de?: Date, p?: number, ps?: string }) => {
+    const reloadPage = async (data: { v?: string, s?: string, d?: Date, de?: Date, p?: number, ps?: string }) => {
         if (data.v) {
             saveVehicle.current = data.v;
             savePage.current = 1;
@@ -132,11 +132,11 @@ export default function Alarm() {
         saveUrl.current = `/alarm/alarms?vehicle_name=${saveVehicle.current}&start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}&page=${savePage.current}&page_size=${savePageSize.current}`;
         setLoadingWhenClick(true);
         alarmSetPage(saveUrl.current);
-    }, []);
+    };
 
 
 
-    const alarmSetPage = useCallback(async (url: string) => {
+    const alarmSetPage =async (url: string) => {
         try {
             const res = await getAPI(url);
             if (onlineRef.current == false) {
@@ -169,10 +169,10 @@ export default function Alarm() {
         } finally {
             setLoadingWhenClick(false);
         }
-    }, []);
+    };
 
 
-    const _pagination = useCallback((ttp: number, page: number): React.ReactElement | null => {
+    const _pagination = (ttp: number, page: number): React.ReactElement | null => {
         if (ttp <= 5) {
             return (<div className='pagination'>
 
@@ -237,7 +237,7 @@ export default function Alarm() {
             </div>);
         }
         else return null
-    }, []);
+    };
 
 
     useEffect(() => {

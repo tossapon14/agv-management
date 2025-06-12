@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import './css/createuser.css';
 import AddUserImage from '../assets/images/add-user.png';
 import { FaCircleUser } from "react-icons/fa6";
@@ -76,9 +76,9 @@ export default function CreateUser() {
         }
 
     }
-    const buttonBackLogin = useCallback(() => {
+    const buttonBackLogin =() => {
         window.location.href = "/signup-admin";
-    }, [])
+    };
 
     useEffect(() => {
         if (sessionStorage.getItem('user')!.split(",")[2] !== "admin") {

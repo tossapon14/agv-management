@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {useEffect, useRef, useState } from 'react';
 import './css/statistics.css';
 import { FcComboChart } from "react-icons/fc";
 import { IoMdDownload } from "react-icons/io";
@@ -70,7 +70,7 @@ export default function Statistics() {
 
   const { t } = useTranslation("mission");
 
-  const reloadDataByDate = useCallback(async (data: { d?: Date, de?: Date, }) => {
+  const reloadDataByDate =  async (data: { d?: Date, de?: Date, }) => {
     if (data.d) {
       if (data.d > new Date(saveDateEnd.current)) {
         return;
@@ -96,9 +96,9 @@ export default function Statistics() {
     setLoadingWhenClick(true);
 
     statisticsSetPage(saveUrl.current);
-  }, []);
+  } ;
 
-  const statisticsSetPage = useCallback(async (url: string) => {
+  const statisticsSetPage = async (url: string) => {
     try {
 
       const res = await getData(url);
@@ -183,7 +183,7 @@ export default function Statistics() {
     } finally {
       setLoadingWhenClick(false);
     }
-  }, []);
+  } ;
 
 
   useEffect(() => {

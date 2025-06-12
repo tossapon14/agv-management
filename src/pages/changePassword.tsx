@@ -1,5 +1,5 @@
 import NetworkError from './networkError';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from "react-router-dom";
 import './css/changepassword.css';
 import { axiosPut } from "../api/axiosFetch";
@@ -59,9 +59,9 @@ export default function ChangePassword() {
             }
         }
     };
-    const buttonBackLogin = useCallback(() => {
+    const buttonBackLogin =() => {
         window.location.href = "/signup-admin";
-    }, [])
+    };
     useEffect(() => {
          if (sessionStorage.getItem('user')?.split(",")[2] !== "admin") {
             window.location.href = "/login";

@@ -1,5 +1,5 @@
 import { axiosGet } from "../api/axiosFetch";
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FcChargeBattery } from "react-icons/fc";
 import BatteryAreaChart from "./chart/BatteryAreaChart";
 import { IoMdDownload } from "react-icons/io";
@@ -58,7 +58,7 @@ const Battery = () => {
   const { t } = useTranslation("mission");
 
 
-  const reloadDataByDate = useCallback(async (data: { v?: string, d?: Date, de?: Date, }) => {
+  const reloadDataByDate =async (data: { v?: string, d?: Date, de?: Date, }) => {
     if (data.v) {
       saveVehicle.current = data.v;
       setVehicle(data.v);
@@ -86,9 +86,9 @@ const Battery = () => {
     saveUrl.current = `/vehicle/battery_level?vehicle_name=${saveVehicle.current}&start_date=${saveDateStart.current}&end_date=${saveDateEnd.current}`;
     setLoadingWhenClick(true);
     batterySetPage(saveUrl.current);
-  }, []);
+  };
 
-  const batterySetPage = useCallback(async (url: string) => {
+  const batterySetPage = async (url: string) => {
     try {
       const res = await getBattery(url);
       if (onlineRef.current == false) {
@@ -120,7 +120,7 @@ const Battery = () => {
     } finally {
       setLoadingWhenClick(false);
     }
-  }, []);
+  };
   useEffect(() => {
 
 

@@ -10,7 +10,7 @@ import { PiPath } from "react-icons/pi";
 import { BsFillRocketTakeoffFill } from "react-icons/bs";
 import { HiOutlineStatusOnline } from "react-icons/hi";
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef} from 'react';
 import { IVehicles, IPayload } from './home.tsx';
 import { axiosGet, axiosPost } from "../api/axiosFetch";
 import { colorAgv } from '../utils/centerFunction';
@@ -46,7 +46,7 @@ export default function Vehicle() {
     const closeModal = () => {
         setAgvDataExtend(null);
     }
-    const btnGoHome = useCallback(async (homeNode: string, name: string) => {
+    const btnGoHome = async (homeNode: string, name: string) => {
         const command = {
             "nodes": homeNode,
             "requester": myUser.current,
@@ -61,7 +61,7 @@ export default function Vehicle() {
             console.error(e?.message);
             setResponseData({ error: true, message: e?.message })
         }
-    }, []);
+    };
     const btnConfirmGoHome = (homeNode: string, name: string) => {
         setDialogGoHome({ show: true, homeNode: homeNode, name: name });
     };

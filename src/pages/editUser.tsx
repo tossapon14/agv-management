@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect} from 'react';
 import './css/createuser.css';
 import AddUserImage from '../assets/images/add-user.png';
 import { FaUserGear } from "react-icons/fa6";
@@ -77,9 +77,9 @@ export default function EditUser() {
         const { name, value } = e.target;
         setUserInfo({ ...userInfo, [name]: value });
     };
-    const buttonBackLogin = useCallback(() => {
+    const buttonBackLogin =() => {
         window.location.href = "/signup-admin";
-    }, [])
+    };
 
     useEffect(() => {
 

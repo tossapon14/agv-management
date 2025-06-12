@@ -57,6 +57,7 @@
   background-color: var(--bgc-bg-gray-color);
   color: var(--bgc-bg-color);
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .drawer-mobile li {
