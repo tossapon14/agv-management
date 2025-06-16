@@ -5,13 +5,13 @@ import { IAlarm } from "./alarm";
 import { useTranslation } from 'react-i18next';
 
 function HomeAlarmError({ agvName }: { agvName: string }) {
-    const [alarm, setAlarm] = useState<{ [agv: string]: { [lang:string]: string}[] } | null>(null);
+    const [alarm, setAlarm] = useState<{ [agv: string]: { [lang: string]: string }[] } | null>(null);
     const { t, i18n } = useTranslation("home");
     useEffect(() => {
         const _date = new Date().toISOString().substring(0, 10)
         const getAlarm = async () => {
             const res: IAlarm = await axiosGet(`/alarm/alarms?vehicle_name=${agvName}&start_date=${_date}&end_date=${_date}&page=1&page_size=10`);
-            const agv: { [agv: string]: {[lang:string]: string }[] } = {};
+            const agv: { [agv: string]: { [lang: string]: string }[] } = {};
             res.payload.forEach((pay) => {
                 const descript = pay.description.split("|");
                 if (agv[pay.vehicle_name] === undefined) {
@@ -21,7 +21,7 @@ function HomeAlarmError({ agvName }: { agvName: string }) {
             });
             setAlarm(agv)
         }
-         const timerID = setInterval(getAlarm, 3000);
+        const timerID = setInterval(getAlarm, 3000);
         return () => {
             clearInterval(timerID);
         }
@@ -36,7 +36,7 @@ function HomeAlarmError({ agvName }: { agvName: string }) {
                 <div className="bg-secondary" key={key} style={{ padding: "1rem", marginBottom: '1rem' }}>
                     <h5 style={{ color: 'rgb(255, 85, 85)' }}>{key}</h5>
                     {value.map((error, i) => (
-                        <p key={i}>{error[i18n.language] }</p>
+                        <p key={i}>{error[i18n.language]}</p>
                     ))}
                 </div>
 
