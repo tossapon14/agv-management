@@ -610,8 +610,7 @@
 
 .drop-btn:hover {
   background-color: #c20600;
-  border: 2px solid #840000;
-}
+ }
 
 .drop-btn:active {
   transform: scale(0.95);
