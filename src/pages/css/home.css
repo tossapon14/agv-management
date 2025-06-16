@@ -1284,7 +1284,8 @@
    border: 12px solid rgb(33, 37, 41);
   opacity: 0;
   animation: form-fade 1s linear forwards;
- }
+  animation-delay: 1s;
+}
 
 .error-list-container {
   padding: 1rem;
