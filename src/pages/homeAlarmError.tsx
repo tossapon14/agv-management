@@ -21,8 +21,7 @@ function HomeAlarmError({ agvName }: { agvName: string }) {
             });
             setAlarm(agv)
         }
-        getAlarm();
-        const timerID = setInterval(getAlarm, 3000);
+         const timerID = setInterval(getAlarm, 3000);
         return () => {
             clearInterval(timerID);
         }
