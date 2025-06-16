@@ -48,5 +48,6 @@
   "md_confirm_cancel": "Press Cancel to send command",
   "btn_confirm": "Confirm",
   "command": "Send a command",
-  "back": "Back"
+  "back": "Back",
+  "alarmlink":"add-on"
 }

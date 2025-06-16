@@ -108,14 +108,14 @@ function App() {
                     <PiBatteryCharging size="32" />
                     {t("battery")}
                   </a>
-                </li>
+                </li> </>}
                 <li>
                   <a href="/alarms" className={linkFocused[5]}>
                     <BiError size="32" />
                     {t("alarm")}
                   </a>
                 </li>
-              </>}
+             
               <li>
                 <a href="/login" className={linkFocused[6]}>
                   <IoIosLogIn size="32" />
@@ -156,14 +156,13 @@ function App() {
                     <PiBatteryCharging size="28" />
                     {t("battery")}
                   </a>
-                </li>
+                </li></>}
                 <li>
                   <a href="/alarms" className={linkFocused[5]}>
                     <BiError size="28" />
                     {t("alarm")}
                   </a>
                 </li>
-              </>}
               <li>
                 <a href="/login" className={linkFocused[6]}>
                   <IoIosLogIn size="28" />

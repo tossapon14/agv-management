@@ -19,6 +19,7 @@ import StatusOnline from './statusOnline';
 import { pairMissionStatus, colorAgv } from '../utils/centerFunction';
 import ResponseAPI from './responseAPI.tsx';
 import NotAuthenticated from './not_authenticated.tsx';
+import HomeAlarmError from './homeAlarmError.tsx';
 
 
 
@@ -141,6 +142,7 @@ export default function Home() {
     state: 0
   }
   ]);
+  const [agvHaveAlarm, setAgvHaveAlarm] = useState<string | null>(null);
   const [pickup, setPickup] = useState<string | null>(null);
   const [selectStations, setselectStations] = useState<string[]>([])
   const [missionTable, setMissionTable] = useState<IPayloadMission[]>([]);
@@ -416,7 +418,7 @@ export default function Home() {
       const rawPose = coor.split(",");
       const x = Number(rawPose[0]) * -Math.cos(-0.082) - Number(rawPose[1]) * -Math.sin(-0.082);
       const y = Number(rawPose[0]) * -Math.sin(-0.082) + Number(rawPose[1]) * -Math.cos(-0.082);
-      const positionX = (((x + 45) / 996.782) * 100).toFixed(3) + '%';
+      const positionX = (((x + 45) / 1005) * 100).toFixed(3) + '%'; //(((x + 45) / 996.782)
       const positionY = (((y + 270) / 586.10) * 100).toFixed(3) + '%';
       const degree = ((Number(rawPose[2]) - 0.082) * -180) / Math.PI;
       if (prev_deg.current[name] === undefined) {
@@ -429,7 +431,7 @@ export default function Home() {
       if (Math.abs(prev_deg.current[name]) > 1e6) {
         prev_deg.current[name] %= 360;
       }
-      console.log(delta, prev_deg.current[name])
+      // console.log(delta, prev_deg.current[name])
       return [name, positionX, positionY, prev_deg.current[name].toFixed(3)];
     }
     const _date = new Date().toISOString().substring(0, 10)
@@ -472,6 +474,7 @@ export default function Home() {
         const _agvPosition: string[][] = [];
         const _agv: IPayload[] = [];
         const _currentMissionId: number[] = [];
+        var haveAlarm:boolean = false;
         res.payload.forEach((data: IPayload) => {
 
           var _agvData: IPayload;
@@ -500,14 +503,17 @@ export default function Home() {
                 timestamp: data.mission.dispatch_time?.substring(11, 16),
               }
               _currentMissionId.push(data.mission.id);
-            } else {
+            } else {  // no mission
               _agvData = data;
               if (mapHavePath.current) {
                 setAgvPath(null);
                 mapHavePath.current = false;
               }
             }
-          } else {
+            if (data.state === 6) {
+              haveAlarm = true;
+            }
+          } else {  // agv state =0 
             _agvData = data;
             if (mapHavePath.current) {
               setAgvPath(null);
@@ -520,6 +526,12 @@ export default function Home() {
         setCurrentMission(_currentMissionId);
         setAgvPosition(_agvPosition);
         setAgvAll(_agv);
+        if (haveAlarm) {
+          setAgvHaveAlarm(selectAgv.current);
+        } 
+        else {
+          setAgvHaveAlarm(null);
+        }
       } catch (e: any) {
         if (e.message === "Network Error") {
           setOnlineBar(false);
@@ -590,11 +602,6 @@ export default function Home() {
   }, []);
   return (
     <section className='home'>
-      {!loadSuccess && <div className={`loading-background ${waitModeLoad ? 'bg-opacity' : ''}`}>
-        <div id="loading"></div>
-      </div>}
-      {onlineBar !== null && <StatusOnline online={onlineBar}></StatusOnline>}
-      {notauthenticated && <NotAuthenticated />}
       <section className="col1">
         <MapAnimate data={agvPosition} paths={agvPath}  ></MapAnimate>
       </section>
@@ -697,7 +704,7 @@ export default function Home() {
                 </div>
 
                 <div className={`auto-manual ${(agv as IPayload).mode}`}>{(agv as IPayload).mode}</div>
-                {((agv as IPayload).emergency_state || (agv as IPayload).state == 6) ? <div className='EmergencyBtn'><BiSolidError size={20} color='red' />&nbsp;&nbsp;{(agv as IPayload).emergency_state ? t("emer") : t("state_6")}</div>
+                {((agv as IPayload).emergency_state || (agv as IPayload).state == 6) ? <div className='EmergencyBtn'><BiSolidError size={20} color='red' />&nbsp;&nbsp;{(agv as IPayload).state == 6 ? t("state_6") : t("emer")}</div>
                   : <div className='agv-state'>{t(`state_${agv.state}`)}</div>}
               </div>
               <div className='velocity'>
@@ -915,6 +922,12 @@ export default function Home() {
           </div>
         </div>
       </div>
+      {!loadSuccess && <div className={`loading-background ${waitModeLoad ? 'bg-opacity' : ''}`}>
+        <div id="loading"></div>
+      </div>}
+      {onlineBar !== null && <StatusOnline online={onlineBar}></StatusOnline>}
+      {agvHaveAlarm && <HomeAlarmError agvName={agvHaveAlarm}></HomeAlarmError>}
+      {notauthenticated && <NotAuthenticated />}
     </section >
   );
 }

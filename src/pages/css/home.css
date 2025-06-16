@@ -1275,6 +1275,35 @@
   }
 }
 
+.error-card {
+  bottom: 20px;
+  right: 20px;
+  width: 400px;
+  height: 500px;
+  background-color: #383838;
+   border: 12px solid rgb(33, 37, 41);
+  opacity: 0;
+  animation: form-fade 1s linear forwards;
+  animation-delay: 1s;
+}
+
+.error-list-container {
+  padding: 1rem;
+  width: 100%;
+  height: 88%;
+  overflow-y: auto;
+  /* background-color: #444444; */
+}
+
+.placeholder-wave div {
+  height: 28px;
+}
+
+.placeholder-wave span {
+  height: 20px;
+  margin-top: 0.8rem;
+}
+
 @media only screen and (max-width: 1890px) {
   :root {
     --agv-card-width: 430px;
@@ -1445,7 +1474,7 @@
     height: 90px;
   }
 
- 
+
 
   #login .logoposition {
     top: 120px !important;
@@ -1484,7 +1513,7 @@
 
   .mission-status {
     font-size: 20px;
-   }
+  }
 
   .home-table-head th {
     font-size: 14px;

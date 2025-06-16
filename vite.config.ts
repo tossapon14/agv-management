@@ -47,7 +47,8 @@ export default defineConfig({
             './src/pages/vehicle.tsx',
            './src/pages/not_authenticated.tsx',
            './src/App.tsx',
-           './src/header.tsx'
+           './src/header.tsx',
+           './src/pages/homeAlarmError.tsx'
           ],
         },
       },

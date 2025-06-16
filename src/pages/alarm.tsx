@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import NotAuthenticated from "./not_authenticated";
 import StatusOnline from "./statusOnline";
 
-interface IAlarm {
+export interface IAlarm {
     message: string
     payload: IAlarmPayload[]
     structure: IStructure
@@ -251,7 +251,7 @@ export default function Alarm() {
                     saveDateEnd.current = _date;
                     setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle")??'[]') as string[]);
                     alarmSetPage(saveUrl.current);
-                    timerInterval.current = setInterval(() => alarmSetPage(saveUrl.current), 10000);
+                    timerInterval.current = setInterval(() => alarmSetPage(saveUrl.current), 4000);
                 }
             } catch (e: any) {
                 console.error(e);

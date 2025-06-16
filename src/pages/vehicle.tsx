@@ -204,7 +204,7 @@ export default function Vehicle() {
                                     </div>
                                     <span className='ms-2 fs-6' style={{ color: '#646464', fontWeight: '500' }}>{agv.ip_address}:{agv.port}</span>
                                 </div>
-                                {(agv.state!=0&&(agv.emergency_state || agv.state == 6)) && <div className='EmergencyBtn'><BiSolidError size={20} color='red' />&nbsp;&nbsp;{agv.emergency_state ? t("emer") : t("state_6")}</div>}
+                                {(agv.state!=0&&(agv.emergency_state || agv.state == 6)) && <div className='EmergencyBtn'><BiSolidError size={20} color='red' />&nbsp;&nbsp;{agv.state ==6 ?t("state_6"): t("emer")}</div>}
                             </div>
                         </div>
                         <div className="v-content-chart">
