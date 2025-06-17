@@ -12,19 +12,26 @@ function HomeAlarmError({ agvName }: { agvName: string }) {
         const getAlarm = async () => {
             const res: IAlarm = await axiosGet(`/alarm/alarms?vehicle_name=${agvName}&start_date=${_date}&end_date=${_date}&page=1&page_size=10`);
             const agv: { [agv: string]: { [lang: string]: string }[] } = {};
-            res.payload.forEach((pay) => {
-                const descript = pay.description.split("|");
+            for (let i = 0; i < res.payload.length; i++) {
+                const pay = res.payload[i];
+                const descript = res.payload[i].description.split("|");
                 if (agv[pay.vehicle_name] === undefined) {
                     agv[pay.vehicle_name] = [];
+                    agv[pay.vehicle_name].push({ time: pay.timestamp, th:  descript[1], en: descript[0] });
+
+                } else if (agv[pay.vehicle_name][0]['time'] === pay.timestamp) {
+                    agv[pay.vehicle_name].push({ time: pay.timestamp, th:  descript[1], en: descript[0] });
+
                 }
-                agv[pay.vehicle_name!].push({ th: pay.timestamp.substring(11, 19) + " " + descript[1], en: pay.timestamp.substring(11, 19) + " " + descript[0] });
-            });
+
+            }
+
             setAlarm(agv)
         }
-        const timerID = setInterval(getAlarm, 3000);
-        return () => {
-            clearInterval(timerID);
-        }
+        const timeOut = setTimeout(()=>getAlarm(),2000);
+        return ()=>{
+            clearTimeout(timeOut);
+        };
     }, [agvName]);
     return <div className="error-card position-fixed overflow-hidden  text-white ">
         <div className="pb-3 ps-2 d-flex align-items-end w-100 bg-dark" style={{ height: "50px" }}>
@@ -36,7 +43,7 @@ function HomeAlarmError({ agvName }: { agvName: string }) {
                 <div className="bg-secondary" key={key} style={{ padding: "1rem", marginBottom: '1rem' }}>
                     <h5 style={{ color: 'rgb(255, 85, 85)' }}>{key}</h5>
                     {value.map((error, i) => (
-                        <p key={i}>{error[i18n.language]}</p>
+                        <p key={i}>{error['time'].substring(11,19)} {error[i18n.language]}</p>
                     ))}
                 </div>
 
