@@ -200,8 +200,7 @@ export default function Home() {
   ];
 
   const playRingtone = () => {
-    console.log("ring tone");
-    if (import.meta.env.VITE_REACT_APP_USE_AUDIO === "true") {
+     if (import.meta.env.VITE_REACT_APP_USE_AUDIO === "true") {
       audioRingTone.current?.play();
     }
   };
