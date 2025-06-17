@@ -20,6 +20,7 @@ import { pairMissionStatus, colorAgv } from '../utils/centerFunction';
 import ResponseAPI from './responseAPI.tsx';
 import NotAuthenticated from './not_authenticated.tsx';
 import HomeAlarmError from './homeAlarmError.tsx';
+import Sound from '../assets/sounds/mixkit-happy-bells-notification-937.wav'
 
 
 
@@ -169,6 +170,7 @@ export default function Home() {
   const mapHavePath = useRef<boolean>(false)
   const getAGVAPI = useRef<() => Promise<void>>(async () => { });
   const getMissionAPI = useRef<() => Promise<void>>(async () => { });
+  const audioRingTone = useRef<HTMLAudioElement>(null);
 
   const { t } = useTranslation('home');
 
@@ -196,6 +198,19 @@ export default function Home() {
     { id: "21", top: "68%", left: "60%" },
     { id: "22", top: "68%", left: "69%" },
   ];
+
+  const playRingtone = () => {
+    console.log("ring tone");
+    if (import.meta.env.VITE_REACT_APP_USE_AUDIO === "true") {
+      audioRingTone.current?.play();
+    }
+  };
+  const stopRingtone = () => {
+    if (import.meta.env.VITE_REACT_APP_USE_AUDIO === "true") {
+      audioRingTone.current?.pause();
+      audioRingTone.current!.currentTime = 0;
+    }
+  };
   const btnCancelMission = async (id: number | undefined, name: string | undefined) => {
     if (!id || !name) return;
     setDialogSummary({ show: false });
@@ -474,7 +489,9 @@ export default function Home() {
         const _agvPosition: string[][] = [];
         const _agv: IPayload[] = [];
         const _currentMissionId: number[] = [];
-        var haveAlarm:boolean = false;
+        var haveAlarm: boolean = false;
+        var haveAlarm: boolean = false;
+
         res.payload.forEach((data: IPayload) => {
 
           var _agvData: IPayload;
@@ -489,10 +506,18 @@ export default function Home() {
                 var drop = data.mission?.nodes_coordinate.slice(_processMission.dropNumber);
                 mapHavePath.current = true;
                 setAgvPath({ paths: data.mission!.paths_coordinate[1], drop });
+                if (`${data.state}${data.mission.status}${data.mission.transport_state}` === '721' || `${data.state}${data.mission.status}${data.mission.transport_state}` == '724') {
+                  playRingtone();
+                } else if (!audioRingTone.current!.paused) {
+                  stopRingtone();
+                }
               } else {
                 if (mapHavePath.current) {
                   setAgvPath(null);   // set when state > 5 mistion complete or agv != ALL
                   mapHavePath.current = false;
+                }
+                if (!audioRingTone.current!.paused) {
+                  stopRingtone();
                 }
 
               }
@@ -509,6 +534,9 @@ export default function Home() {
                 setAgvPath(null);
                 mapHavePath.current = false;
               }
+              if (!audioRingTone.current!.paused) {
+                stopRingtone();
+              }
             }
             if (data.state === 6) {
               haveAlarm = true;
@@ -519,6 +547,9 @@ export default function Home() {
               setAgvPath(null);
               mapHavePath.current = false;
             }
+            if (!audioRingTone.current!.paused) {
+                  stopRingtone();
+                }
           }
           _agv.push(_agvData);
         });
@@ -528,7 +559,7 @@ export default function Home() {
         setAgvAll(_agv);
         if (haveAlarm) {
           setAgvHaveAlarm(selectAgv.current);
-        } 
+        }
         else {
           setAgvHaveAlarm(null);
         }
@@ -591,6 +622,7 @@ export default function Home() {
     if (confirmModalRef.current) {
       confirmModalRef.current.addEventListener("mouseup", handleClickOutsideConfirm)
     }
+    audioRingTone.current = new Audio(Sound);
 
     return () => {
       modalRef.current?.removeEventListener("mouseup", handleClickOutside);
