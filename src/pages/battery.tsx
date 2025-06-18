@@ -22,15 +22,15 @@ export interface IDataSeries {
   const res: IBattery = await axiosGet(url);
   return res;
 };
-const downloadCSV = async (start_date: string, end_date: string) => {
+const downloadCSV = async (vehicle:string, start_date: string, end_date: string) => {
   const fetchData: string = await axiosGet(
-    `/vehicle/export_battery_report?vehicle_name=ALL&start_date=${start_date}&end_date=${end_date}`);
+    `/vehicle/export_battery_report?vehicle_name=${vehicle}&start_date=${start_date}&end_date=${end_date}`);
   const blob = new Blob([fetchData], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
 
   const link = document.createElement("a");
   link.href = url;
-  link.download = `battery-${start_date} ${end_date}.csv`;
+  link.download = `battery_vehicle_${vehicle}_date_${start_date}_${end_date}.csv`;
   link.click();
 
   URL.revokeObjectURL(url);
@@ -185,7 +185,7 @@ const Battery = () => {
             <DatePicker selected={new Date(endDate)} onChange={(e) => reloadDataByDate({ de: e ?? undefined })} />
           </div>
         </div>
-        <button className="export-btn2" onClick={() => downloadCSV(startDate, endDate)}><IoMdDownload /> <span className="d-none d-sm-inline">{t("downloadBtn")}</span> </button>
+        <button className="export-btn2" onClick={() => downloadCSV(saveVehicle.current, startDate, endDate)}><IoMdDownload /> <span className="d-none d-sm-inline">{t("downloadBtn")}</span> </button>
       </div>}
     </div>
     {!checkNetwork ? <NetworkError /> : <>
