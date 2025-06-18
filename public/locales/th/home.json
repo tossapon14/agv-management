@@ -49,5 +49,6 @@
   "btn_confirm": "ยืนยัน",
   "command": "สั่งงาน",
   "back": "ย้อนกลับ",
-  "alarmlink":"เพิ่มเติม"
+  "alarmlink":"เพิ่มเติม",
+  "errorTitle":"พบปัญหา"
 }

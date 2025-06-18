@@ -49,5 +49,6 @@
   "btn_confirm": "Confirm",
   "command": "Send a command",
   "back": "Back",
-  "alarmlink":"add-on"
+  "alarmlink":"add-on",
+  "errorTitle":"ERROR"
 }

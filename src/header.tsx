@@ -10,7 +10,7 @@ import { HiOutlineBars3, HiXMark } from "react-icons/hi2";
 export default function Headers({ drawerFunction }: { drawerFunction: (t: boolean) => void }) {
     const { i18n } = useTranslation();
     const user = (sessionStorage.getItem("user")?.split(",")[4] || "");
-    const [lang, setLang] = useState<string>(localStorage.getItem('BGLanguage') ?? "en");
+    const [lang, setLang] = useState<string>(localStorage.getItem('BGCLanguage') ?? "en");
     const [open, setOpen] = useState<boolean>(false);
     const [iconNav, setIconNav] = useState<boolean>(true);
     const languageBlockRef = useRef<HTMLDivElement>(null)
