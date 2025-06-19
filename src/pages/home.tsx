@@ -541,9 +541,6 @@ export default function Home() {
             if (data.state === 6) {
               haveAlarm = true;
             }
-            if (data.battery <= 30 && selectAgv.current !== 'ALL') {
-               setBatteryLow({ name: data.name, battery: data.battery })
-            } 
           } else {  // agv state =0 
             _agvData = data;
             if (mapHavePath.current) {
@@ -554,7 +551,7 @@ export default function Home() {
               stopRingtone();
             }
           }
-           _agv.push(_agvData);
+          _agv.push(_agvData);
         });
 
         setCurrentMission(_currentMissionId);
@@ -566,8 +563,10 @@ export default function Home() {
         else {
           setAgvHaveAlarm(null);
         }
-        if(selectAgv.current==="ALL"||_agv[0].battery>30||_agv[0].state ===0){
-            setBatteryLow(null);
+        if (selectAgv.current !== 'ALL' && _agv[0].battery <= 30 && _agv[0].state != 0) {
+          setBatteryLow({ name: _agv[0].name, battery: _agv[0].battery })
+        } else {
+          setBatteryLow(null);
         }
       } catch (e: any) {
         if (e.message === "Network Error") {
@@ -968,13 +967,8 @@ export default function Home() {
         <div className='w-100 p-4 text-center h5'><BiError size={32} color={'red'} /><span className='ps-2'>{batteryLow.name} {t('batteryLow')}</span>
         </div>
         <div className="w-100 text-center">
-          <div className='d-flex'>
-            <div className='col-3 font-weight-bold h3' style={{ color: 'red' }}>{batteryLow.battery}%</div>
-            <div className='text-start'>
-              <p>{t('battery1')}</p>
-              <p className='pt-1'>{t('battery2')}</p>
-            </div>
-          </div>
+          <div className='d-inline font-weight-bold h3' style={{ color: 'red' }}>{batteryLow.battery}%<span style={{paddingLeft:'16px',fontSize:"16px",color:'rgb(229, 229, 229)'}}>{t('battery1')}</span></div>
+           <p className='pt-3'>{t('battery2')}</p>
           <button className="battery-low-btn mt-3" onClick={() => setBatteryLow(null)}>OK</button>
         </div>
       </div>}
