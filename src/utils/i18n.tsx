@@ -7,7 +7,6 @@ i18n
   .use(LanguageDetector) // detect language and use localStorage
   .use(initReactI18next)
   .init({
-    lng:'en',
     fallbackLng: 'en',
     supportedLngs: ['en', 'th'],
     nonExplicitSupportedLngs: true,
