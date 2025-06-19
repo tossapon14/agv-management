@@ -1303,6 +1303,35 @@
   margin-top: 0.8rem;
 }
 
+.battery-low-alert {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  height: 250px;
+  background-color: black;
+  color: rgb(229, 229, 229);
+  padding-inline: 16px;
+  border-bottom: 2px solid #ff4603;
+
+}
+
+.battery-low-btn {
+  border: 1px solid #fff;
+  margin: 0 auto;
+  width: 70%;
+  height: 36px;
+  background: none;
+  color: white;
+  border-radius: 18px;
+
+}
+
+.battery-low-btn:active {
+  transform: scale(0.98);
+}
+
 @media only screen and (max-width: 1890px) {
   :root {
     --agv-card-width: 430px;

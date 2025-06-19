@@ -14,8 +14,8 @@ const BatteryDonutChart: React.FC<BatteryDonutChartProps> = ({ level }) => {
 
   // Change color based on battery level
   const getBatteryColor = (level: number): string => {
-    if (level > 50) return "#003092"; // Green (High)
-    else if (level > 20) return "#FFC107"; // Yellow (Medium)
+    if (level > 40) return "#003092"; // Green (High)
+    else if (level > 30) return "#FFC107"; // Yellow (Medium)
     return "#F44336"; // Red (Low)
   };
 

@@ -50,5 +50,8 @@
   "command": "Send a command",
   "back": "Back",
   "alarmlink":"add-on",
-  "errorTitle":"ERROR"
+  "errorTitle":"ERROR",
+  "batteryLow":"Low battery",
+  "battery1":"Warning: Low Battery",
+  "battery2":"Please chaege your vehivle soon."
 }

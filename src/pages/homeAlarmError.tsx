@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BiSolidError } from "react-icons/bi";
+import { BiError } from "react-icons/bi";
 import { axiosGet } from "../api/axiosFetch";
 import { IAlarm } from "./alarm";
 import { useTranslation } from 'react-i18next';
@@ -34,7 +34,7 @@ function HomeAlarmError({ agvName }: { agvName: string }) {
     }, [agvName]);
     return <div className="error-card position-fixed overflow-hidden  text-white ">
         <div className="pb-3 ps-2 d-flex align-items-end w-100 bg-dark" style={{ height: "50px" }}>
-            <BiSolidError size={28} color={'rgb(254, 0, 0)'} />
+            <BiError size={28} color={'rgb(254, 0, 0)'} />
             <span className="h5 ms-2 mb-0">{t("errorTitle")}</span>
         </div>
         {alarm ? <div className='overflow-auto' style={{ height: "460px" }}>

@@ -14,7 +14,7 @@ import { IoMdSettings, IoMdClose } from "react-icons/io";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { axiosGet, axiosPost, axiosPut } from "../api/axiosFetch";
 import { useState, useRef, useEffect, Fragment, useCallback } from 'react';
-import { BiSolidError } from "react-icons/bi";
+import { BiSolidError, BiError } from "react-icons/bi";
 import StatusOnline from './statusOnline';
 import { pairMissionStatus, colorAgv } from '../utils/centerFunction';
 import ResponseAPI from './responseAPI.tsx';
@@ -171,6 +171,7 @@ export default function Home() {
   const getAGVAPI = useRef<() => Promise<void>>(async () => { });
   const getMissionAPI = useRef<() => Promise<void>>(async () => { });
   const audioRingTone = useRef<HTMLAudioElement>(null);
+  const [batteryLow,setBatteryLow] =useState<{name:string,battery:number}|null>(null);
 
   const { t } = useTranslation('home');
 
@@ -200,7 +201,7 @@ export default function Home() {
   ];
 
   const playRingtone = () => {
-     if (import.meta.env.VITE_REACT_APP_USE_AUDIO === "true") {
+    if (import.meta.env.VITE_REACT_APP_USE_AUDIO === "true") {
       audioRingTone.current?.play();
     }
   };
@@ -540,6 +541,9 @@ export default function Home() {
             if (data.state === 6) {
               haveAlarm = true;
             }
+            if(data.battery<=30&&selectAgv.current !== 'ALL'){
+              setBatteryLow({name:data.name,battery:data.battery})
+            }
           } else {  // agv state =0 
             _agvData = data;
             if (mapHavePath.current) {
@@ -547,8 +551,8 @@ export default function Home() {
               mapHavePath.current = false;
             }
             if (!audioRingTone.current!.paused) {
-                  stopRingtone();
-                }
+              stopRingtone();
+            }
           }
           _agv.push(_agvData);
         });
@@ -725,13 +729,13 @@ export default function Home() {
               </button>
 
             </div>
-          </section> : <section key={index} className='box-agv-data'>
+          </section> : <section key={index} className='box-agv-data'>   {/* vehicle online have data */}
             <div className='top-box-data'>
               <img className='image-agv' src={AgvImg}></img>
               <div className='box-name-agv'>
                 <div className='box-name-battery'>
                   <div className='agv-name-text' style={{ backgroundColor: colorAgv[agv.name] }}>{agv.name}</div>
-                  <div className='agv-battery'><CiBatteryFull size={36} /><span>{(agv as IPayload).battery}%</span></div>
+                  <div className='agv-battery' ><CiBatteryFull size={36} /><span>{(agv as IPayload).battery}%</span></div>
                 </div>
 
                 <div className={`auto-manual ${(agv as IPayload).mode}`}>{(agv as IPayload).mode}</div>
@@ -957,6 +961,20 @@ export default function Home() {
         <div id="loading"></div>
       </div>}
       {onlineBar !== null && <StatusOnline online={onlineBar}></StatusOnline>}
+      {batteryLow && <div className='battery-low-alert'>
+        <div className='w-100 p-4 text-center h5'><BiError size={32} color={'red'} /><span className='ps-2'>{batteryLow.name} {t('batteryLow')}</span>
+        </div>
+        <div className="w-100 text-center">
+          <div className='d-flex'>
+            <div className='col-3 font-weight-bold h3' style={{color:'red'}}>{batteryLow.battery}%</div>
+            <div className='text-start'>
+              <p>{t('battery1')}</p>
+              <p className='pt-1'>{t('battery2')}</p>
+            </div>
+          </div>
+          <button className="battery-low-btn mt-3" onClick={()=>setBatteryLow(null)}>OK</button>
+        </div>
+      </div>}
       {agvHaveAlarm && <HomeAlarmError agvName={agvHaveAlarm}></HomeAlarmError>}
       {notauthenticated && <NotAuthenticated />}
     </section >

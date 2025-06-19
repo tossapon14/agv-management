@@ -18,7 +18,7 @@ const BatteryAreaChart2:React.FC<IBatteryProps> = ({data,color}) => {
         },
         annotations: {
           yaxis: [{
-            y: 20,
+            y: 30,
             borderColor: '#ff1100',
             label: {
               text: 'battery low',

@@ -252,6 +252,7 @@ export default function Alarm() {
                     saveDateStart.current = _date;
                     saveDateEnd.current = _date;
                     saveVehicle.current = _vehicle;
+                    setVehicle(_vehicle);
                     setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle")??'[]') as string[]);
                     alarmSetPage(saveUrl.current);
                     timerInterval.current = setInterval(() => alarmSetPage(saveUrl.current), 10000);
