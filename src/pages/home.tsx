@@ -171,7 +171,7 @@ export default function Home() {
   const getAGVAPI = useRef<() => Promise<void>>(async () => { });
   const getMissionAPI = useRef<() => Promise<void>>(async () => { });
   const audioRingTone = useRef<HTMLAudioElement>(null);
-  const [batteryLow,setBatteryLow] =useState<{name:string,battery:number}|null>(null);
+  const [batteryLow, setBatteryLow] = useState<{ name: string, battery: number } | null>(null);
 
   const { t } = useTranslation('home');
 
@@ -541,9 +541,9 @@ export default function Home() {
             if (data.state === 6) {
               haveAlarm = true;
             }
-            if(data.battery<=30&&selectAgv.current !== 'ALL'){
-              setBatteryLow({name:data.name,battery:data.battery})
-            }
+            if (data.battery <= 30 && selectAgv.current !== 'ALL') {
+               setBatteryLow({ name: data.name, battery: data.battery })
+            } 
           } else {  // agv state =0 
             _agvData = data;
             if (mapHavePath.current) {
@@ -554,7 +554,7 @@ export default function Home() {
               stopRingtone();
             }
           }
-          _agv.push(_agvData);
+           _agv.push(_agvData);
         });
 
         setCurrentMission(_currentMissionId);
@@ -565,6 +565,9 @@ export default function Home() {
         }
         else {
           setAgvHaveAlarm(null);
+        }
+        if(selectAgv.current==="ALL"||_agv[0].battery>30||_agv[0].state ===0){
+            setBatteryLow(null);
         }
       } catch (e: any) {
         if (e.message === "Network Error") {
@@ -966,13 +969,13 @@ export default function Home() {
         </div>
         <div className="w-100 text-center">
           <div className='d-flex'>
-            <div className='col-3 font-weight-bold h3' style={{color:'red'}}>{batteryLow.battery}%</div>
+            <div className='col-3 font-weight-bold h3' style={{ color: 'red' }}>{batteryLow.battery}%</div>
             <div className='text-start'>
               <p>{t('battery1')}</p>
               <p className='pt-1'>{t('battery2')}</p>
             </div>
           </div>
-          <button className="battery-low-btn mt-3" onClick={()=>setBatteryLow(null)}>OK</button>
+          <button className="battery-low-btn mt-3" onClick={() => setBatteryLow(null)}>OK</button>
         </div>
       </div>}
       {agvHaveAlarm && <HomeAlarmError agvName={agvHaveAlarm}></HomeAlarmError>}
