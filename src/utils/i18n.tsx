@@ -8,16 +8,18 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'en',
+    supportedLngs: ['en', 'th'],
+    nonExplicitSupportedLngs: true,
     debug: false,
-    ns: [ 'login','home',"vehicle","mission","drawer","user" ],  // multiple namespaces
+    ns: ['login', 'home', "vehicle", "mission", "drawer", "user"],
     defaultNS: 'login',
     backend: {
-      loadPath: './locales/{{lng}}/{{ns}}.json', // e.g., /locales/en/home.json
+      loadPath: './locales/{{lng}}/{{ns}}.json',
     },
     detection: {
       order: ['localStorage', 'navigator'],
-      caches: ['localStorage'], // save language to localStorage
-      lookupLocalStorage: 'BGLanguage'
+      caches: ['localStorage'],
+      lookupLocalStorage: 'BGCLanguage'
     },
     interpolation: {
       escapeValue: false,

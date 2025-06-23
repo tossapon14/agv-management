@@ -44,7 +44,7 @@ const downloadCSV = async (vehicle: string, status: string, start_date: string, 
 
     const link = document.createElement("a");
     link.href = url;
-    link.download = `mission-vehicle-${vehicle}-status-${status} date ${start_date} ${end_date}.csv`;
+    link.download = `mission_vehicle_${vehicle}_status_${status}_date_${start_date}_${end_date}.csv`;
     link.click();
 
     URL.revokeObjectURL(url);

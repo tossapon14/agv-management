@@ -103,7 +103,7 @@ export default function Vehicle() {
                     getAgv();
                     timerInterval.current = setInterval(() => {
                         getAgv();
-                    }, 5000);
+                    }, 4000);
                 }
             } catch (e: any) {
                 console.error(e);

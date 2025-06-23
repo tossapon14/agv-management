@@ -24,6 +24,7 @@ function MapAnimate({ data, paths}: MapAnimateProps) {
     setSwitch(!sw);
     setStationshow(!stationshow);
   };
+  
   const calPathAgv = useMemo(():{paths:string,drop:{ x: string, y: string }[]}=>{
      if ( mapID.current!=null&&paths!==null&& paths?.paths.length != 0) {
       const positionsPoint = (point:number[]):string[]=>{

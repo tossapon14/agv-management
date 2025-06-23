@@ -50,7 +50,7 @@ const downloadCSV = async (vehicle: string, start_date: string, end_date: string
 
     const link = document.createElement("a");
     link.href = url;
-    link.download = `alarm-vehicle-${vehicle} ${start_date} ${end_date}.csv`;
+    link.download = `alarm_vehicle_${vehicle}_date_${start_date}_${end_date}.csv`;
     link.click();
 
     URL.revokeObjectURL(url);
@@ -246,12 +246,16 @@ export default function Alarm() {
                 const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
                 if (response.ok) {
                     const _date = new Date().toISOString().substring(0, 10)
-                    saveUrl.current = `/alarm/alarms?vehicle_name=ALL&start_date=${_date}&end_date=${_date}&page=1&page_size=10`
+                    const _vehicle = sessionStorage.getItem('user')?.split(",")[2] == "admin" ? 'ALL' : sessionStorage.getItem('user')?.split(",")[2] ?? "";
+
+                    saveUrl.current = `/alarm/alarms?vehicle_name=${_vehicle}&start_date=${_date}&end_date=${_date}&page=1&page_size=10`
                     saveDateStart.current = _date;
                     saveDateEnd.current = _date;
+                    saveVehicle.current = _vehicle;
+                    setVehicle(_vehicle);
                     setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle")??'[]') as string[]);
                     alarmSetPage(saveUrl.current);
-                    timerInterval.current = setInterval(() => alarmSetPage(saveUrl.current), 4000);
+                    timerInterval.current = setInterval(() => alarmSetPage(saveUrl.current), 10000);
                 }
             } catch (e: any) {
                 console.error(e);

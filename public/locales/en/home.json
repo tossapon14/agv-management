@@ -49,5 +49,9 @@
   "btn_confirm": "Confirm",
   "command": "Send a command",
   "back": "Back",
-  "alarmlink":"add-on"
+  "alarmlink":"add-on",
+  "errorTitle":"ERROR",
+  "batteryLow":"Low battery",
+  "battery1":"Warning: Low Battery",
+  "battery2":"Please chaege your vehicle soon."
 }

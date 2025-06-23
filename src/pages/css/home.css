@@ -610,7 +610,6 @@
 
 .drop-btn:hover {
   background-color: #c20600;
-  border: 2px solid #840000;
 }
 
 .drop-btn:active {
@@ -1278,10 +1277,10 @@
 .error-card {
   bottom: 20px;
   right: 20px;
-  width: 400px;
+  width: 390px;
   height: 500px;
   background-color: #383838;
-   border: 12px solid rgb(33, 37, 41);
+  border: 12px solid rgb(33, 37, 41);
   opacity: 0;
   animation: form-fade 1s linear forwards;
   animation-delay: 1s;
@@ -1302,6 +1301,35 @@
 .placeholder-wave span {
   height: 20px;
   margin-top: 0.8rem;
+}
+
+.battery-low-alert {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  height: 250px;
+  background-color: black;
+  color: rgb(229, 229, 229);
+  padding-inline: 16px;
+  border-bottom: 4px solid #ff4603;
+
+}
+
+.battery-low-btn {
+  border: 1px solid #fff;
+  margin: 0 auto;
+  width: 70%;
+  height: 36px;
+  background: none;
+  color: white;
+  border-radius: 18px;
+
+}
+
+.battery-low-btn:active {
+  transform: scale(0.98);
 }
 
 @media only screen and (max-width: 1890px) {
@@ -1626,7 +1654,9 @@
       "col2-vehicle"
       "home-table";
     grid-template-columns: 1fr;
-    grid-template-rows: var(--map-height) 520px 400px;
+    grid-template-rows: var(--map-height) auto 400px;
+
+    /* grid-template-rows: var(--map-height) 520px 400px; */
   }
 
   .home>.col2-vehicle {
@@ -1634,6 +1664,7 @@
     padding: 0;
     overflow: hidden;
     padding: 0 0.5rem;
+    height: min-content;
   }
 
   .box-display-agv {
@@ -1645,7 +1676,7 @@
     border-radius: 5px;
     background-color: #e0e0e0;
     border: 1px solid #000000;
-    height: 425px;
+    height: min-content;
   }
 
   .box-agv-data {
@@ -1972,5 +2003,15 @@
 
   .stat-card-box .stat-card {
     width: 160px !important;
+  }
+
+  .error-card {
+    right: 0;
+    width: 100vw;
+    border: 8px solid rgb(33, 37, 41);
+  }
+
+  .timer-clock{
+    display: none;
   }
 }

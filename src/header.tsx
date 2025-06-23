@@ -10,7 +10,7 @@ import { HiOutlineBars3, HiXMark } from "react-icons/hi2";
 export default function Headers({ drawerFunction }: { drawerFunction: (t: boolean) => void }) {
     const { i18n } = useTranslation();
     const user = (sessionStorage.getItem("user")?.split(",")[4] || "");
-    const [lang, setLang] = useState<string>(localStorage.getItem('BGLanguage') ?? "en");
+    const [lang, setLang] = useState<string>(localStorage.getItem('BGCLanguage') ?? "en");
     const [open, setOpen] = useState<boolean>(false);
     const [iconNav, setIconNav] = useState<boolean>(true);
     const languageBlockRef = useRef<HTMLDivElement>(null)
@@ -78,8 +78,8 @@ export default function Headers({ drawerFunction }: { drawerFunction: (t: boolea
                     </div>
                 </div>
                 <div className='timer-clock'>
-                    <div className="d-flex align-items-center" >
-                        {user && <div className="rounded-circle d-flex  align-items-center justify-content-center me-2" style={{ fontWeight: 'bold', width: "32px", height: "32px", background: "linear-gradient(122deg,rgba(33, 111, 255, 1) 0%, rgba(140, 243, 255, 1) 100%)", color: 'white' }}>{user[0].toUpperCase()}</div>}
+                    <div className="d-flex align-items-center icon-user" >
+                        {user && <div className="rounded-circle d-flex align-items-center  justify-content-center me-2 " style={{ fontWeight: 'bold', width: "32px", height: "32px", background: "linear-gradient(122deg,rgba(33, 111, 255, 1) 0%, rgba(140, 243, 255, 1) 100%)", color: 'white' }}>{user[0].toUpperCase()}</div>}
                         <span className='h5 m-0 pe-1 pe-md-3'>{user} </span> <span className='d-none d-md-inline'>@ BGC อยุธยากล๊าส</span>
                     </div>
                 </div>

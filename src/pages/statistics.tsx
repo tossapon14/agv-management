@@ -44,7 +44,7 @@ const downloadCSV = async (start_date: string, end_date: string) => {
 
   const link = document.createElement("a");
   link.href = url;
-  link.download = `statistics-${start_date} ${end_date}.csv`;
+  link.download = `statistics_date_${start_date}_${end_date}.csv`;
   link.click();
 
   URL.revokeObjectURL(url);
