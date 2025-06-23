@@ -172,7 +172,7 @@ export default function Home() {
   const getMissionAPI = useRef<() => Promise<void>>(async () => { });
   const audioRingTone = useRef<HTMLAudioElement>(null);
   const [batteryLow, setBatteryLow] = useState<{ name: string, battery: number } | null>(null);
-
+  const controller = useRef<AbortController>(new AbortController());
   const { t } = useTranslation('home');
 
   const buttonsDrop = [
@@ -216,7 +216,7 @@ export default function Home() {
     setDialogSummary({ show: false });
     setResponseData({ error: null, message: "loading" });
     try {
-      await axiosPut(`/mission/update/status?mission_id=${id}&vehicle_name=${name}&command=cancel`);
+      await axiosPut(`/mission/update/status?mission_id=${id}&vehicle_name=${name}&command=cancel`, undefined, controller.current.signal);
       setResponseData({ error: false, message: "Cancel success" })
       if (getMissionAPI.current) {
         getMissionAPI.current();
@@ -252,7 +252,7 @@ export default function Home() {
   const APIPutDropProduct = async (name: string) => {
     setResponseData({ error: null, message: "loading" });
     try {
-      await axiosPut(`fleet/command?command=next&vehicle_name=${name}`);
+      await axiosPut(`fleet/command?command=next&vehicle_name=${name}`, undefined, controller.current.signal);
       setResponseData({ error: false, message: "drop success" })
     } catch (e: any) {
       console.error("drop product", e)
@@ -264,7 +264,7 @@ export default function Home() {
   const sendCommand = async (agv: string, command: string) => {
     setResponseData({ error: null, message: "loading" });
     try {
-      await axiosPut(`fleet/command?command=${command}&vehicle_name=${agv}`);
+      await axiosPut(`fleet/command?command=${command}&vehicle_name=${agv}`, undefined, controller.current.signal);
       setResponseData({ error: false, message: `${command} send success` })
     } catch (e: any) {
       console.error('send stop or continue', e)
@@ -282,7 +282,7 @@ export default function Home() {
       vehicle_name: agv
     }
     try {
-      await axiosPut("/mission/update", dataMission);
+      await axiosPut("/mission/update", dataMission, controller.current.signal);
       setResponseData({ error: false, message: "send command success" })
     } catch (e: any) {
       console.error(e?.message);
@@ -300,7 +300,7 @@ export default function Home() {
       "vehicle_name": agv
     }
     try {
-      await axiosPost("/mission/create", dataMission);
+      await axiosPost("/mission/create", dataMission, controller.current.signal);
       setResponseData({ error: false, message: "send command success" })
     } catch (e: any) {
       console.error(e?.message);
@@ -350,7 +350,7 @@ export default function Home() {
 
   const getCanDrop = async (pick: string): Promise<string[]> => {
     try {
-      const response: IGetCanDrop = await axiosPost(`/node/validate_stations`, [pick]);
+      const response: IGetCanDrop = await axiosPost(`/node/validate_stations`, [pick], controller.current.signal);
       const available_drop: string[] = response.available_dropoffs;
       return available_drop;
     } catch (e) {
@@ -362,7 +362,7 @@ export default function Home() {
 
   const getDropNextStation = async (allGoal: string[]): Promise<string[]> => {
     try {
-      const response: IGetCanDrop = await axiosPost(`/node/validate_stations`, allGoal);
+      const response: IGetCanDrop = await axiosPost(`/node/validate_stations`, allGoal, controller.current.signal);
       const available_drop: string[] = response.available_dropoffs.filter((item: string) =>
         !response.blocked_dropoffs.includes(item)
       );
@@ -392,7 +392,7 @@ export default function Home() {
 
   };
 
-  const selectAgvFunction = (agvName: string) => {
+  const selectAgvFunction = async (agvName: string) => {
     selectAgv.current = agvName;
     loadSave.current = false;
     setSelectedAgv(agvName);
@@ -433,7 +433,7 @@ export default function Home() {
       const rawPose = coor.split(",");
       const x = Number(rawPose[0]) * -Math.cos(-0.082) - Number(rawPose[1]) * -Math.sin(-0.082);
       const y = Number(rawPose[0]) * -Math.sin(-0.082) + Number(rawPose[1]) * -Math.cos(-0.082);
-      const positionX = (((x + 45) / 1005) * 100).toFixed(3) + '%'; //(((x + 45) / 996.782)
+      const positionX = (((x + 43) / 1005) * 100).toFixed(3) + '%'; //(((x + 45) / 996.782)
       const positionY = (((y + 270) / 586.10) * 100).toFixed(3) + '%';
       const degree = ((Number(rawPose[2]) - 0.082) * -180) / Math.PI;
       if (prev_deg.current[name] === undefined) {
@@ -454,7 +454,7 @@ export default function Home() {
     getMissionAPI.current = async () => {
       try {
         const res: IMissionData = await axiosGet(
-          `/mission/missions?vehicle_name=${selectAgv.current}&status=ALL&start_date=${_date}&end_date=${_date}&page=1&page_size=10`
+          `/mission/missions?vehicle_name=${selectAgv.current}&status=ALL&start_date=${_date}&end_date=${_date}&page=1&page_size=10`, controller.current.signal
         );
 
         setMissionTable(res.payload.slice(0, 4).map(ele => ({
@@ -470,17 +470,17 @@ export default function Home() {
         }
         return e.response?.data || { message: "Unknown error occurred" };
       } finally {
-        if (!loadSave.current) {
+
+        if (!loadSave.current && selectAgv.current === agvCurrentWaitForLoad) {
           loadSave.current = true;
           setLoadSuccess(true);
         }
       }
     };
-
     getAGVAPI.current = async () => {
       try {
         const res: IVehicles = await axiosGet(
-          `/vehicle/vehicles?vehicle_name=${selectAgv.current}&state=ALL`,
+          `/vehicle/vehicles?vehicle_name=${selectAgv.current}&state=ALL`, controller.current.signal
         );
         if (onlineRef.current == false) {
           setOnlineBar(true);
@@ -491,9 +491,10 @@ export default function Home() {
         const _currentMissionId: number[] = [];
         var haveAlarm: boolean = false;
         var haveAlarm: boolean = false;
+        agvCurrentWaitForLoad = res.payload.length > 1 ? "ALL" : res.payload[0].name;
+        if (selectAgv.current !== agvCurrentWaitForLoad) return;
 
         res.payload.forEach((data: IPayload) => {
-
           var _agvData: IPayload;
           if (data.state > 0) {
             _agvPosition.push(calPositionAGV(data.coordinate, data.name));
@@ -572,7 +573,7 @@ export default function Home() {
         if (e.message === "Network Error") {
           setOnlineBar(false);
           onlineRef.current = false;
-        } else if (e.response.status === 401 || e.response?.data?.detail === "Invalid token or Token has expired.") {
+        } else if (e.response?.status === 401 || e.response?.data?.detail === "Invalid token or Token has expired.") {
           setNotAuthenticated(true)
           if (timerInterval.current) {
             clearInterval(timerInterval.current as NodeJS.Timeout);
@@ -585,13 +586,11 @@ export default function Home() {
           console.error(e.message)
         }
       } finally {
-        if (!loadSave.current) {
+        if (!loadSave.current && selectAgv.current === agvCurrentWaitForLoad) {
           loadSave.current = true;
           setLoadSuccess(true);
-
         }
       }
-
     }
     const handleClickOutside = (event: any) => {
       if (modalRef.current === event.target) {
@@ -607,6 +606,8 @@ export default function Home() {
     myUser.current = sessionStorage.getItem("user")?.split(",")[2] ?? "";
     if (myUser.current === "") return;
     selectAgv.current = myUser.current === "admin" ? "ALL" : myUser.current;
+    var agvCurrentWaitForLoad: string = selectAgv.current;
+
     setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle") ?? '[]') as string[]);
     setSelectedAgv(selectAgv.current);
     getAGVAPI.current();
@@ -630,6 +631,7 @@ export default function Home() {
     audioRingTone.current = new Audio(Sound);
 
     return () => {
+      // controller.current.abort();
       modalRef.current?.removeEventListener("mouseup", handleClickOutside);
       confirmModalRef.current?.removeEventListener("mouseup", handleClickOutsideConfirm);
       if (timerInterval.current != null) {
@@ -967,8 +969,8 @@ export default function Home() {
         <div className='w-100 p-4 text-center h5'><BiError size={32} color={'red'} /><span className='ps-2'>{batteryLow.name} {t('batteryLow')}</span>
         </div>
         <div className="w-100 text-center">
-          <div className='d-inline font-weight-bold h3' style={{ color: 'red' }}>{batteryLow.battery}%<span style={{paddingLeft:'16px',fontSize:"16px",color:'rgb(229, 229, 229)'}}>{t('battery1')}</span></div>
-           <p className='pt-3'>{t('battery2')}</p>
+          <div className='d-inline font-weight-bold h3' style={{ color: 'red' }}>{batteryLow.battery}%<span style={{ paddingLeft: '16px', fontSize: "16px", color: 'rgb(229, 229, 229)' }}>{t('battery1')}</span></div>
+          <p className='pt-3'>{t('battery2')}</p>
           <button className="battery-low-btn mt-3" onClick={() => setBatteryLow(null)}>OK</button>
         </div>
       </div>}

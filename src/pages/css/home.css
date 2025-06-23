@@ -1654,7 +1654,9 @@
       "col2-vehicle"
       "home-table";
     grid-template-columns: 1fr;
-    grid-template-rows: var(--map-height) 520px 400px;
+    grid-template-rows: var(--map-height) auto 400px;
+
+    /* grid-template-rows: var(--map-height) 520px 400px; */
   }
 
   .home>.col2-vehicle {
@@ -1662,6 +1664,7 @@
     padding: 0;
     overflow: hidden;
     padding: 0 0.5rem;
+    height: min-content;
   }
 
   .box-display-agv {
@@ -1673,7 +1676,7 @@
     border-radius: 5px;
     background-color: #e0e0e0;
     border: 1px solid #000000;
-    height: 425px;
+    height: min-content;
   }
 
   .box-agv-data {
@@ -2008,7 +2011,7 @@
     border: 8px solid rgb(33, 37, 41);
   }
 
-  .icon-user {
-    display: none !important;
+  .timer-clock{
+    display: none;
   }
 }
