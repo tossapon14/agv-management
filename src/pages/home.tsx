@@ -151,8 +151,7 @@ export default function Home() {
   const missionLoop = useRef(0);
   const [loadSuccess, setLoadSuccess] = useState(false);
   const [buttonDropList, setButtonDropList] = useState<number[]>([]);
-  const [agvPosition, setAgvPosition] = useState<string[][]>([])
-  const prev_deg = useRef<{ [key: string]: number }>({});
+  const [agvPosition2, setAgvPosition2] = useState<{name:string,position:string}[]>([]);
   const [agvPath, setAgvPath] = useState<{ paths: number[][], drop: number[][] } | null>(null);
   const [onlineBar, setOnlineBar] = useState<null | boolean>(null);
   const onlineRef = useRef<boolean | null>(null);
@@ -429,26 +428,6 @@ export default function Home() {
       return { percents: percents, dropList: nodes.split(','), numProcess, dropNumber };
     };
 
-    const calPositionAGV = (coor: string, name: string): string[] => {
-      const rawPose = coor.split(",");
-      const x = Number(rawPose[0]) * -Math.cos(-0.082) - Number(rawPose[1]) * -Math.sin(-0.082);
-      const y = Number(rawPose[0]) * -Math.sin(-0.082) + Number(rawPose[1]) * -Math.cos(-0.082);
-      const positionX = (((x + 43) / 1005) * 100).toFixed(3) + '%'; //(((x + 45) / 996.782)
-      const positionY = (((y + 270) / 586.10) * 100).toFixed(3) + '%';
-      const degree = ((Number(rawPose[2]) - 0.082) * -180) / Math.PI;
-      if (prev_deg.current[name] === undefined) {
-        prev_deg.current[name] = 0.0;
-      }
-      let delta = degree - prev_deg.current[name];
-
-      delta = ((delta + 180) % 360 + 360) % 360 - 180;
-      prev_deg.current[name] = prev_deg.current[name] + delta;
-      if (Math.abs(prev_deg.current[name]) > 1e6) {
-        prev_deg.current[name] %= 360;
-      }
-      // console.log(delta, prev_deg.current[name])
-      return [name, positionX, positionY, prev_deg.current[name].toFixed(3)];
-    }
     const _date = new Date().toISOString().substring(0, 10)
 
     getMissionAPI.current = async () => {
@@ -486,19 +465,18 @@ export default function Home() {
           setOnlineBar(true);
           onlineRef.current = true;
         }
-        const _agvPosition: string[][] = [];
+         const _agvPosition2: { name: string, position: string }[] = [];
         const _agv: IPayload[] = [];
         const _currentMissionId: number[] = [];
         var haveAlarm: boolean = false;
-        var haveAlarm: boolean = false;
-        agvCurrentWaitForLoad = res.payload.length > 1 ? "ALL" : res.payload[0].name;
+         agvCurrentWaitForLoad = res.payload.length > 1 ? "ALL" : res.payload[0].name;
         if (selectAgv.current !== agvCurrentWaitForLoad) return;
 
         res.payload.forEach((data: IPayload) => {
           var _agvData: IPayload;
           if (data.state > 0) {
-            _agvPosition.push(calPositionAGV(data.coordinate, data.name));
-            if (data.mission) {
+            _agvPosition2.push({ name: data.name, position: data.coordinate });
+             if (data.mission) {
               let _processMission = calProcessMission(data.node_idx, data.mission.nodes_idx, data.mission.nodes);
               if (_processMission?.dropNumber != undefined && data.state > 2 && selectAgv.current !== 'ALL') {  // condition find path color   
                 if (_processMission.dropList.length > 1) {
@@ -556,7 +534,7 @@ export default function Home() {
         });
 
         setCurrentMission(_currentMissionId);
-        setAgvPosition(_agvPosition);
+         setAgvPosition2(_agvPosition2);
         setAgvAll(_agv);
         if (haveAlarm) {
           setAgvHaveAlarm(selectAgv.current);
@@ -641,7 +619,7 @@ export default function Home() {
   return (
     <section className='home'>
       <section className="col1">
-        <MapAnimate data={agvPosition} paths={agvPath}  ></MapAnimate>
+        <MapAnimate  position={agvPosition2} paths={agvPath}  ></MapAnimate>
       </section>
       <section className="mt-3 px-0 home-table">
         <div className="card mb-3">
