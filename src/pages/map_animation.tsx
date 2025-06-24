@@ -26,14 +26,20 @@ function MapAnimate({ position, paths }: MapAnimateProps) {
     setSwitch(!sw);
     setStationshow(!stationshow);
   };
+  const positionsPoint = (point: number[]): number[] => {
+    const positionX = (((point[0] * -0.9966398834184859 - point[1] * 0.08190813622337459 + 52) / 1005) * mapID.current!.clientWidth) ;
+    const positionY = ((1 - ((point[0] * 0.08190813622337459 + point[1] * -0.9966398834184859 + 280) / 586.10)) * mapID.current!.clientHeight) ;
+    return [positionX, positionY];
+  };
 
   const agvPosition = useMemo((): { name: string, x: string, y: string, rotate: string }[] => {
     if (mapID.current != null && position.length > 0) {
       return position.map((agv) => {
         const agvPosition = agv.position.split(",");
-        const x = -15 + Math.round(((Number(agvPosition[0]) * -0.9966398834184859 - Number(agvPosition[1]) * 0.08190813622337459 + 52) / 1005) * mapID.current!.clientWidth);
-        const y = -12 + Math.round((1 - ((Number(agvPosition[0]) * 0.08190813622337459 + Number(agvPosition[1]) * -0.9966398834184859 + 280) / 586.10)) * mapID.current!.clientHeight);
-         // Calculate rotation based on the position string
+        const [positionX, positionY] = positionsPoint([Number(agvPosition[0]), Number(agvPosition[1])]);
+        const x = -14 + positionX;
+        const y = -12 + positionY;
+        // Calculate rotation based on the position string
         const degree = ((Number(agvPosition[2]) - 0.082) * -180) / Math.PI;
         if (prev_deg.current[agv.name] === undefined) {
           prev_deg.current[agv.name] = 0.0;
@@ -45,28 +51,21 @@ function MapAnimate({ position, paths }: MapAnimateProps) {
         if (Math.abs(prev_deg.current[agv.name]) > 1e6) {
           prev_deg.current[agv.name] %= 360;
         }
-         return { name: agv.name, x: x.toString(), y: y.toString(), rotate: `rotate(${prev_deg.current[agv.name].toFixed(2)})` };
+        return { name: agv.name, x: x.toString(), y: y.toString(), rotate: `rotate(${prev_deg.current[agv.name].toFixed(2)})` };
       });
 
     }
     return [];
   }, [position]);
 
-  const calPathAgv = useMemo((): { paths: string, drop: { x: string, y: string }[] } => {
+  const calPathAgv = useMemo((): { paths: string, drop: { x: number, y: number }[] } => {
     if (mapID.current != null && paths !== null && paths?.paths.length != 0) {
-      const positionsPoint = (point: number[]): string[] => {
-        const x = point[0] * -0.9966398834184859 - point[1] * 0.08190813622337459;
-        const y = point[0] * 0.08190813622337459 + point[1] * -0.9966398834184859;
-        const positionX = (((x + 52) / 1005) * mapID.current!.clientWidth).toFixed(2);
-        const positionY = ((1 - ((y + 280) / 586.10)) * mapID.current!.clientHeight).toFixed(2);
-        return [positionX, positionY]
-      };
       let d = "M";
       paths!.paths.forEach(point => {
         const [positionX, positionY] = positionsPoint(point);
-        d = d + ' ' + positionX + ' ' + positionY;
+        d = d + ' ' + positionX.toFixed(2) + ' ' + positionY.toFixed(2);
       });
-      const drop: { x: string, y: string }[] = [];
+      const drop: { x: number, y: number }[] = [];
       paths!.drop.forEach((point) => {
         const [positionX, positionY] = positionsPoint(point);
         drop.push({ x: positionX, y: positionY })
@@ -104,8 +103,8 @@ function MapAnimate({ position, paths }: MapAnimateProps) {
               strokeWidth="2"
             />
             <image
-              x={Number(drop.x) - 20}  // Center the pin image if needed
-              y={Number(drop.y) - 40}
+              x={drop.x - 20}  // Center the pin image if needed
+              y={drop.y - 40}
               href={Pin}
               className="pin-animate"
             />
@@ -119,7 +118,7 @@ function MapAnimate({ position, paths }: MapAnimateProps) {
           height={24}
           href={agv.name in AGV ? AGV[agv.name] : AGV1}
           className="carmodel-position"
-           transform={agv.rotate}
+          transform={agv.rotate}
           transform-origin={"30% 50%"}
         />))}
       </svg>

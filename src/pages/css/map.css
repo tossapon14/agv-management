@@ -26,7 +26,7 @@
 .carmodel-position {
     transform-box: fill-box;
     transition: x 3s linear, y 3s linear, transform 3s linear;
-    will-change: transform, left, bottom;
+    will-change: x, y , transform;
 }
 #map .switch-map-pick{
     position:absolute;

@@ -815,7 +815,7 @@ export default function Home() {
             <button className='btn w-100 mt-3 py-3 btn-danger' onClick={() => btnCancelMission(dialogSummary.id, dialogSummary.name)}>{t("tb_cancel")}</button>
 
           </> :
-            dialogSummary.agvCode === "724" ? <> {/*  dialog drop   */}
+            dialogSummary.agvCode === "724" ? <> {/*  dialog drop   724*/}
               <div className='card-summaryCommand-header'>
                 <div className="icon-name-agv">
                   <div className='bg-img' style={{ background: '#FFF1EA' }}>
