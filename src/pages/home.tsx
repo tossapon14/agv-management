@@ -608,7 +608,7 @@ export default function Home() {
     audioRingTone.current = new Audio(Sound);
 
     return () => {
-      // controller.current.abort();
+      controller.current.abort();
       modalRef.current?.removeEventListener("mouseup", handleClickOutside);
       confirmModalRef.current?.removeEventListener("mouseup", handleClickOutsideConfirm);
       if (timerInterval.current != null) {
