@@ -11,46 +11,72 @@ import { useState, useRef, useMemo } from 'react'
 import './css/map.css';
 
 interface MapAnimateProps {
-  data: string[][] // Optional prop to toggle station visibility initially
-  paths: {paths: number[][],drop:number[][]}|null
- }
+  position: { name: string, position: string }[]
+  paths: { paths: number[][], drop: number[][] } | null
+}
 const AGV: { [key: string]: string } = { AGV1: AGV1, AGV2: AGV2, AGV3: AGV3, AGV4: AGV4 }
-function MapAnimate({ data, paths}: MapAnimateProps) {
+function MapAnimate({ position, paths }: MapAnimateProps) {
   const [stationshow, setStationshow] = useState(true);
   const [sw, setSwitch] = useState(true);
- 
+  const prev_deg = useRef<{ [key: string]: number }>({});
+
+
   const mapID = useRef<HTMLDivElement>(null);
   const setSwitchShow = () => {
     setSwitch(!sw);
     setStationshow(!stationshow);
   };
-  
-  const calPathAgv = useMemo(():{paths:string,drop:{ x: string, y: string }[]}=>{
-     if ( mapID.current!=null&&paths!==null&& paths?.paths.length != 0) {
-      const positionsPoint = (point:number[]):string[]=>{
-         const x = point[0] * -0.9966398834184859 - point[1] * 0.08190813622337459;
-          const y = point[0] * 0.08190813622337459 + point[1] * -0.9966398834184859;
-          const positionX = (((x + 52) / 1005) * mapID.current!.clientWidth).toFixed(2);
-          const positionY = ((1 - ((y + 280) / 586.10)) * mapID.current!.clientHeight).toFixed(2);
-          return [positionX,positionY]
-      }; 
-        let d = "M";
-        paths!.paths.forEach(point => {
-          const [positionX,positionY] = positionsPoint(point);
-          d = d + ' ' + positionX + ' ' + positionY;
-        });
-        const drop: { x: string, y: string }[] = [];
-        paths!.drop.forEach((point) => {
-          const [positionX,positionY] = positionsPoint(point);
-          drop.push({ x: positionX, y: positionY })
-        });
-        return {paths:d,drop:drop};
-      } else {
-       return {paths:"",drop:[]};
-      }
-     
-},[paths]);
-  
+  const positionsPoint = (point: number[]): number[] => {
+    const positionX = (((point[0] * -0.9966398834184859 - point[1] * 0.08190813622337459 + 52) / 1005) * mapID.current!.clientWidth) ;
+    const positionY = ((1 - ((point[0] * 0.08190813622337459 + point[1] * -0.9966398834184859 + 280) / 586.10)) * mapID.current!.clientHeight) ;
+    return [positionX, positionY];
+  };
+
+  const agvPosition = useMemo((): { name: string, x: string, y: string, rotate: string }[] => {
+    if (mapID.current != null && position.length > 0) {
+      return position.map((agv) => {
+        const agvPosition = agv.position.split(",");
+        const [positionX, positionY] = positionsPoint([Number(agvPosition[0]), Number(agvPosition[1])]);
+        const x = -14 + positionX;
+        const y = -12 + positionY;
+        // Calculate rotation based on the position string
+        const degree = ((Number(agvPosition[2]) - 0.082) * -180) / Math.PI;
+        if (prev_deg.current[agv.name] === undefined) {
+          prev_deg.current[agv.name] = 0.0;
+        }
+        let delta = degree - prev_deg.current[agv.name];
+
+        delta = ((delta + 180) % 360 + 360) % 360 - 180;
+        prev_deg.current[agv.name] = prev_deg.current[agv.name] + delta;
+        if (Math.abs(prev_deg.current[agv.name]) > 1e6) {
+          prev_deg.current[agv.name] %= 360;
+        }
+        return { name: agv.name, x: x.toString(), y: y.toString(), rotate: `rotate(${prev_deg.current[agv.name].toFixed(2)})` };
+      });
+
+    }
+    return [];
+  }, [position]);
+
+  const calPathAgv = useMemo((): { paths: string, drop: { x: number, y: number }[] } => {
+    if (mapID.current != null && paths !== null && paths?.paths.length != 0) {
+      let d = "M";
+      paths!.paths.forEach(point => {
+        const [positionX, positionY] = positionsPoint(point);
+        d = d + ' ' + positionX.toFixed(2) + ' ' + positionY.toFixed(2);
+      });
+      const drop: { x: number, y: number }[] = [];
+      paths!.drop.forEach((point) => {
+        const [positionX, positionY] = positionsPoint(point);
+        drop.push({ x: positionX, y: positionY })
+      });
+      return { paths: d, drop: drop };
+    } else {
+      return { paths: "", drop: [] };
+    }
+
+  }, [paths]);
+
 
   return (
     <div id="map" ref={mapID}>
@@ -77,21 +103,31 @@ function MapAnimate({ data, paths}: MapAnimateProps) {
               strokeWidth="2"
             />
             <image
-              x={Number(drop.x) - 20}  // Center the pin image if needed
-              y={Number(drop.y) - 40}
+              x={drop.x - 20}  // Center the pin image if needed
+              y={drop.y - 40}
               href={Pin}
               className="pin-animate"
             />
           </g>
         ))}
+        {agvPosition.map((agv => <image
+          key={agv.name}
+          x={agv.x}
+          y={agv.y}
+          width={48}
+          height={24}
+          href={agv.name in AGV ? AGV[agv.name] : AGV1}
+          className="carmodel-position"
+          transform={agv.rotate}
+          transform-origin={"30% 50%"}
+        />))}
       </svg>
-      {data.map((agv,i) => <img key={i} src={AGV[agv[0]]} className='carmodel-position' style={{ left: `${agv[1]}`, bottom: `${agv[2]}`, transform: `rotate(${agv[3]}deg)` }} alt={`${agv[0]}`}></img>)}
       <div className="switch-map-pick">
-         <h6>{sw ? "show" : "hide"}</h6>
+        <h6>{sw ? "show" : "hide"}</h6>
         <Switch isOn={sw} handleToggle={setSwitchShow} />
       </div>
     </div>
   );
 }
 
-export default  MapAnimate;
+export default MapAnimate;
