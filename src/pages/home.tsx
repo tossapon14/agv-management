@@ -449,7 +449,6 @@ export default function Home() {
         }
         return e.response?.data || { message: "Unknown error occurred" };
       } finally {
-
         if (!loadSave.current && selectAgv.current === agvCurrentWaitForLoad) {
           loadSave.current = true;
           setLoadSuccess(true);
