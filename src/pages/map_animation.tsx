@@ -37,7 +37,7 @@ function MapAnimate({ position, paths }: MapAnimateProps) {
       return position.map((agv) => {
         const agvPosition = agv.position.split(",");
         const [positionX, positionY] = positionsPoint([Number(agvPosition[0]), Number(agvPosition[1])]);
-        const x = -14 + positionX;
+        const x = -15 + positionX;
         const y = -12 + positionY;
         // Calculate rotation based on the position string
         const degree = ((Number(agvPosition[2]) - 0.082) * -180) / Math.PI;

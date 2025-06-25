@@ -313,16 +313,33 @@
   padding: 0;
   border: 1px solid #ffd0ce;
   border-radius: 8px;
+   
 }
 
 .pickup-process-line {
   width: 100%;
-  padding: 0 0 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  }
- 
+  height:0px;
+  transition: height 0.7s;
+  will-change: height;
+ }
+
+.pickup-process-line:has(.pickup-data) {
+  height: 64px;
+}
+.pickup-process-line:has(.pickup-data):has(.alert-pickup) {
+  height: 118px;
+}
+
+.pickup-process-line:has(.mission-process-box) {
+  height: 124px;
+}
+
+.pickup-process-line:has(.mission-process-box):has(.alert-pickup) {
+  height: 176px;
+}
 
 .pickup-process-line .alert-pickup {
   padding: 8px;
@@ -333,8 +350,10 @@
   background-color: #000000;
   color: white;
   margin-top: 12px;
-  animation: alertfade 0.5s ease-out infinite alternate;
-
+  opacity: 0;
+  animation: alertfade 0.5s ease-out infinite alternate; 
+  animation-delay: 1s;
+  will-change: opacity;
 }
 
 @keyframes alertfade {
@@ -357,6 +376,7 @@
   background-color: #efefef;
   border-radius: 5px;
   border: 1px solid #ffc78b;
+  
 }
 
 .pickup-process-line .pickup-data span {
@@ -410,7 +430,7 @@
 
 .center-line-box {
   flex-grow: 1;
-  height: 100%;
+  height: 108px;
   position: relative;
   /* background-color: #ca4343; */
 }
@@ -2013,7 +2033,7 @@
     border: 8px solid rgb(33, 37, 41);
   }
 
-  .timer-clock{
+  .timer-clock {
     display: none;
   }
 }
