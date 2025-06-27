@@ -13,7 +13,7 @@ import { FaRegTrashCan } from "react-icons/fa6";
 import { IoMdSettings, IoMdClose } from "react-icons/io";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { axiosGet, axiosPost, axiosPut } from "../api/axiosFetch";
-import { useState, useRef, useEffect, Fragment, useCallback } from 'react';
+import { useState, useRef, useEffect, Fragment } from 'react';
 import { BiSolidError, BiError } from "react-icons/bi";
 import StatusOnline from './statusOnline';
 import { pairMissionStatus, colorAgv } from '../utils/centerFunction';
@@ -332,20 +332,6 @@ export default function Home() {
     }
   };
 
-  const deleteDrop = useCallback(async (pickup: string, node: string) => {
-    const element = document.getElementById(node);
-    if (element) {
-      element.classList.add("slide-out");
-      const resultRemove = selectStations.filter(item => item !== node);
-      const allGoal: string[] = [pickup, ...resultRemove];
-      const btnDropList = await getDropNextStation(allGoal);
-      const index_drop = btnDropList.map((drop) => Number(drop.substring(1, 3)) - 1);
-      setButtonDropList(index_drop);
-      setTimeout(() => {
-        setselectStations(resultRemove);
-      }, 500);
-    }
-  }, [selectStations]);
 
   const getCanDrop = async (pick: string): Promise<string[]> => {
     try {
@@ -361,6 +347,7 @@ export default function Home() {
 
   const getDropNextStation = async (allGoal: string[]): Promise<string[]> => {
     try {
+      console.log(allGoal);
       const response: IGetCanDrop = await axiosPost(`/node/validate_stations`, allGoal, controller.current.signal);
       const available_drop: string[] = response.available_dropoffs.filter((item: string) =>
         !response.blocked_dropoffs.includes(item)
@@ -373,14 +360,29 @@ export default function Home() {
 
   };
 
-  const clickDrop = useCallback(async (pickup: string, index: string) => {
+   const deleteDrop =  async (pickup: string, node: string) => {
+    const element = document.getElementById(node);
+    if (element) {
+      element.classList.add("slide-out");
+      const resultRemove = selectStations.filter(item => item !== node);
+      const allGoal: string[] = [pickup, ...resultRemove];
+      const btnDropList = await getDropNextStation(allGoal);
+      const index_drop = btnDropList.map((drop) => Number(drop.substring(1, 3)) - 1);
+      setButtonDropList(index_drop);
+      setTimeout(() => {
+        setselectStations(resultRemove);
+      }, 500);
+    }
+  } ;
+
+  const clickDrop = async (pickup: string, index: string) => {
     if (!selectStations.includes(`D${index}S`) && selectStations.length <= 3) {
       setselectStations(prev => [...prev, `D${index}S`]);
       const btnDropList = await getDropNextStation([pickup, ...selectStations, `D${index}S`]);
       const index_drop = btnDropList.map((drop) => Number(drop.substring(1, 3)) - 1);
       setButtonDropList(index_drop);
     }
-  }, [selectStations])
+  };
 
   const clickPickup = (index: number) => {
     const PS = ["P01S", "P02S", "P03S", "P04S", "P05S", "P06S", "P07S", "P08S"];
@@ -719,7 +721,7 @@ export default function Home() {
                 </div>
 
                 <div className={`auto-manual ${(agv as IPayload).mode}`}>{(agv as IPayload).mode}</div>
-                {((agv as IPayload).emergency_state || (agv as IPayload).state == 6) ? <div className='EmergencyBtn'><BiSolidError size={20} color='red' />&nbsp;&nbsp;{(agv as IPayload).state == 6 ? t("state_6") : t("emer")}</div>
+                {((agv as IPayload).emergency_state || (agv as IPayload).state == 6) ? <div key={agv.name} className='EmergencyBtn'><BiSolidError size={20} color='red' />&nbsp;&nbsp;{(agv as IPayload).state == 6 ? t("state_6") : t("emer")}</div>
                   : <div className='agv-state'>{t(`state_${agv.state}`)}</div>}
               </div>
               <div className='velocity'>
