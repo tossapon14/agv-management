@@ -48,7 +48,8 @@ export default defineConfig({
            './src/pages/not_authenticated.tsx',
            './src/App.tsx',
            './src/header.tsx',
-           './src/pages/homeAlarmError.tsx'
+           './src/pages/homeAlarmError.tsx',
+           'src/utils/FilterDropoff.ts'
           ],
         },
       },

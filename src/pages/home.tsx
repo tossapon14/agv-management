@@ -21,6 +21,7 @@ import ResponseAPI from './responseAPI.tsx';
 import NotAuthenticated from './not_authenticated.tsx';
 import HomeAlarmError from './homeAlarmError.tsx';
 import Sound from '../assets/sounds/mixkit-happy-bells-notification-937.wav'
+import FilterDropoff from '../utils/FilterDropoff.ts';
 
 
 
@@ -126,7 +127,7 @@ interface IdialogConfirm {
   pickupName?: string
 }
 interface IGetCanDrop {
-  pickup: string
+  pickup: string|null
   selected_dropoffs: string[]
   blocked_dropoffs: string[]
   available_dropoffs: string[]
@@ -172,6 +173,7 @@ export default function Home() {
   const audioRingTone = useRef<HTMLAudioElement>(null);
   const [batteryLow, setBatteryLow] = useState<{ name: string, battery: number } | null>(null);
   const controller = useRef<AbortController>(new AbortController());
+  const FilterDrop = useRef(new FilterDropoff())
   const { t } = useTranslation('home');
 
   const buttonsDrop = [
@@ -188,7 +190,7 @@ export default function Home() {
     { id: "11", top: "68%", left: "25%" },
     { id: "12", top: "56%", left: "25%" },
     { id: "13", top: "35%", left: "42%" },
-    { id: "14", top: "43%", left: "42%" },
+    { id: "14", top: "35%", left: "49%" },
     { id: "15", top: "70%", left: "52%" },
     { id: "16", top: "72%", left: "78%" },
     { id: "17", top: "86%", left: "40%" },
@@ -314,13 +316,13 @@ export default function Home() {
       setShowModal("show-modal");
       setPickup(null);
       setselectStations([]);  // show when select button drop
-      setButtonDropList([]);  // button drop on image bgc
+      setButtonDropList([]);  // button drop on image bgc if [] show loading
       if (data.agvCode !== "721") {
         return;
       }
       else if (data.agvCode === "721" && data.pickup) {
         data.pickup = data.pickup!.split(",")[0] ?? "";
-        const btnDropList = await getCanDrop(data.pickup!);
+        const btnDropList =  getDropNextStation([data.pickup]);
         const index_drop = btnDropList.map((drop) => Number(drop.substring(1, 3)) - 1);
         setButtonDropList(index_drop);
       } else {
@@ -332,23 +334,9 @@ export default function Home() {
     }
   };
 
-
-  const getCanDrop = async (pick: string): Promise<string[]> => {
+  const getDropNextStation =  (allGoal: string[]): string[]=> {
     try {
-      const response: IGetCanDrop = await axiosPost(`/node/validate_stations`, [pick], controller.current.signal);
-      const available_drop: string[] = response.available_dropoffs;
-      return available_drop;
-    } catch (e) {
-      console.error(e);
-      return []
-    }
-
-  };
-
-  const getDropNextStation = async (allGoal: string[]): Promise<string[]> => {
-    try {
-      console.log(allGoal);
-      const response: IGetCanDrop = await axiosPost(`/node/validate_stations`, allGoal, controller.current.signal);
+      const response: IGetCanDrop = FilterDrop.current.validate_stations(allGoal);;
       const available_drop: string[] = response.available_dropoffs.filter((item: string) =>
         !response.blocked_dropoffs.includes(item)
       );
@@ -867,9 +855,9 @@ export default function Home() {
             <img src={Map_btn} className="map-img" alt='map' loading="lazy"></img>
             {missionModel.agvCode === "721" ?
               <>
-                {buttonDropList.length === 0 && <div className='modal-loading-background'>
+                {/* {buttonDropList.length === 0 && <div className='modal-loading-background'>
                   <div id="loading"></div>
-                </div>}
+                </div>} */}
                 {buttonDropList.map((i) => (
                   <button
                     key={i}
