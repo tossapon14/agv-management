@@ -354,7 +354,7 @@ export default function Home() {
       element.classList.add("slide-out");
       const resultRemove = selectStations.filter(item => item !== node);
       const allGoal: string[] = [pickup, ...resultRemove];
-      const btnDropList = await getDropNextStation(allGoal);
+      const btnDropList =   getDropNextStation(allGoal);
       const index_drop = btnDropList.map((drop) => Number(drop.substring(1, 3)) - 1);
       setButtonDropList(index_drop);
       setTimeout(() => {
@@ -363,10 +363,10 @@ export default function Home() {
     }
   } ;
 
-  const clickDrop = async (pickup: string, index: string) => {
+  const clickDrop =  (pickup: string, index: string) => {
     if (!selectStations.includes(`D${index}S`) && selectStations.length <= 3) {
       setselectStations(prev => [...prev, `D${index}S`]);
-      const btnDropList = await getDropNextStation([pickup, ...selectStations, `D${index}S`]);
+      const btnDropList =   getDropNextStation([pickup, ...selectStations, `D${index}S`]);
       const index_drop = btnDropList.map((drop) => Number(drop.substring(1, 3)) - 1);
       setButtonDropList(index_drop);
     }
