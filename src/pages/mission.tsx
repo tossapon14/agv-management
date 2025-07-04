@@ -62,15 +62,14 @@ const isoDurationToMinSec = (duration: string | undefined | null): string => {
         const matches = duration!.match(regex);
         if (matches === null) return "00:00"
         else {
-            const minutes = parseInt(matches[1]);
-            const seconds = parseInt(matches[2]);
+            const minutes = parseInt(matches[1]??'0');
+            const seconds = parseInt(matches[2]??'00');
 
             // Format to m:ss (add leading zero to seconds if needed)
             const formatted = `${minutes}:${seconds.toString().padStart(2, '0')}`;
             return formatted;
         }
     }
-
 
 };
 
