@@ -1,8 +1,8 @@
 import BgMap from '../assets/images/bg_map.png';
-import AGV1 from '../assets/images/carmodel_blue.png';
+import AGV1 from '../assets/images/carmodel_purple.png';
 import AGV2 from '../assets/images/carmodel.webp';
-import AGV3 from '../assets/images/carmodel_green.png';
-import AGV4 from '../assets/images/carmodel_yellow.png';
+import AGV3 from '../assets/images/carmodel_yellow.png';
+import AGV4 from '../assets/images/carmodel_green.png';
 import Pin from '../assets/images/pin2.png';
 
 import Location from "../assets/images/location.png";

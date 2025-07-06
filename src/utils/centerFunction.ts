@@ -10,6 +10,8 @@ const pairMissionStatus = (state: number): { txt: string, color: string, bgcolor
         default: return { txt: "รออนุมัติ", color: "#444444", bgcolor: "#fff" };
     }
 }
-const colorAgv: { [key: string]: string } = { "AGV1": "#001494", "AGV2": "#cc0000", "AGV3": "#006a33", "AGV4": "#d7be00", "AGV5": "#94008d", "AGV6": "#0097a8" };
+// const colorAgv: { [key: string]: string } = { "AGV1": "#001494", "AGV2": "#cc0000", "AGV3": "#006a33", "AGV4": "#d7be00", "AGV5": "#94008d", "AGV6": "#0097a8" };
+const colorAgv: { [key: string]: string } = { "AGV1": "#9400d7", "AGV2": "#cc0000", "AGV3": "#d7be00", "AGV4": "#006a33", "AGV5": "#001494", "AGV6": "#0097a8" };
+
 export {pairMissionStatus,colorAgv};
 export default pairMissionStatus;

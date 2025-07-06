@@ -200,6 +200,7 @@
 }
 
 .goback-home {
+    padding-bottom: 6px;
     color: white;
     width: 120px;
     height: 36px;
@@ -297,6 +298,7 @@ button.goback-home:disabled:active{
 
 .EmergencyBtn {
     width: fit-content;
+    text-wrap: nowrap;
     margin: 8px 0 0;
     height: 30px;
     background-color: #000000;

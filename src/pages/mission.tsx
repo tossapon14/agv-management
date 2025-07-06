@@ -58,15 +58,16 @@ const getMissions = async (url: string): Promise<IMissionData> => {
 const isoDurationToMinSec = (duration: string | undefined | null): string => {
     if (!duration) return "";
     else {
-        const regex = /PT(?:(\d+)M)?(?:(\d+)S)?/;
+        const regex = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/;
         const matches = duration!.match(regex);
-        if (matches === null) return "00:00"
+        if (matches === null) return "00:00:00"
         else {
-            const minutes = parseInt(matches[1]??'0');
-            const seconds = parseInt(matches[2]??'00');
+            const hours = parseInt(matches[1]??"0");
+            const minutes = parseInt(matches[2]??'00');
+            const seconds = parseInt(matches[3]??'00');
 
             // Format to m:ss (add leading zero to seconds if needed)
-            const formatted = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            const formatted = `${hours}:${minutes}:${seconds.toString().padStart(2, '0')}`;
             return formatted;
         }
     }
