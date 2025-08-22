@@ -10,7 +10,7 @@ import { PiPath } from "react-icons/pi";
 import { BsFillRocketTakeoffFill } from "react-icons/bs";
 import { HiOutlineStatusOnline } from "react-icons/hi";
 
-import { useEffect, useState, useRef} from 'react';
+import { useEffect, useState, useRef, use } from 'react';
 import { IVehicles, IPayload } from './home.tsx';
 import { axiosGet, axiosPost } from "../api/axiosFetch";
 import { colorAgv } from '../utils/centerFunction';
@@ -36,8 +36,8 @@ export default function Vehicle() {
     const [responseData, setResponseData] = useState<{ error: boolean | null, message?: string }>({ error: null });
     const confirmModalRef = useRef<HTMLDivElement>(null);
     const [dialogGoHome, setDialogGoHome] = useState<{ show: boolean, name?: string, homeNode?: string }>({ show: false });
+    const myPosition = useRef<string>("");
     const myUser = useRef<string>("");
-
     const { t } = useTranslation("vehicle");
 
     const btnChooseAGV = (index: number) => {
@@ -67,8 +67,11 @@ export default function Vehicle() {
     };
 
     useEffect(() => {
-        myUser.current = sessionStorage.getItem("user")?.split(",")[2] ?? "";
-        const vehicle = myUser.current === "admin" ? "ALL" : myUser.current;
+        const getStore = sessionStorage.getItem("user")?.split(",")
+        if (!getStore) return;
+        myUser.current = getStore[4] ?? "";
+        myPosition.current = getStore[2] ?? "";
+        const vehicle = myPosition.current === "admin" ? "ALL" : myPosition.current;
 
         const getAgv = async () => {
             try {
@@ -194,7 +197,9 @@ export default function Vehicle() {
                         <div className="v-content-image">
                             <div className={`border-of-image ${(agv.state === 0) && 'agv-offline'}`}>
                                 <img src={AgvImg} alt="agv" width="238" height='180' />
+                       
                             </div>
+
                             <div className="v-content-name">
                                 <h6>{agv.name}</h6>
                                 <div className='hr-name-agv' style={{ background: colorAgv[agv.name] }}></div>
@@ -204,7 +209,7 @@ export default function Vehicle() {
                                     </div>
                                     <span className='ms-2 fs-6' style={{ color: '#646464', fontWeight: '500' }}>{agv.ip_address}:{agv.port}</span>
                                 </div>
-                                {(agv.state!=0&&(agv.emergency_state || agv.state == 6)) && <div className='EmergencyBtn'><BiSolidError size={20} color='red' />&nbsp;&nbsp;{agv.state ==6 ?t("state_6"): t("emer")}</div>}
+                                {(agv.state != 0 && (agv.emergency_state || agv.state == 6)) && <div className='EmergencyBtn'><BiSolidError size={20} color='red' />&nbsp;&nbsp;{agv.state == 6 ? t("state_6") : t("emer")}</div>}
                             </div>
                         </div>
                         <div className="v-content-chart">
@@ -212,7 +217,7 @@ export default function Vehicle() {
                                 <BatteryDonutChart level={agv.state === 0 ? 0 : agv.battery}></BatteryDonutChart>
                             </section>
                             <section className="velocity-chart">
-                                <VelocityChart level={agv.state === 0?0:(agv.velocity)}></VelocityChart>
+                                <VelocityChart level={agv.state === 0 ? 0 : (agv.velocity)}></VelocityChart>
                             </section>
                         </div>
                     </div>
@@ -243,7 +248,7 @@ export default function Vehicle() {
                                 <PiPath size={24} />
                             </div>
                             <div className='d-flex flex-column'>
-                                <p className='ms-2 fs-6 my-0' style={{ color: '#646464', fontWeight: '500' }}>{agv.mode} </p>
+                                <p className='ms-2 fs-6 my-0' style={{ color: '#646464', fontWeight: '500' }}>{agv.battery}% </p>
                                 <p className='ms-2 my-0' style={{ color: 'rgb(194, 194, 194)', fontSize: '12px' }}>{t('distance')}</p>
 
                             </div>
@@ -265,7 +270,7 @@ export default function Vehicle() {
                             {/* <div className='trapezoid' style={{borderBottom:`72px solid ${colorAgv[agv.name]}`}}><MdOnlinePrediction size={50} color='#0dff20' style={{margin:'12px 16px 0'}} /></div> */}
                             <div className='trapezoid' >
                                 <h3 style={{ color: 'white', margin: '16px 32px 0', fontWeight: '500' }}>{agv.name}</h3>
-                                <button className="goback-home" disabled={agv.state === 0} onClick={() => btnConfirmGoHome(agv.home, agv.name)} style={{ margin: '14px 0px 0', background: colorAgv[agv.name] }}>go home</button>
+                                <button className="goback-home" disabled={agv.state === 0} onClick={() => btnConfirmGoHome(agv.home, agv.name)} style={{ margin: '14px 0px 0', background: 'rgb(178, 178, 178)' }}>{t("gohome")}</button>
                             </div>
                             {agv.state === 0 ? <HiOutlineStatusOnline size={40} color={'#cccc'} style={{ margin: '0px 28px 0 0' }} />
                                 : <div className='onlineneon'><HiOutlineStatusOnline size={32} color='#0dff20' /></div>}

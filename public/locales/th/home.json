@@ -35,6 +35,7 @@
   "pick": "จอดจุด",
   "tb_jobid": "รหัส",
   "tb_car": "รถ",
+  "tb_requester": "ผู้สั่ง",
   "tb_pickup": "จุดจอด",
   "tb_status": "สถานะ",
   "tb_drop": "จุดลง",

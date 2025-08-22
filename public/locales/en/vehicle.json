@@ -40,5 +40,6 @@
   "t_state_5": "Complete",
   "md_gohome":"Back to the garage",
   "md_confirm":"Press confirm to send command",
-  "btn_confirm":"Confirm"
+  "btn_confirm":"Confirm",
+  "gohome":"Go home"
 }

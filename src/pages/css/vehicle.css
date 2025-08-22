@@ -74,8 +74,9 @@
 .border-of-image {
     width: 170px;
     height: 220px;
-    background: rgb(255, 234, 217);
-    border: 1px solid #ffbbbb;
+
+    background: linear-gradient(90deg, rgba(252, 207, 174, 1) 0%, rgba(255, 242, 242, 1) 100%);
+    /* border: 1px solid #a9a9a9; */
     border-radius: 8px;
     margin: 28px 0 0 60px;
     position: relative;
@@ -209,15 +210,18 @@
     position: relative;
     overflow: visible;
 }
-button.goback-home:disabled{
+
+button.goback-home:disabled {
     background-color: #828282 !important;
     color: #000000;
 }
-button.goback-home:disabled:active{
+
+button.goback-home:disabled:active {
     transform: scale(1);
 }
+
 .goback-home:active {
-   transform: scale(0.96);
+    transform: scale(0.96);
 }
 
 .onlineneon {

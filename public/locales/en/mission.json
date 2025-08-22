@@ -3,7 +3,7 @@
     "m_subtitle": "view and manage your mission",
     "tb_jobid": "job id",
     "tb_car": "Truck",
-    "tb_req": "requester",
+    "tb_req": "Worker",
     "tb_pickup": "Pickup",
     "tb_drop": "Drop",
     "tb_status": "Status",
@@ -53,5 +53,6 @@
     "al_code": "Code",
     "al_status": "Status",
     "al_time": "time",
-    "alarm": "errors/1 page"
+    "alarm": "errors/1 page",
+    "display-information": "Display information"
   }

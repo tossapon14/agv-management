@@ -313,7 +313,7 @@
   padding: 0;
   border: 1px solid #ffd0ce;
   border-radius: 8px;
-   
+
 }
 
 .pickup-process-line {
@@ -321,14 +321,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  height:0px;
+  height: 0px;
   transition: height 0.7s;
   will-change: height;
- }
+}
 
 .pickup-process-line:has(.pickup-data) {
   height: 64px;
 }
+
 .pickup-process-line:has(.pickup-data):has(.alert-pickup) {
   height: 118px;
 }
@@ -351,7 +352,7 @@
   color: white;
   margin-top: 12px;
   opacity: 0;
-  animation: alertfade 0.5s ease-out infinite alternate; 
+  animation: alertfade 0.5s ease-out infinite alternate;
   animation-delay: 1s;
   will-change: opacity;
 }
@@ -376,7 +377,7 @@
   background-color: #efefef;
   border-radius: 5px;
   border: 1px solid #ffc78b;
-  
+
 }
 
 .pickup-process-line .pickup-data span {
@@ -1557,7 +1558,7 @@
   .auto-manual+.EmergencyBtn {
     font-size: 14px;
     transform: translateX(-50px);
-    text-wrap:nowrap;
+    text-wrap: nowrap;
 
   }
 
@@ -1777,6 +1778,9 @@
     padding: 0.5rem !important;
   }
 
+  .chart-all-show-text {
+    margin-right: 0 !important;
+  }
 
 }
 

@@ -192,7 +192,7 @@ const Battery = () => {
       <div className="selected-agv-box mb-2">
         {btnAGV.map((name) => <button key={name} onClick={() => reloadDataByDate({ v: name })} className={`${vehicle === name ? "active" : ""}`}>{name}</button>)}
       </div>
-      <div className='chart-all-agv'>
+      {vehicle==="ALL" && <div className='chart-all-agv'>
 
         <h5>{t("bt_all_agv")}</h5>
         <p className='p-subtitle'>{t("bt_sub1")}</p>
@@ -200,7 +200,7 @@ const Battery = () => {
           <BatteryAreaChart data={battery} />
         </div>
 
-      </div>
+      </div>}
 
       {battery.series.map((agv, i) =>
         <div className="agv-one-box" key={agv.name}>

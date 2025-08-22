@@ -119,7 +119,7 @@ function MapAnimate({ position, paths }: MapAnimateProps) {
           href={agv.name in AGV ? AGV[agv.name] : AGV1}
           className="carmodel-position"
           transform={agv.rotate}
-          transform-origin={"30% 50%"}
+          transformOrigin={"30% 50%"}
         />))}
       </svg>
       <div className="switch-map-pick">

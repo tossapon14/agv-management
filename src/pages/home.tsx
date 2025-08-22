@@ -127,7 +127,7 @@ interface IdialogConfirm {
   pickupName?: string
 }
 interface IGetCanDrop {
-  pickup: string|null
+  pickup: string | null
   selected_dropoffs: string[]
   blocked_dropoffs: string[]
   available_dropoffs: string[]
@@ -152,7 +152,7 @@ export default function Home() {
   const missionLoop = useRef(0);
   const [loadSuccess, setLoadSuccess] = useState(false);
   const [buttonDropList, setButtonDropList] = useState<number[]>([]);
-  const [agvPosition2, setAgvPosition2] = useState<{name:string,position:string}[]>([]);
+  const [agvPosition2, setAgvPosition2] = useState<{ name: string, position: string }[]>([]);
   const [agvPath, setAgvPath] = useState<{ paths: number[][], drop: number[][] } | null>(null);
   const [onlineBar, setOnlineBar] = useState<null | boolean>(null);
   const onlineRef = useRef<boolean | null>(null);
@@ -165,7 +165,8 @@ export default function Home() {
   const [dialogSummary, setDialogSummary] = useState<IdialogConfirm>({ show: false });
   const [responseData, setResponseData] = useState<{ error: boolean | null, message?: string }>({ error: null });
   const [currentMission, setCurrentMission] = useState<number[]>([]);
-  const myUser = useRef<string>("");
+  const myPosition = useRef<string>("");
+  const myUser = useRef<string>("")
   const [notauthenticated, setNotAuthenticated] = useState(false);
   const mapHavePath = useRef<boolean>(false)
   const getAGVAPI = useRef<() => Promise<void>>(async () => { });
@@ -292,7 +293,7 @@ export default function Home() {
 
   };
 
-
+  // create first mission pickup
   const APIPostPickupMission = async (agv: string, pickup: string) => {
     const dataMission: IMissionCreate = {
       "nodes": pickup,
@@ -322,7 +323,7 @@ export default function Home() {
       }
       else if (data.agvCode === "721" && data.pickup) {
         data.pickup = data.pickup!.split(",")[0] ?? "";
-        const btnDropList =  getDropNextStation([data.pickup]);
+        const btnDropList = getDropNextStation([data.pickup]);
         const index_drop = btnDropList.map((drop) => Number(drop.substring(1, 3)) - 1);
         setButtonDropList(index_drop);
       } else {
@@ -334,7 +335,7 @@ export default function Home() {
     }
   };
 
-  const getDropNextStation =  (allGoal: string[]): string[]=> {
+  const getDropNextStation = (allGoal: string[]): string[] => {
     try {
       const response: IGetCanDrop = FilterDrop.current.validate_stations(allGoal);;
       const available_drop: string[] = response.available_dropoffs.filter((item: string) =>
@@ -348,25 +349,25 @@ export default function Home() {
 
   };
 
-   const deleteDrop =  async (pickup: string, node: string) => {
+  const deleteDrop = async (pickup: string, node: string) => {
     const element = document.getElementById(node);
     if (element) {
       element.classList.add("slide-out");
       const resultRemove = selectStations.filter(item => item !== node);
       const allGoal: string[] = [pickup, ...resultRemove];
-      const btnDropList =   getDropNextStation(allGoal);
+      const btnDropList = getDropNextStation(allGoal);
       const index_drop = btnDropList.map((drop) => Number(drop.substring(1, 3)) - 1);
       setButtonDropList(index_drop);
       setTimeout(() => {
         setselectStations(resultRemove);
       }, 500);
     }
-  } ;
+  };
 
-  const clickDrop =  (pickup: string, index: string) => {
+  const clickDrop = (pickup: string, index: string) => {
     if (!selectStations.includes(`D${index}S`) && selectStations.length <= 3) {
       setselectStations(prev => [...prev, `D${index}S`]);
-      const btnDropList =   getDropNextStation([pickup, ...selectStations, `D${index}S`]);
+      const btnDropList = getDropNextStation([pickup, ...selectStations, `D${index}S`]);
       const index_drop = btnDropList.map((drop) => Number(drop.substring(1, 3)) - 1);
       setButtonDropList(index_drop);
     }
@@ -454,18 +455,18 @@ export default function Home() {
           setOnlineBar(true);
           onlineRef.current = true;
         }
-         const _agvPosition2: { name: string, position: string }[] = [];
+        const _agvPosition2: { name: string, position: string }[] = [];
         const _agv: IPayload[] = [];
         const _currentMissionId: number[] = [];
         var haveAlarm: boolean = false;
-         agvCurrentWaitForLoad = res.payload.length > 1 ? "ALL" : res.payload[0].name;
+        agvCurrentWaitForLoad = res.payload.length > 1 ? "ALL" : res.payload[0].name;
         if (selectAgv.current !== agvCurrentWaitForLoad) return;
 
         res.payload.forEach((data: IPayload) => {
           var _agvData: IPayload;
           if (data.state > 0) {
             _agvPosition2.push({ name: data.name, position: data.coordinate });
-             if (data.mission) {
+            if (data.mission) {
               let _processMission = calProcessMission(data.node_idx, data.mission.nodes_idx, data.mission.nodes);
               if (_processMission?.dropNumber != undefined && data.state > 2 && selectAgv.current !== 'ALL') {  // condition find path color   
                 if (_processMission.dropList.length > 1) {
@@ -523,7 +524,7 @@ export default function Home() {
         });
 
         setCurrentMission(_currentMissionId);
-         setAgvPosition2(_agvPosition2);
+        setAgvPosition2(_agvPosition2);
         setAgvAll(_agv);
         if (haveAlarm) {
           setAgvHaveAlarm(selectAgv.current);
@@ -569,10 +570,12 @@ export default function Home() {
         setDialogSummary({ show: false })
       }
     };
+    const getStore = sessionStorage.getItem("user")?.split(",")
 
-    myUser.current = sessionStorage.getItem("user")?.split(",")[2] ?? "";
-    if (myUser.current === "") return;
-    selectAgv.current = myUser.current === "admin" ? "ALL" : myUser.current;
+    if (!getStore) return;
+    myUser.current = getStore[4] ?? "";
+    myPosition.current = getStore[2] ?? "";
+    selectAgv.current = myPosition.current === "admin" ? "ALL" : myPosition.current;
     var agvCurrentWaitForLoad: string = selectAgv.current;
 
     setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle") ?? '[]') as string[]);
@@ -608,7 +611,7 @@ export default function Home() {
   return (
     <section className='home'>
       <section className="col1">
-        <MapAnimate  position={agvPosition2} paths={agvPath}  ></MapAnimate>
+        <MapAnimate position={agvPosition2} paths={agvPath}  ></MapAnimate>
       </section>
       <section className="mt-3 px-0 home-table">
         <div className="card mb-3">
@@ -628,6 +631,7 @@ export default function Home() {
                   <tr className='home-table-head'>
                     <th>{t("tb_jobid")}</th>
                     <th>{t("tb_car")}</th>
+                    <th>{t("tb_requester")}</th>
                     <th><div className='head-table-flex'>
                       <div className='pick-circle-icon'>
                       </div>{t("tb_pickup")}
@@ -651,6 +655,7 @@ export default function Home() {
                   {missionTable.map((data, i) => <tr key={i} className={`${currentMission.includes(data.id) ? "row-misstion-background" : ""}`}>
                     <td>#{data.id}</td>
                     <td><div className='td-vehicle-name'><div className='circle-vehicle-icon' style={{ background: `${colorAgv[data.vehicle_name]}` }}></div><span className="dot dot-blue"></span>{data.vehicle_name}</div></td>
+                    <td>{data.requester}</td>
                     <td>{data.pick}</td>
                     <td>{data.drop}</td>
                     <td><div className='box-status' style={{ background: data.str_status.bgcolor, color: data.str_status.color }}>{t(`m_status_${data.status}`)}</div></td>

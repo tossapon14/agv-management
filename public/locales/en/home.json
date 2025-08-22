@@ -35,6 +35,7 @@
   "tb_jobid": "job id",
   "pick": "Pickup",
   "tb_car": "Truck",
+  "tb_requester": "Worker",
   "tb_pickup": "Pickup",
   "tb_status": "Status",
   "tb_drop": "Drop",
