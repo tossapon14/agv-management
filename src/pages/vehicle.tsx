@@ -10,7 +10,7 @@ import { PiPath } from "react-icons/pi";
 import { BsFillRocketTakeoffFill } from "react-icons/bs";
 import { HiOutlineStatusOnline } from "react-icons/hi";
 
-import { useEffect, useState, useRef, use } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { IVehicles, IPayload } from './home.tsx';
 import { axiosGet, axiosPost } from "../api/axiosFetch";
 import { colorAgv } from '../utils/centerFunction';

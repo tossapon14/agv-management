@@ -160,6 +160,7 @@ export default function Home() {
   const confirmModalRef = useRef<HTMLDivElement>(null);
   const selectAgv = useRef<string>('');
   const loadSave = useRef(false);
+  const battery_low_alert = useRef<number>(30)
   const [btnAGVName, setBtnAGVName] = useState<string[] | null>(["All"]);
   const [waitModeLoad, setWaitModeLoad] = useState<boolean>(false);
   const [dialogSummary, setDialogSummary] = useState<IdialogConfirm>({ show: false });
@@ -175,6 +176,7 @@ export default function Home() {
   const [batteryLow, setBatteryLow] = useState<{ name: string, battery: number } | null>(null);
   const controller = useRef<AbortController>(new AbortController());
   const FilterDrop = useRef(new FilterDropoff())
+  const timerToClearModal = useRef<NodeJS.Timeout | null>(null);
   const { t } = useTranslation('home');
 
   const buttonsDrop = [
@@ -318,6 +320,10 @@ export default function Home() {
       setPickup(null);
       setselectStations([]);  // show when select button drop
       setButtonDropList([]);  // button drop on image bgc if [] show loading
+      timerToClearModal.current = setTimeout(() => {
+        setShowModal("hidden-modal");
+        setDialogSummary({ show: false });
+      }, 20000);
       if (data.agvCode !== "721") {
         return;
       }
@@ -475,13 +481,13 @@ export default function Home() {
                 var drop = data.mission?.nodes_coordinate.slice(_processMission.dropNumber);
                 mapHavePath.current = true;
                 setAgvPath({ paths: data.mission!.paths_coordinate[1], drop });
-                if (`${data.state}${data.mission.status}${data.mission.transport_state}` === '721' || `${data.state}${data.mission.status}${data.mission.transport_state}` == '724') {
+                if (`${data.state}${data.mission.status}${data.mission.transport_state}` === '721'||`${data.state}${data.mission.status}${data.mission.transport_state}` === '722') {
                   playRingtone();
                 } else if (!audioRingTone.current!.paused) {
                   stopRingtone();
                 }
-              } else {
-                if (mapHavePath.current) {
+              } else {  // this condition for all AGV
+                 if (mapHavePath.current) {
                   setAgvPath(null);   // set when state > 5 mistion complete or agv != ALL
                   mapHavePath.current = false;
                 }
@@ -532,7 +538,7 @@ export default function Home() {
         else {
           setAgvHaveAlarm(null);
         }
-        if (selectAgv.current !== 'ALL' && _agv[0].battery <= 30 && _agv[0].state != 0) {
+        if (selectAgv.current !== 'ALL' && _agv[0].battery <= battery_low_alert.current && _agv[0].state != 0) {
           setBatteryLow({ name: _agv[0].name, battery: _agv[0].battery })
         } else {
           setBatteryLow(null);
@@ -577,7 +583,7 @@ export default function Home() {
     myPosition.current = getStore[2] ?? "";
     selectAgv.current = myPosition.current === "admin" ? "ALL" : myPosition.current;
     var agvCurrentWaitForLoad: string = selectAgv.current;
-
+    battery_low_alert.current = Number(import.meta.env.VITE_REACT_APP_BATTERY_LOW_ALERT) || 30
     setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle") ?? '[]') as string[]);
     setSelectedAgv(selectAgv.current);
     getAGVAPI.current();
@@ -606,6 +612,9 @@ export default function Home() {
       if (timerInterval.current != null) {
         clearInterval(timerInterval.current as NodeJS.Timeout);
       }
+      if(timerToClearModal.current){
+        clearTimeout(timerToClearModal.current)
+      } 
     };
   }, []);
   return (
@@ -854,11 +863,11 @@ export default function Home() {
             </>}
         </div>
       </div>
-      <div ref={modalRef} className={`modal ${showModal} `}>
+      <div ref={modalRef} className={`modal ${showModal} `}>    {/** show dialod choose drop station */}
         <div className='modal-content-home'>
           <div className='box-map-and-btn'>
             <img src={Map_btn} className="map-img" alt='map' loading="lazy"></img>
-            {missionModel.agvCode === "721" ?
+            {missionModel.agvCode === "721" ?     
               <>
                 {/* {buttonDropList.length === 0 && <div className='modal-loading-background'>
                   <div id="loading"></div>

@@ -10,13 +10,14 @@ const BatteryDonutChart: React.FC<BatteryDonutChartProps> = ({ level }) => {
     { name: "Battery", value: level }, // Filled part
     { name: "Remaining", value: 100 - level }, // Empty part
   ];
+  const battery_low_alert = Number(import.meta.env.VITE_REACT_APP_BATTERY_LOW_ALERT) || 30;
 
 
   // Change color based on battery level
   const getBatteryColor = (level: number): string => {
     if (level > 40) return "#003092"; // Green (High)
-    else if (level > 30) return "#FFC107"; // Yellow (Medium)
-    return "#F44336"; // Red (Low)
+    else if (level > battery_low_alert) return "#FFC107"; // Yellow (Medium)
+    return "#ff0000ff"; // Red (Low)
   };
 
   return (

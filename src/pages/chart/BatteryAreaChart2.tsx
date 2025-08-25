@@ -9,7 +9,8 @@ interface IBatteryProps {
 }
 color:string
 }
-const BatteryAreaChart2:React.FC<IBatteryProps> = ({data,color}) => {
+ const BatteryAreaChart2:React.FC<IBatteryProps> = ({data,color}) => {
+      const battery_low_alert = Number(import.meta.env.VITE_REACT_APP_BATTERY_LOW_ALERT) || 30;
       const series = [data];
       const options:ApexCharts.ApexOptions ={
         chart: {
@@ -18,7 +19,7 @@ const BatteryAreaChart2:React.FC<IBatteryProps> = ({data,color}) => {
         },
         annotations: {
           yaxis: [{
-            y: 30,
+            y: battery_low_alert,
             borderColor: '#ff1100',
             label: {
               text: 'battery low',
