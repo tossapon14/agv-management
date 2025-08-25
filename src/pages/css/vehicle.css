@@ -201,24 +201,27 @@
 }
 
 .goback-home {
-    padding-bottom: 6px;
     color: white;
-    width: 120px;
+    width: 130px;
     height: 36px;
     border-radius: 5px;
     border: 1px solid #acacac;
     position: relative;
-    overflow: visible;
+    cursor: pointer;
+    background-color: #3b3b3b;
 }
+.goback-home:hover {
+    background: #0f0f0f;
+    transform: scale(1.02);
+  }
 
 button.goback-home:disabled {
     background-color: #828282 !important;
-    color: #000000;
+    color: #b0b0b0;
+    transform: none;
 }
 
-button.goback-home:disabled:active {
-    transform: scale(1);
-}
+ 
 
 .goback-home:active {
     transform: scale(0.96);
@@ -265,6 +268,7 @@ button.goback-home:disabled:active {
     display: flex;
     justify-content: center;
     align-items: center;
+    background-color: #00000039;
     backdrop-filter: blur(4px);
     width: 100vw;
     height: 100vh;

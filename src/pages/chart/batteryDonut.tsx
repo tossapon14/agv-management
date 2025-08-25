@@ -23,7 +23,7 @@ const BatteryDonutChart: React.FC<BatteryDonutChartProps> = ({ level }) => {
   return (
     <div style={{ position: "relative", width: 200, height: 200 }}>
       <ResponsiveContainer width="100%" height="100%">
-        <PieChart> 
+        <PieChart>
           {/* Battery Level Arc */}
           <Pie
             data={data}
@@ -43,19 +43,11 @@ const BatteryDonutChart: React.FC<BatteryDonutChartProps> = ({ level }) => {
 
       {/* Center Label */}
       <div
-        style={{
-          position: "absolute",
-          top: "35%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          fontSize: "26px",
-          fontWeight: "500",
-          textAlign: "center",
-        }}
+        className={`text-batteryDonut ${battery_low_alert >= level ? "color-red" : "color-black"}`}
       >
-        {level}
-        <p style={{fontSize:"12px",fontWeight:"normal"}}>battery %</p>
-        
+        <h3 className={`${battery_low_alert >= level ? "color-red animation" : "color-black"}`}>{level}</h3>
+        <p style={{ fontSize: "12px", fontWeight: "normal"}}>battery %</p>
+
       </div>
     </div>
   );

@@ -6,6 +6,8 @@ interface BatteryDonutChartProps {
 }
 
 const BatteryDonutChart2: React.FC<BatteryDonutChartProps> = ({ level }) => {
+  const battery_low_alert = Number(import.meta.env.VITE_REACT_APP_BATTERY_LOW_ALERT) || 30;
+
   const data = [
     { name: "Battery", value: level }, // Filled part
     { name: "Remaining", value: 100 - level }, // Empty part
@@ -15,14 +17,14 @@ const BatteryDonutChart2: React.FC<BatteryDonutChartProps> = ({ level }) => {
   // Change color based on battery level
   const getBatteryColor = (level: number): string => {
     if (level > 50) return "#0d6efd"; // Green (High)
-    else if (level > 20) return "#FFC107"; // Yellow (Medium)
-    return "#F44336"; // Red (Low)
+    else if (level > battery_low_alert) return "#FFC107"; // Yellow (Medium)
+    return "#ff1100ff"; // Red (Low)
   };
 
   return (
     <div style={{ position: "relative", width: 300, height: 300 }}>
       <ResponsiveContainer width="100%" height="100%">
-        <PieChart> 
+        <PieChart>
           {/* Battery Level Arc */}
           <Pie
             data={data}
@@ -42,19 +44,12 @@ const BatteryDonutChart2: React.FC<BatteryDonutChartProps> = ({ level }) => {
 
       {/* Center Label */}
       <div
-        style={{
-          position: "absolute",
-          top: "40%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          fontSize: "26px",
-          fontWeight: "500",
-          textAlign: "center",
-        }}
+        style={{ top: "42%", left: "50%" }}
+        className={`text-batteryDonut ${battery_low_alert >= level ? "color-red" : "color-black"}`}
       >
-        {level}
-        <p style={{fontSize:"12px",fontWeight:"normal"}}>battery %</p>
-        
+        <h2 className={`${battery_low_alert >= level ? "color-red animation" : "color-black"}`}>{level}</h2>
+        <p style={{ fontSize: "12px", fontWeight: "normal"}}>battery %</p>
+
       </div>
     </div>
   );

@@ -46,15 +46,27 @@
   width: 100%;
   height: 80px;
   border-bottom: 1px solid #979797;
-  }
+}
 
+.modal-cancel-mission {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #00000039;
+  backdrop-filter: blur(4px);
+}
 
 .selected-mission-btn {
   display: flex;
   align-items: end;
   flex-wrap: nowrap;
   width: 100%;
-   overflow-y: visible;
+  overflow-y: visible;
   margin-right: 0.5rem;
   padding: 0 0 0 2rem;
 }
@@ -218,9 +230,11 @@
   transform: scale(0.95);
   background-color: #0016df;
 }
+
 .export-btn2:hover {
   background-color: #292929;
 }
+
 .export-btn2:active {
   transform: scale(0.95);
 }

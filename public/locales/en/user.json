@@ -33,5 +33,8 @@
     "new_pass":"New Password",
     "btn_change":"Change Password",
     "online": "Online",
-    "offline": "Offline"
+    "offline": "Offline",
+    "delete_user": "Do you want delete this account?",
+    "close": "Close",
+    "save": "Save"
 }

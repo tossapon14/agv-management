@@ -22,7 +22,7 @@ import NotAuthenticated from './not_authenticated.tsx';
 import HomeAlarmError from './homeAlarmError.tsx';
 import Sound from '../assets/sounds/mixkit-happy-bells-notification-937.wav'
 import FilterDropoff from '../utils/FilterDropoff.ts';
-
+ 
 
 
 interface IagvDataModel {
@@ -215,9 +215,9 @@ export default function Home() {
       audioRingTone.current!.currentTime = 0;
     }
   };
-  const btnCancelMission = async (id: number | undefined, name: string | undefined) => {
+  const btnConfirmCancelMission = async (id: number | undefined, name: string | undefined) => {
     if (!id || !name) return;
-    setDialogSummary({ show: false });
+    closeDialogSummary();
     setResponseData({ error: null, message: "loading" });
     try {
       await axiosPut(`/mission/update/status?mission_id=${id}&vehicle_name=${name}&command=cancel`, undefined, controller.current.signal);
@@ -231,15 +231,29 @@ export default function Home() {
     }
 
   };
+  const showCancelDialogSummary = (vehicle:string,id:number,agvCode:string="001") => {
+    setDialogSummary({ show: true, name:vehicle, id: id, agvCode: agvCode })
+    timerToClearModal.current = setTimeout(() => {
+      setDialogSummary({ show: false });
+    }, 10000);
+  };
 
   const showDialogSummary = (id: number, name: string, agvCode: string, pickup: string | undefined, dropall?: string[]) => {
     setShowModal("hidden-modal");
     setDialogSummary({ show: true, id, name, agvCode, pickupName: pickup, dropAll: dropall });
+    clearTimeout(timerToClearModal.current!);
+    timerToClearModal.current = setTimeout(() => {
+      setDialogSummary({ show: false });
+    }, 10000);
+  };
+  const closeDialogSummary = () => {
+    clearTimeout(timerToClearModal.current!);
+    setDialogSummary({ show: false });
   };
 
-
+  
   const btnDialogConfirm = (id: number, name: string, agvCode: string | undefined, pick?: string | undefined, drop?: string[] | undefined) => {
-    setDialogSummary({ show: false });
+    closeDialogSummary();
     setResponseData({ error: null, message: "loading" });
     if (agvCode === '721' && pick != undefined && drop != undefined) {
       const nodeCommand = pick + "," + drop.join(",");
@@ -322,7 +336,6 @@ export default function Home() {
       setButtonDropList([]);  // button drop on image bgc if [] show loading
       timerToClearModal.current = setTimeout(() => {
         setShowModal("hidden-modal");
-        setDialogSummary({ show: false });
       }, 20000);
       if (data.agvCode !== "721") {
         return;
@@ -340,6 +353,11 @@ export default function Home() {
       console.error(e);
     }
   };
+  const closeModal = () => {
+    setShowModal("hidden-modal");
+    clearTimeout(timerToClearModal.current!);
+  };
+
 
   const getDropNextStation = (allGoal: string[]): string[] => {
     try {
@@ -481,13 +499,13 @@ export default function Home() {
                 var drop = data.mission?.nodes_coordinate.slice(_processMission.dropNumber);
                 mapHavePath.current = true;
                 setAgvPath({ paths: data.mission!.paths_coordinate[1], drop });
-                if (`${data.state}${data.mission.status}${data.mission.transport_state}` === '721'||`${data.state}${data.mission.status}${data.mission.transport_state}` === '722') {
+                if (`${data.state}${data.mission.status}${data.mission.transport_state}` === '721' || `${data.state}${data.mission.status}${data.mission.transport_state}` === '722') {
                   playRingtone();
                 } else if (!audioRingTone.current!.paused) {
                   stopRingtone();
                 }
               } else {  // this condition for all AGV
-                 if (mapHavePath.current) {
+                if (mapHavePath.current) {
                   setAgvPath(null);   // set when state > 5 mistion complete or agv != ALL
                   mapHavePath.current = false;
                 }
@@ -569,11 +587,12 @@ export default function Home() {
     const handleClickOutside = (event: any) => {
       if (modalRef.current === event.target) {
         setShowModal("hidden-modal");
+        clearTimeout(timerToClearModal.current!);
       }
     };
     const handleClickOutsideConfirm = (event: any) => {
       if (confirmModalRef.current === event.target) {
-        setDialogSummary({ show: false })
+        closeDialogSummary();
       }
     };
     const getStore = sessionStorage.getItem("user")?.split(",")
@@ -612,9 +631,9 @@ export default function Home() {
       if (timerInterval.current != null) {
         clearInterval(timerInterval.current as NodeJS.Timeout);
       }
-      if(timerToClearModal.current){
+      if (timerToClearModal.current) {
         clearTimeout(timerToClearModal.current)
-      } 
+      }
     };
   }, []);
   return (
@@ -670,7 +689,7 @@ export default function Home() {
                     <td><div className='box-status' style={{ background: data.str_status.bgcolor, color: data.str_status.color }}>{t(`m_status_${data.status}`)}</div></td>
                     <td>{data.timestamp.substring(0, 10)}</td>
                     <td>{data.timestamp.substring(11, 19)}</td>
-                    <td>{data.status == 0 && <button className="btn-cancel" onClick={() => setDialogSummary({ show: true, name: data.vehicle_name, id: data.id, agvCode: "001" })}>cancel</button>}</td>
+                    <td>{data.status == 0 && <button className="btn-cancel" onClick={() => showCancelDialogSummary( data.vehicle_name, data.id)}>cancel</button>}</td>
                   </tr>
                   )}
                 </tbody>
@@ -808,14 +827,14 @@ export default function Home() {
                 </div>
                 <h5>{t("md_cancel")} {dialogSummary.name}</h5>
               </div>
-              <button className='btn-close-summary' onClick={() => setDialogSummary({ show: false })}><IoMdClose size={16} /></button>
+              <button className='btn-close-summary' onClick={closeDialogSummary}><IoMdClose size={16} /></button>
             </div>
             <div className='summary-command-pickup'>
               <div className='h1 px-1' style={{ borderBottom: '4px solid red' }}>{dialogSummary.id}</div>
             </div>
             <p>job id</p>
             <p style={{ color: '#ccc' }}>{t("md_confirm_cancel")}</p>
-            <button className='btn w-100 mt-3 py-3 btn-danger' onClick={() => btnCancelMission(dialogSummary.id, dialogSummary.name)}>{t("tb_cancel")}</button>
+            <button className='btn w-100 mt-3 py-3 btn-danger' onClick={() => btnConfirmCancelMission(dialogSummary.id, dialogSummary.name)}>{t("tb_cancel")}</button>
 
           </> :
             dialogSummary.agvCode === "724" ? <> {/*  dialog drop   724*/}
@@ -826,7 +845,7 @@ export default function Home() {
                   </div>
                   <h5>{dialogSummary.name} <span className='h6'>{t("md_head")}</span></h5>
                 </div>
-                <button className='btn-close-summary' onClick={() => setDialogSummary({ show: false })}><IoMdClose size={16} /></button>
+                <button className='btn-close-summary' onClick={closeDialogSummary}><IoMdClose size={16} /></button>
               </div>
               <div className='summary-command-pickup'>
                 <div className='pickup-name-box' style={{ borderBottom: '2px solid red' }}>{dialogSummary.dropOne}</div>
@@ -834,7 +853,7 @@ export default function Home() {
               <p>{t("md_pick")}</p>
               <p style={{ color: '#ccc' }}>{t("md_confirm")}</p>
               <button className='btn-confirm' onClick={() => btnDialogConfirm(dialogSummary.id!, dialogSummary.name!, dialogSummary.agvCode)}>{t("btn_confirm")}</button>
-            </> : <>                         {/*721 or all code  pickup and drop   */}
+            </> : <>                         {/*721 or all code when pickup */}
               <div className='card-summaryCommand-header'>
                 <div className="icon-name-agv">
                   <div className='bg-img'>
@@ -842,7 +861,7 @@ export default function Home() {
                   </div>
                   <h5>{dialogSummary.name}</h5>
                 </div>
-                <button className='btn-close-summary' onClick={() => setDialogSummary({ show: false })}><IoMdClose size={16} /></button>
+                <button className='btn-close-summary' onClick={closeDialogSummary}><IoMdClose size={16} /></button>
               </div>
               <div className='summary-command-pickup'>
                 <div className='pickup-name-box border-bottom-color'>{dialogSummary.pickupName}</div>
@@ -867,7 +886,7 @@ export default function Home() {
         <div className='modal-content-home'>
           <div className='box-map-and-btn'>
             <img src={Map_btn} className="map-img" alt='map' loading="lazy"></img>
-            {missionModel.agvCode === "721" ?     
+            {missionModel.agvCode === "721" ?
               <>
                 {/* {buttonDropList.length === 0 && <div className='modal-loading-background'>
                   <div id="loading"></div>
@@ -893,7 +912,7 @@ export default function Home() {
                 <button className="btn-pickup-agv" onClick={() => clickPickup(6)} style={{ top: "54%", left: "36%" }}>P7</button>
                 <button className="btn-pickup-agv" onClick={() => clickPickup(7)} style={{ top: "66%", left: "36%" }}>P8</button>
               </>}
-            <button className='close-modal2-top-left' onClick={() => setShowModal("hidden-modal")}>{t("back")}</button>
+            <button className='close-modal2-top-left' onClick={closeModal}>{t("back")}</button>
           </div>
           <div className='agv-mission-box'>
             <div className='agv-mission-card' style={{ borderTop: `16px solid ${colorAgv[missionModel.agv]}` }}>
@@ -937,7 +956,7 @@ export default function Home() {
                 <button className='btn-send-command mt-xxl-4' disabled={!(pickup)} onClick={() => showDialogSummary(missionModel.id ?? 0, missionModel.agv, missionModel.agvCode ?? '', pickup ?? "",)}>{t("command")}</button>
               }
             </div>
-            <button className='close-modal' onClick={() => setShowModal("hidden-modal")}>{t("back")}</button>
+            <button className='close-modal' onClick={closeModal}>{t("back")}</button>
           </div>
         </div>
       </div>

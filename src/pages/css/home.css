@@ -1132,9 +1132,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #d3d3d3cd;
-  z-index: 2;
-  backdrop-filter: blur(5px);
+   z-index: 2;
+   background-color: #00000039;
+  backdrop-filter: blur(6px);
 }
 
 .card-summaryCommand {

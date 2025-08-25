@@ -301,12 +301,14 @@ export default function User() {
                     <ResponseAPI response={responseData} />
                     <div className={`fixed-bg-delete ${showConfirmDelete.show ? "" : "d-none"}`}>
                         <div className='box-confirm-delete'>
-                            <img src={Delete_img} alt="delete icon" width={40} height={40} />
-                            <h4 className='mt-2'>Do you want delete this account?</h4>
-                            <p className='text-center'>un.  <span className='name-user'>{showConfirmDelete.username}</span></p>
+                            <div className="d-flex align-items-center">
+                                <img src={Delete_img} alt="delete icon" width={40} height={40} />
+                                <h5 className='ms-2'>{t("delete_user")}</h5>
+                            </div>
+                            <p className='text-center'>  <span className='name-user'>{showConfirmDelete.username}</span></p>
                             <div className='box-confirm-delete-btn'>
-                                <button className='btn btn-danger' onClick={handleCloseModalDelete}>close</button>
-                                <button className='btn btn-primary' onClick={() => onConfirmDelete()}>confirm</button>
+                                <button className='btn btn-outline-danger' onClick={handleCloseModalDelete}>{t("close")}</button>
+                                <button className='btn btn-primary' onClick={() => onConfirmDelete()}>{t("save")}</button>
                             </div>
                         </div>
                     </div>
@@ -332,7 +334,7 @@ export default function User() {
                     <div className='user-card d-flex mb-5'>
                         <div className='box-of-search position-relative'>
                             <h5>{t("search")}</h5>
-                             <div className="create-reload-mobile-button">
+                            <div className="create-reload-mobile-button">
                                 <button className='btn btn-outline-primary mt-2' onClick={handleOpenInNewTab}>{t("create")}</button>
                                 <button className='btn btn-outline-dark mt-2 ms-2' onClick={() => window.location.reload()}>{t("reload")}</button>
                             </div>

@@ -38,6 +38,7 @@ export default function Vehicle() {
     const [dialogGoHome, setDialogGoHome] = useState<{ show: boolean, name?: string, homeNode?: string }>({ show: false });
     const myPosition = useRef<string>("");
     const myUser = useRef<string>("");
+    const timerCloseGoHome = useRef<NodeJS.Timeout | null>(null);
     const { t } = useTranslation("vehicle");
 
     const btnChooseAGV = (index: number) => {
@@ -54,7 +55,7 @@ export default function Vehicle() {
             "vehicle_name": name
         }
         try {
-            setDialogGoHome({ show: false });
+            closeDialogGoHome();
             await axiosPost("/mission/create", command);
             setResponseData({ error: false, message: "send command success" })
         } catch (e: any) {
@@ -62,8 +63,16 @@ export default function Vehicle() {
             setResponseData({ error: true, message: e?.message })
         }
     };
+    const closeDialogGoHome = () => {
+        setDialogGoHome({ show: false });
+        clearTimeout(timerCloseGoHome.current!);
+    };
+    
     const btnConfirmGoHome = (homeNode: string, name: string) => {
         setDialogGoHome({ show: true, homeNode: homeNode, name: name });
+        timerCloseGoHome.current = setTimeout(() => {
+            setDialogGoHome({ show: false });
+        }, 10000);
     };
 
     useEffect(() => {
@@ -119,15 +128,18 @@ export default function Vehicle() {
         };
         const handleClickOutsideConfirm = (event: any) => {
             if (confirmModalRef.current === event.target) {
-                setDialogGoHome({ show: false })
+                closeDialogGoHome();
             }
         };
         confirmModalRef.current?.addEventListener("mouseup", handleClickOutsideConfirm)
         checkNetwork();
         return () => {
             confirmModalRef.current?.removeEventListener("mouseup", handleClickOutsideConfirm);
-            if (timerInterval.current != null) {
+            if (timerInterval.current) {
                 clearInterval(timerInterval.current as NodeJS.Timeout);
+            }
+            if (timerCloseGoHome.current) {
+                clearTimeout(timerCloseGoHome.current);
             }
         };
     }, []);
@@ -155,7 +167,7 @@ export default function Vehicle() {
                             </div>
                             <h5>{dialogGoHome.name}</h5>
                         </div>
-                        <button className='btn-close-summary' onClick={() => setDialogGoHome({ show: false })}><IoMdClose size={16} /></button>
+                        <button className='btn-close-summary' onClick={closeDialogGoHome}><IoMdClose size={16} /></button>
                     </div>
                     <div className='summary-command-pickup'>
                         <div className='h4'>{t("md_gohome")}</div>
@@ -197,7 +209,7 @@ export default function Vehicle() {
                         <div className="v-content-image">
                             <div className={`border-of-image ${(agv.state === 0) && 'agv-offline'}`}>
                                 <img src={AgvImg} alt="agv" width="238" height='180' />
-                       
+
                             </div>
 
                             <div className="v-content-name">
@@ -270,7 +282,7 @@ export default function Vehicle() {
                             {/* <div className='trapezoid' style={{borderBottom:`72px solid ${colorAgv[agv.name]}`}}><MdOnlinePrediction size={50} color='#0dff20' style={{margin:'12px 16px 0'}} /></div> */}
                             <div className='trapezoid' >
                                 <h3 style={{ color: 'white', margin: '16px 32px 0', fontWeight: '500' }}>{agv.name}</h3>
-                                <button className="goback-home" disabled={agv.state === 0} onClick={() => btnConfirmGoHome(agv.home, agv.name)} style={{ margin: '14px 0px 0', background: 'rgb(178, 178, 178)' }}>{t("gohome")}</button>
+                                <button className="goback-home" disabled={agv.state === 0} onClick={() => btnConfirmGoHome(agv.home, agv.name)} style={{ margin: '14px 0 0' }}>{t("gohome")}</button>
                             </div>
                             {agv.state === 0 ? <HiOutlineStatusOnline size={40} color={'#cccc'} style={{ margin: '0px 28px 0 0' }} />
                                 : <div className='onlineneon'><HiOutlineStatusOnline size={32} color='#0dff20' /></div>}

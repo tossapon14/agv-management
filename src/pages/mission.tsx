@@ -62,9 +62,9 @@ const isoDurationToMinSec = (duration: string | undefined | null): string => {
         const matches = duration!.match(regex);
         if (matches === null) return "00:00:00"
         else {
-            const hours = parseInt(matches[1]??"0");
-            const minutes = parseInt(matches[2]??'00');
-            const seconds = parseInt(matches[3]??'00');
+            const hours = parseInt(matches[1] ?? "0");
+            const minutes = parseInt(matches[2] ?? '00');
+            const seconds = parseInt(matches[3] ?? '00');
 
             // Format to m:ss (add leading zero to seconds if needed)
             const formatted = `${hours}:${minutes}:${seconds.toString().padStart(2, '0')}`;
@@ -103,12 +103,16 @@ export default function Mission() {
     const timerInterval = useRef<NodeJS.Timeout>(null);
     const [onlineBar, setOnlineBar] = useState<null | boolean>(null);
     const onlineRef = useRef<boolean | null>(null);
+    const timerCloseCancel = useRef<NodeJS.Timeout | null>(null);
     const { t } = useTranslation("mission");
-    const [loadingWhenClick, setLoadingWhenClick] = useState<boolean >(false);
-
+    const [loadingWhenClick, setLoadingWhenClick] = useState<boolean>(false);
+    const closeDialogCancelMission = () => {
+        setDialogCancel({ show: false });
+        clearTimeout(timerCloseCancel.current!);
+    };
     const btnCancelMission = async (id: number | undefined, name: string | undefined) => {
         if (!id || !name) return;
-        setDialogCancel({ show: false });
+        closeDialogCancelMission();
         setResponseData({ error: null, message: "loading" });
         try {
             await axiosPut(`/mission/update/status?mission_id=${id}&vehicle_name=${name}&command=cancel`);
@@ -119,6 +123,13 @@ export default function Mission() {
             setResponseData({ error: true, message: e?.message })
         }
 
+    };
+
+    const showDialogCancel = (data: { show: boolean, name?: string, id?: number }) => {
+        setDialogCancel(data);
+        timerCloseCancel.current = setTimeout(() => {
+            setDialogCancel({ show: false });
+        }, 10000);
     };
 
     const reloadMission = async (data: { v?: string, s?: string, d?: Date | undefined, de?: Date | undefined, p?: number, ps?: string }) => {
@@ -171,7 +182,7 @@ export default function Mission() {
 
     const missionSetPage = async (url: string) => {
         try {
-            
+
             const res = await getMissions(url);
             if (onlineRef.current == false) {
                 setOnlineBar(true);
@@ -284,12 +295,12 @@ export default function Mission() {
     };
 
     useEffect(() => {
-         const checkNetwork = async () => {
-            try { 
+        const checkNetwork = async () => {
+            try {
                 const response = await fetch(import.meta.env.VITE_REACT_APP_API_URL, { method: "GET" });
                 if (response.ok) {
                     const _vehicle = sessionStorage.getItem('user')?.split(",")[2] == "admin" ? 'ALL' : sessionStorage.getItem('user')?.split(",")[2] ?? "";
-                    setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle")??'[]') as string[]);
+                    setBtnAGVName(JSON.parse(sessionStorage.getItem("vehicle") ?? '[]') as string[]);
                     setVehicle(_vehicle);
                     const _date = new Date().toISOString().substring(0, 10)
                     saveUrl.current = `/mission/missions?vehicle_name=${_vehicle}&status=ALL&start_date=${_date}&end_date=${_date}&page=1&page_size=10`
@@ -310,7 +321,7 @@ export default function Mission() {
         };
         const handleClickOutsideCancel = (event: any) => {
             if (cancelModalRef.current === event.target) {
-                setDialogCancel({ show: false })
+                closeDialogCancelMission();
             }
         };
         if (cancelModalRef.current) {
@@ -323,6 +334,9 @@ export default function Mission() {
             cancelModalRef.current?.removeEventListener("mouseup", handleClickOutsideCancel);
             if (timerInterval.current != null) {
                 clearInterval(timerInterval.current);
+            }
+            if (timerCloseCancel.current) {
+                clearTimeout(timerCloseCancel.current);
             }
 
         }
@@ -425,7 +439,7 @@ export default function Mission() {
                             <td>{miss.tend}</td>
                             <td>{miss.duration}</td>
 
-                            <td>{miss.status == 0 && <button className='btn-cancel' onClick={() => setDialogCancel({ show: true, id: miss.id, name: miss.vehicle_name })}>cancel</button>}</td>
+                            <td>{miss.status == 0 && <button className='btn-cancel' onClick={() => showDialogCancel({ show: true, id: miss.id, name: miss.vehicle_name })}>cancel</button>}</td>
                         </tr>)}
 
                     </tbody>
@@ -449,25 +463,26 @@ export default function Mission() {
                 {pagination}
             </div>
             <ResponseAPI response={responseData} />
-            <div ref={cancelModalRef} className={`modal-summaryCommand ${!dialogCancel.show && 'd-none'}`}>
-                <div className='card-summaryCommand'>
-                    <div className='card-summaryCommand-header'>
-                        <div className="icon-name-agv">
-                            <div className='bg-img' style={{ background: 'rgb(255, 244, 244)' }}>
-                                <TbCancel size={32} color={'rgb(254, 0, 0)'} />
-                            </div>
-                            <h5>{t("md_cancel")} {dialogCancel.name}</h5>
-                        </div>
-                        <button className='btn-close-summary' onClick={() => setDialogCancel({ show: false })}><IoMdClose size={16} /></button>
-                    </div>
-                    <div className='summary-command-pickup'>
-                        <div className='h1 px-1' style={{ borderBottom: '4px solid red' }}>{dialogCancel.id}</div>
-                    </div>
-                    <p>job id</p>
-                    <p style={{ color: '#ccc' }}>{t("md_confirm_cancel")}</p>
-                    <button className='btn w-100 mt-3 py-3 btn-danger' onClick={() => btnCancelMission(dialogCancel.id!, dialogCancel.name!)}>{t("tb_cancel")}</button>
-                </div>
-            </div>
+
         </div>}
+        <div ref={cancelModalRef} className={`modal-cancel-mission ${!dialogCancel.show && 'd-none'}`}>
+            <div className='card-summaryCommand'>
+                <div className='card-summaryCommand-header'>
+                    <div className="icon-name-agv">
+                        <div className='bg-img' style={{ background: 'rgb(255, 244, 244)' }}>
+                            <TbCancel size={32} color={'rgb(254, 0, 0)'} />
+                        </div>
+                        <h5>{t("md_cancel")} {dialogCancel.name}</h5>
+                    </div>
+                    <button className='btn-close-summary' onClick={closeDialogCancelMission}><IoMdClose size={16} /></button>
+                </div>
+                <div className='summary-command-pickup'>
+                    <div className='h1 px-1' style={{ borderBottom: '4px solid red' }}>{dialogCancel.id}</div>
+                </div>
+                <p>job id</p>
+                <p style={{ color: '#ccc' }}>{t("md_confirm_cancel")}</p>
+                <button className='btn w-100 mt-3 py-3 btn-danger' onClick={() => btnCancelMission(dialogCancel.id!, dialogCancel.name!)}>{t("tb_cancel")}</button>
+            </div>
+        </div>
     </section>;
 }

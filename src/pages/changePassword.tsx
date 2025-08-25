@@ -86,6 +86,7 @@ export default function ChangePassword() {
                             <div id="loading"></div>
                         </div>}
                         <div className="card-change-password">
+                            
                             <button className="button-close" onClick={buttonBackLogin}><IoMdClose size={18} color={'#000000'}></IoMdClose></button>
 
                             <img src={Lock_img} alt="lock" width={54} height={54} />
